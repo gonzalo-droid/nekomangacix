@@ -1,34 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Neko Manga Cix - Tienda de Manga Online
 
-## Getting Started
+Una aplicación e-commerce moderna de manga construida con **Next.js 16**, **TypeScript**, **Tailwind CSS** y **React Context** para gestión de estado.
 
-First, run the development server:
+## Características
+
+- ✨ **Diseño moderno y responsivo** - Mobile-first con Tailwind CSS
+- 🛒 **Carrito de compras funcional** - Con persistencia en localStorage
+- 🔍 **Búsqueda y filtros** - Por editorial, precio, disponibilidad
+- 📱 **Header sticky** - Navegación siempre visible
+- 💬 **Integración WhatsApp** - Para consultas y pedidos
+- ♿ **Accesibilidad** - HTML semántico, labels ARIA, navegación por teclado
+- 🇪🇸 **Contenido en español** - Precios en soles peruanos (S/)
+
+## Instalación Rápida
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+El servidor estará en **http://localhost:3000**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estructura del Proyecto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+nekomangacix/
+├── app/                        # App Router pages
+│   ├── layout.tsx              # Layout global
+│   ├── page.tsx                # Home
+│   ├── products/page.tsx       # Productos
+│   ├── cart/page.tsx           # Carrito
+│   ├── about/page.tsx          # Nosotros
+│   └── contact/page.tsx        # Contacto
+├── components/                 # Componentes reutilizables
+│   ├── Header.tsx
+│   ├── Footer.tsx
+│   ├── ProductCard.tsx
+│   ├── Filters.tsx
+│   └── WhatsAppFloatingButton.tsx
+├── context/
+│   └── CartContext.tsx         # Estado del carrito
+├── lib/
+│   └── products.ts             # Mock data
+└── package.json
+```
 
-## Learn More
+## Páginas
 
-To learn more about Next.js, take a look at the following resources:
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Inicio - Hero, secciones editoriales |
+| `/products` | Grid de productos con filtros y búsqueda |
+| `/cart` | Carrito de compras |
+| `/about` | Información de la tienda (Nosotros) |
+| `/contact` | Formulario de contacto |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Características Principales
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 🛒 Carrito (CartContext)
+- Persistencia en localStorage
+- Hook `useCart()` para acceso global
+- Funciones: add, remove, update, clear
 
+### 🔍 Búsqueda y Filtros
+- Búsqueda por nombre/editorial
+- Filtro por editorial
+- Rango de precio
+- Stock disponible
+- URL params para compartir búsquedas
+
+### 📦 Productos
+- 16 productos mock
+- Editoriales: Argentina (Ivrea, Ovni) y México (Panini, Viz)
+- Tags: nuevo, bestseller, clásico, etc.
+- Placeholders con emojis
+
+### ♿ Accesibilidad
+- Etiquetas ARIA en inputs/buttons
+- HTML semántico
+- Navegación por teclado
+- Alto contraste
+
+### 💬 WhatsApp
+- Botón flotante en todas las páginas
+- Números pre-llenados: +51 924 462 641
+- Carrito integrado con pedido automático
+
+## Datos de Productos
+
+```typescript
+{
+  id: "1",
+  title: "Jujutsu Kaisen Vol. 1",
+  editorial: "Ivrea Argentina",
+  pricePEN: 45.00,
+  stock: 12,
+  tags: ["nuevo"],
+  description: "...",
+  imageUrl: "...",
+  countryGroup: "Argentina"
+}
+```
+
+## Comandos
+
+```bash
+npm run dev      # Desarrollo
+npm run build    # Build
+npm start        # Producción
+npm run lint     # Linting
+```
+
+## Tecnologías
+
+- **Next.js** 16 (App Router)
+- **React** 19
+- **TypeScript**
+- **Tailwind CSS**
+- **Lucide React** (iconos)
+- **Context API** (estado)
+
+## Notas
+
+- Precios en S/ (soles peruanos)
+- Envío base: S/ 20.00
+- Mock data - sin backend real
+- Imágenes placeholders (emojis)
+- Mensajes de contacto simulados
+
+## Mejoras Futuras
+
+- Backend real
+- Autenticación
+- Base de datos
+- Pasarela de pago
+- Imágenes reales
+- Reseñas
+- Favoritos
+
+## Licencia
+
+MIT
+
+---
+
+🐱 **Neko Manga Cix** - Tienda de manga online 2024
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
