@@ -9,10 +9,10 @@ export default function AboutPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-purple-600 to-pink-500 text-white py-16 md:py-24">
+      <section className="bg-gradient-to-r from-[#2b496d] to-[#3d6491] text-white py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Sobre Neko Manga Cix</h1>
-          <p className="text-lg md:text-xl text-purple-100">
+          <p className="text-lg md:text-xl text-blue-100">
             Somos más que una tienda. Somos una comunidad apasionada por el manga.
           </p>
         </div>
@@ -35,7 +35,7 @@ export default function AboutPage() {
               Nos esforzamos por ser la tienda de manga más confiable y amigable de Chiclayo y el Perú.
             </p>
           </div>
-          <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-12 flex items-center justify-center min-h-64">
+          <div className="bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] rounded-lg p-12 flex items-center justify-center min-h-64">
             <div className="text-center">
               <div className="text-8xl mb-4">🐱</div>
               <p className="text-2xl font-bold text-gray-900">Neko Manga Cix</p>
@@ -70,7 +70,7 @@ export default function AboutPage() {
         </div>
 
         {/* Services Section */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-12 mb-16">
+        <div className="bg-gradient-to-r from-[#e8eef4] to-[#f0f4f8] rounded-lg p-12 mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">Nuestros Servicios</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex gap-4">
@@ -138,7 +138,7 @@ export default function AboutPage() {
                     href="https://wa.me/51924462641"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-purple-600 hover:text-purple-700 font-semibold"
+                    className="text-[#2b496d] hover:text-[#1e3550] font-semibold"
                   >
                     +51 924 462 641
                   </a>
@@ -153,7 +153,7 @@ export default function AboutPage() {
                     href="https://instagram.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-purple-600 hover:text-purple-700 font-semibold"
+                    className="text-[#2b496d] hover:text-[#1e3550] font-semibold"
                   >
                     @NekoMangaCix
                   </a>
@@ -162,7 +162,7 @@ export default function AboutPage() {
             </div>
             <Link
               href="/contact"
-              className="inline-block bg-purple-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-700 transition-colors"
+              className="inline-block bg-[#2b496d] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#1e3550] transition-colors"
             >
               Enviar Mensaje
             </Link>
@@ -170,16 +170,16 @@ export default function AboutPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-lg p-12 text-center text-white">
+        <div className="bg-gradient-to-r from-[#2b496d] to-[#3d6491] rounded-lg p-12 text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             ¿Listo para tu próxima aventura manga?
           </h2>
-          <p className="text-purple-100 mb-8 text-lg">
+          <p className="text-blue-100 mb-8 text-lg">
             Explora nuestra colección y encuentra tus títulos favoritos.
           </p>
           <Link
             href="/products"
-            className="inline-block bg-white text-purple-600 font-bold py-3 px-8 rounded-lg hover:bg-purple-50 transition-colors"
+            className="inline-block bg-[#f97316] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#ea580c] transition-colors"
           >
             Ver Todos los Productos
           </Link>

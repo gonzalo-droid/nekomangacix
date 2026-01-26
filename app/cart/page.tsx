@@ -30,15 +30,15 @@ export default function CartPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold text-gray-900 mb-12">Carrito de Compras</h1>
+      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-12">Carrito de Compras</h1>
 
       {items.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <p className="text-2xl font-semibold text-gray-900 mb-4">Tu carrito está vacío</p>
-          <p className="text-gray-600 mb-8">Empieza a agregar mangas a tu carrito desde nuestra colección.</p>
+        <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Tu carrito está vacío</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-8">Empieza a agregar mangas a tu carrito desde nuestra colección.</p>
           <Link
             href="/products"
-            className="inline-block bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-purple-700 transition-colors"
+            className="inline-block bg-[#2b496d] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#1e3550] transition-colors"
           >
             Ver Productos
           </Link>
@@ -47,37 +47,37 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
               {items.map((item) => (
                 <div
                   key={item.productId}
-                  className="p-6 border-b border-gray-200 flex gap-6 items-start hover:bg-gray-50 transition-colors"
+                  className="p-6 border-b border-gray-200 dark:border-gray-700 flex gap-6 items-start hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   {/* Product Image Placeholder */}
-                  <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-24 h-24 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] rounded-lg flex items-center justify-center flex-shrink-0">
                     <div className="text-3xl">📚</div>
                   </div>
 
                   {/* Product Info */}
                   <div className="flex-grow">
-                    <h3 className="text-lg font-bold text-gray-900">{item.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{item.editorial}</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{item.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{item.editorial}</p>
 
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-3 mb-4">
                       <button
                         onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                        className="p-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="p-1 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         aria-label="Disminuir cantidad"
                       >
                         <Minus size={16} />
                       </button>
-                      <span className="w-10 text-center font-semibold text-gray-900">
+                      <span className="w-10 text-center font-semibold text-gray-900 dark:text-white">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                        className="p-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="p-1 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         aria-label="Aumentar cantidad"
                       >
                         <Plus size={16} />
@@ -88,8 +88,8 @@ export default function CartPage() {
                   {/* Price & Remove */}
                   <div className="text-right flex flex-col justify-between h-full">
                     <div>
-                      <p className="text-2xl font-bold text-purple-600">S/ {(item.price * item.quantity).toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">S/ {item.price.toFixed(2)} c/u</p>
+                      <p className="text-2xl font-bold text-[#2b496d] dark:text-[#5a7a9e]">S/ {(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">S/ {item.price.toFixed(2)} c/u</p>
                     </div>
                     <button
                       onClick={() => removeFromCart(item.productId)}
@@ -107,7 +107,7 @@ export default function CartPage() {
             <div className="mt-8">
               <Link
                 href="/products"
-                className="text-purple-600 hover:text-purple-700 font-semibold"
+                className="text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#1e3550] dark:hover:text-[#7a9abe] font-semibold"
               >
                 ← Continuar comprando
               </Link>
@@ -116,23 +116,23 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-8 sticky top-24">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Resumen del Pedido</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 sticky top-24">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Resumen del Pedido</h2>
 
-              <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
+              <div className="space-y-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold text-gray-900">S/ {subtotal.toFixed(2)}</span>
+                  <span className="text-gray-600 dark:text-gray-300">Subtotal</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">S/ {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Envío estimado</span>
-                  <span className="font-semibold text-gray-900">S/ {shipping.toFixed(2)}</span>
+                  <span className="text-gray-600 dark:text-gray-300">Envío estimado</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">S/ {shipping.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center mb-8">
-                <span className="text-xl font-bold text-gray-900">Total</span>
-                <span className="text-3xl font-bold text-purple-600">S/ {total.toFixed(2)}</span>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">Total</span>
+                <span className="text-3xl font-bold text-[#2b496d] dark:text-[#5a7a9e]">S/ {total.toFixed(2)}</span>
               </div>
 
               <button
@@ -142,13 +142,13 @@ export default function CartPage() {
                 💬 Finalizar Pedido por WhatsApp
               </button>
 
-              <p className="text-sm text-gray-500 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                 Serás redirigido a WhatsApp para confirmar tu pedido con nuestro equipo.
               </p>
 
               {/* Info Box */}
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-900">
+              <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-900 dark:text-blue-200">
                   <strong>📍 Envío:</strong> El envío es a nivel nacional. Consulta tiempos de envío según tu ubicación.
                 </p>
               </div>

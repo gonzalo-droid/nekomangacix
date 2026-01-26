@@ -77,10 +77,10 @@ export default function ContactPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-purple-600 to-pink-500 text-white py-16 md:py-24">
+      <section className="bg-gradient-to-r from-[#2b496d] to-[#3d6491] text-white py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Contacto</h1>
-          <p className="text-lg md:text-xl text-purple-100">
+          <p className="text-lg md:text-xl text-blue-100">
             ¿Tienes dudas o sugerencias? Nos encanta escucharte.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function ContactPage() {
 
               {/* Email */}
               <div className="flex gap-4 p-6 bg-white rounded-lg shadow-md">
-                <div className="text-3xl text-purple-600">
+                <div className="text-3xl text-[#2b496d]">
                   <Mail size={32} />
                 </div>
                 <div>
@@ -179,7 +179,7 @@ export default function ContactPage() {
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2b496d] transition-colors ${
                       errors.nombre ? 'border-red-500 bg-red-50' : 'border-gray-300'
                     }`}
                     placeholder="Tu nombre completo"
@@ -207,7 +207,7 @@ export default function ContactPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2b496d] transition-colors ${
                       errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
                     }`}
                     placeholder="tu@email.com"
@@ -235,7 +235,7 @@ export default function ContactPage() {
                     name="asunto"
                     value={formData.asunto}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2b496d] transition-colors ${
                       errors.asunto ? 'border-red-500 bg-red-50' : 'border-gray-300'
                     }`}
                     placeholder="Asunto de tu consulta"
@@ -263,7 +263,7 @@ export default function ContactPage() {
                     value={formData.mensaje}
                     onChange={handleChange}
                     rows={6}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors resize-none ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2b496d] transition-colors resize-none ${
                       errors.mensaje ? 'border-red-500 bg-red-50' : 'border-gray-300'
                     }`}
                     placeholder="Cuéntanos lo que necesitas..."
@@ -280,7 +280,7 @@ export default function ContactPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors active:scale-95 transform"
+                  className="w-full bg-[#2b496d] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#1e3550] transition-colors active:scale-95 transform"
                 >
                   Enviar Mensaje
                 </button>
@@ -294,7 +294,7 @@ export default function ContactPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-12">
+        <div className="bg-gradient-to-r from-[#e8eef4] to-[#f0f4f8] rounded-lg p-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             Preguntas Frecuentes
           </h2>

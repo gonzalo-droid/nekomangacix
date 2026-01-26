@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { Menu, X, Search, ShoppingCart } from 'lucide-react';
 
@@ -23,40 +24,55 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link
             href="/"
-            className="flex-shrink-0 font-bold text-xl sm:text-2xl text-gray-900 hover:text-purple-600 transition-colors"
+            className="flex-shrink-0 hover:opacity-80 transition-opacity"
           >
-            🐱 Neko Manga Cix
+            <Image
+              src="/images/logo-light.png"
+              alt="Neko Manga Cix"
+              width={150}
+              height={40}
+              className="h-10 w-auto dark:hidden"
+              priority
+            />
+            <Image
+              src="/images/logo-dark.png"
+              alt="Neko Manga Cix"
+              width={150}
+              height={40}
+              className="h-10 w-auto hidden dark:block"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
               href="/"
-              className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
             >
               Inicio
             </Link>
             <Link
               href="/products"
-              className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
             >
               Productos
             </Link>
             <Link
               href="/about"
-              className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
             >
               Nosotros
             </Link>
             <Link
               href="/contact"
-              className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
             >
               Contacto
             </Link>
@@ -71,12 +87,12 @@ export default function Header() {
                   placeholder="Buscar manga..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-48 px-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-48 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-[#2b496d] transition-all"
                   aria-label="Buscar manga"
                 />
                 <button
                   type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-purple-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#2b496d]"
                   aria-label="Enviar búsqueda"
                 >
                   <Search size={18} />
@@ -86,7 +102,7 @@ export default function Header() {
 
             <Link
               href="/cart"
-              className="relative p-2 text-gray-700 hover:text-purple-600 transition-colors"
+              className="relative p-2 text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors"
               aria-label={`Carrito de compras con ${cartCount} artículos`}
             >
               <ShoppingCart size={24} />
@@ -102,7 +118,7 @@ export default function Header() {
           <div className="flex md:hidden items-center space-x-4">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-gray-700 hover:text-purple-600"
+              className="p-2 text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e]"
               aria-label="Abrir búsqueda"
             >
               <Search size={20} />
@@ -110,7 +126,7 @@ export default function Header() {
 
             <Link
               href="/cart"
-              className="relative p-2 text-gray-700 hover:text-purple-600"
+              className="relative p-2 text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e]"
               aria-label={`Carrito de compras con ${cartCount} artículos`}
             >
               <ShoppingCart size={20} />
@@ -123,7 +139,7 @@ export default function Header() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-700 hover:text-purple-600"
+              className="p-2 text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e]"
               aria-label="Abrir menú"
               aria-expanded={mobileMenuOpen}
             >
@@ -140,7 +156,7 @@ export default function Header() {
               placeholder="Buscar manga..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-[#2b496d]"
               aria-label="Buscar manga en dispositivo móvil"
             />
           </form>
@@ -148,31 +164,31 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden pb-4 space-y-4 border-t border-gray-200 mt-4 pt-4">
+          <div className="md:hidden pb-4 space-y-4 border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
             <Link
               href="/"
-              className="block text-gray-700 hover:text-purple-600 font-medium"
+              className="block text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Inicio
             </Link>
             <Link
               href="/products"
-              className="block text-gray-700 hover:text-purple-600 font-medium"
+              className="block text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Productos
             </Link>
             <Link
               href="/about"
-              className="block text-gray-700 hover:text-purple-600 font-medium"
+              className="block text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Nosotros
             </Link>
             <Link
               href="/contact"
-              className="block text-gray-700 hover:text-purple-600 font-medium"
+              className="block text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contacto

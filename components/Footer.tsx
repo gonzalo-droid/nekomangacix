@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { MessageCircle, Instagram, MapPin } from 'lucide-react';
 
 export default function Footer() {
@@ -10,7 +11,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sobre Nosotros */}
           <div>
-            <h3 className="text-lg font-bold mb-4">🐱 Neko Manga Cix</h3>
+            <Image
+              src="/images/logo-dark.png"
+              alt="Neko Manga Cix"
+              width={150}
+              height={40}
+              className="h-10 w-auto mb-4"
+            />
             <p className="text-gray-400 text-sm">
               Tu tienda de manga online de confianza. Envíos a todo Perú.
             </p>
@@ -21,22 +28,22 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Enlaces Rápidos</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Inicio
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <Link href="/products" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Productos
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <Link href="/about" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Nosotros
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <Link href="/contact" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Contacto
                 </Link>
               </li>
@@ -81,22 +88,22 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Información</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Términos y Condiciones
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Política de Privacidad
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Políticas de Envío
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Preguntas Frecuentes
                 </a>
               </li>

@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="bg-gray-50 text-gray-900 antialiased">
+      <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased">
         <CartProvider>
           <Header />
           <main className="min-h-screen">{children}</main>

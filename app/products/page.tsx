@@ -53,7 +53,7 @@ function ProductsPageContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold text-gray-900 mb-12">Productos</h1>
+      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-12">Productos</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Sidebar Filters */}
@@ -71,7 +71,7 @@ function ProductsPageContent() {
         <main className="md:col-span-3">
           {/* Results Info */}
           <div className="mb-6 flex justify-between items-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Mostrando{' '}
               <span className="font-semibold">
                 {paginatedProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
@@ -99,7 +99,7 @@ function ProductsPageContent() {
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label="Página anterior"
                   >
                     ← Anterior
@@ -112,8 +112,8 @@ function ProductsPageContent() {
                         onClick={() => setCurrentPage(i + 1)}
                         className={`w-10 h-10 rounded-lg transition-colors ${
                           currentPage === i + 1
-                            ? 'bg-purple-600 text-white'
-                            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                            ? 'bg-[#2b496d] text-white'
+                            : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                         aria-label={`Página ${i + 1}`}
                         aria-current={currentPage === i + 1 ? 'page' : undefined}
@@ -126,7 +126,7 @@ function ProductsPageContent() {
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label="Próxima página"
                   >
                     Siguiente →
@@ -136,10 +136,10 @@ function ProductsPageContent() {
             </>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg mb-4">
+              <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">
                 No se encontraron productos que coincidan con tu búsqueda.
               </p>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Intenta ajustar los filtros o la búsqueda.
               </p>
             </div>
