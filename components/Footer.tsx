@@ -62,18 +62,18 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-green-400 transition-colors"
                 >
-                  +51 924 462 641
+                  (+51) 924 462 641
                 </a>
               </li>
               <li className="flex items-center space-x-2">
                 <Instagram size={16} className="text-pink-400" />
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/neko.manga.cix/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-pink-400 transition-colors"
                 >
-                  @NekoMangaCix
+                  @neko.manga.cix
                 </a>
               </li>
               <li className="flex items-center space-x-2">

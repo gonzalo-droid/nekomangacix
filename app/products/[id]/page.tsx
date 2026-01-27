@@ -5,12 +5,7 @@ import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
-import {
-  getProductById,
-  getRelatedProducts,
-  getCategoryLabel,
-  getStockStatusLabel,
-} from '@/lib/products';
+import { useProducts, getCategoryLabel, getStockStatusLabel } from '@/hooks/useProducts';
 import {
   Heart,
   ShoppingCart,
@@ -27,6 +22,7 @@ import {
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.id as string;
+  const { getProductById, getRelatedProducts } = useProducts();
   const product = getProductById(productId);
 
   const { addToCart } = useCart();

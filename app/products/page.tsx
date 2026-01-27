@@ -5,11 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
 import Filters from '@/components/Filters';
-import { products, filterProducts, getAllEditorials } from '@/lib/products';
+import { useProducts } from '@/hooks/useProducts';
 
 function ProductsPageContent() {
   const searchParams = useSearchParams();
-  
+  const { filterProducts, getAllEditorials, isLoading } = useProducts();
+
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedEditorial, setSelectedEditorial] = useState(searchParams.get('editorial') || '');
   const [minPrice, setMinPrice] = useState(0);
@@ -22,7 +23,7 @@ function ProductsPageContent() {
 
   const filteredProducts = useMemo(() => {
     return filterProducts(searchQuery, selectedEditorial, minPrice, maxPrice, inStockOnly);
-  }, [searchQuery, selectedEditorial, minPrice, maxPrice, inStockOnly]);
+  }, [searchQuery, selectedEditorial, minPrice, maxPrice, inStockOnly, filterProducts]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(

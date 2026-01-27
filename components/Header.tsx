@@ -27,7 +27,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
           {/* Logo */}
           <Link
             href="/"
@@ -51,55 +51,57 @@ export default function Header() {
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Desktop Search - Left side, wider */}
+          <div className="hidden md:block flex-1 max-w-xl">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                placeholder="Buscar manga, editorial, autor..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 pl-10 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-[#2b496d] transition-all"
+                aria-label="Buscar manga"
+              />
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] text-sm font-medium"
+                aria-label="Enviar búsqueda"
+              >
+                Buscar
+              </button>
+            </form>
+          </div>
+
+          {/* Desktop Navigation - Right side */}
+          <div className="hidden md:flex items-center space-x-6 ml-auto">
             <Link
               href="/"
-              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium whitespace-nowrap"
             >
               Inicio
             </Link>
             <Link
               href="/products"
-              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium whitespace-nowrap"
             >
               Productos
             </Link>
             <Link
               href="/about"
-              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium whitespace-nowrap"
             >
               Nosotros
             </Link>
             <Link
               href="/contact"
-              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium"
+              className="text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors font-medium whitespace-nowrap"
             >
               Contacto
             </Link>
-          </div>
-
-          {/* Desktop Search & Cart */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="relative">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  type="text"
-                  placeholder="Buscar manga..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-48 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-[#2b496d] transition-all"
-                  aria-label="Buscar manga"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#2b496d]"
-                  aria-label="Enviar búsqueda"
-                >
-                  <Search size={18} />
-                </button>
-              </form>
-            </div>
 
             <Link
               href="/cart"
@@ -118,7 +120,7 @@ export default function Header() {
           </div>
 
           {/* Mobile: Search & Cart & Theme & Menu */}
-          <div className="flex md:hidden items-center space-x-2">
+          <div className="flex md:hidden items-center space-x-2 ml-auto">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               className="p-2 text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e]"
@@ -156,14 +158,20 @@ export default function Header() {
         {/* Mobile Search */}
         {searchOpen && (
           <form onSubmit={handleSearchSubmit} className="md:hidden mt-4 pb-4">
-            <input
-              type="text"
-              placeholder="Buscar manga..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-[#2b496d]"
-              aria-label="Buscar manga en dispositivo móvil"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar manga, editorial, autor..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 pl-10 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-[#2b496d]"
+                aria-label="Buscar manga en dispositivo móvil"
+              />
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+            </div>
           </form>
         )}
 
