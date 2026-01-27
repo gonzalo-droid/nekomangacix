@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { Menu, X, Search, ShoppingCart } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   const { getTotalItems } = useCart();
@@ -112,10 +113,12 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
+            <ThemeToggle />
           </div>
 
-          {/* Mobile: Search & Cart & Menu */}
-          <div className="flex md:hidden items-center space-x-4">
+          {/* Mobile: Search & Cart & Theme & Menu */}
+          <div className="flex md:hidden items-center space-x-2">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               className="p-2 text-gray-700 dark:text-gray-200 hover:text-[#2b496d] dark:hover:text-[#5a7a9e]"
@@ -136,6 +139,8 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
+            <ThemeToggle />
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

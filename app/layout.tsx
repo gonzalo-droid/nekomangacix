@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { CartProvider } from "@/context/CartContext";
+import { FavoritesProvider } from "@/context/FavoritesContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import InstagramFeed from "@/components/InstagramFeed";
 import WhatsAppFloatingButton from "@/components/WhatsAppFloatingButton";
 import "./globals.css";
 
@@ -18,14 +21,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased">
-        <CartProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <WhatsAppFloatingButton />
-        </CartProvider>
+        <ThemeProvider>
+          <FavoritesProvider>
+            <CartProvider>
+              <Header />
+              <main className="min-h-screen">{children}</main>
+              <InstagramFeed />
+              <Footer />
+              <WhatsAppFloatingButton />
+            </CartProvider>
+          </FavoritesProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

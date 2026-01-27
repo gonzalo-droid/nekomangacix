@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *), @media (prefers-color-scheme: dark));
+@variant dark (&:where(.dark, .dark *));
 
 :root {
   /* Paleta principal basada en el logo */
@@ -31,13 +31,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #1f2937;
-    --muted-foreground: #9ca3af;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
 }
 
 body {

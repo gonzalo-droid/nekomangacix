@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
@@ -26,7 +27,9 @@ export default function ProductCard({
   const { addToCart } = useCart();
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     addToCart(id, title, pricePEN, editorial);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -35,11 +38,14 @@ export default function ProductCard({
   const isOutOfStock = stock === 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full">
+    <Link
+      href={`/products/${id}`}
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full group"
+    >
       {/* Product Image */}
       <div className="relative w-full h-48 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] flex items-center justify-center overflow-hidden">
         <div className="text-center">
-          <div className="text-5xl mb-2">📚</div>
+          <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">📚</div>
           <p className="text-gray-500 dark:text-gray-600 text-sm">{title}</p>
         </div>
         {tags.length > 0 && (
@@ -97,6 +103,6 @@ export default function ProductCard({
           <span>{addedToCart ? '¡Agregado!' : 'Agregar al carrito'}</span>
         </button>
       </div>
-    </div>
+    </Link>
   );
 }
