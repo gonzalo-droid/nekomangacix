@@ -28,7 +28,6 @@ export default function RootLayout({
             <CartProvider>
               <Header />
               <main className="min-h-screen">{children}</main>
-              <InstagramFeed />
               <Footer />
               <WhatsAppFloatingButton />
             </CartProvider>

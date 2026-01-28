@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import FairGallery from '@/components/FairGallery';
+import Image from 'next/image';
 
 export const metadata = {
   title: 'Nosotros - Neko Manga Cix',
@@ -14,7 +15,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Sobre Neko Manga Cix</h1>
           <p className="text-lg md:text-xl text-blue-100">
-            Somos más que una tienda. Somos una comunidad apasionada por el manga.
+            Somos más que una tienda. Somos una comunidad apasionada por el manga y el anime.
           </p>
         </div>
       </section>
@@ -37,11 +38,15 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 rounded-lg p-12 flex items-center justify-center min-h-64">
-            <div className="text-center">
-              <div className="text-8xl mb-4">🐱</div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">Neko Manga Cix</p>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">Desde 2024</p>
-            </div>
+              
+            <Image
+                         src="/images/logo-light.png"
+                         alt="Neko Manga Cix"
+                         width={300}
+                         height={100}
+                         className="h-auto w-auto dark:hidden"
+                         priority
+                       />         
           </div>
         </div>
 
