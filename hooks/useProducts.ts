@@ -29,6 +29,10 @@ export function useProducts() {
     return products.find((p) => p.id === id);
   };
 
+  const getProductBySlug = (slug: string): Product | undefined => {
+    return products.find((p) => p.slug === slug);
+  };
+
   const getProductsByEditorial = (editorial: string): Product[] => {
     return products.filter((p) => p.editorial === editorial);
   };
@@ -83,12 +87,12 @@ export function useProducts() {
     return Array.from(new Set(products.map((p) => p.editorial))).sort();
   };
 
-  const getRelatedProducts = (productId: string, limit: number = 4): Product[] => {
-    const product = getProductById(productId);
+  const getRelatedProducts = (slug: string, limit: number = 4): Product[] => {
+    const product = getProductBySlug(slug);
     if (!product) return [];
 
     return products
-      .filter(p => p.id !== productId && (p.category === product.category || p.editorial === product.editorial))
+      .filter(p => p.slug !== slug && (p.category === product.category || p.editorial === product.editorial))
       .slice(0, limit);
   };
 
@@ -96,6 +100,7 @@ export function useProducts() {
     products,
     isLoading,
     getProductById,
+    getProductBySlug,
     getProductsByEditorial,
     searchProducts,
     filterProducts,

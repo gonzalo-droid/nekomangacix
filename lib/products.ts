@@ -1,9 +1,22 @@
 export type StockStatus = 'in_stock' | 'on_demand' | 'preorder' | 'out_of_stock';
 export type Category = 'shonen' | 'seinen' | 'shojo' | 'josei' | 'kodomo' | 'isekai' | 'slice_of_life' | 'horror' | 'romance' | 'action' | 'comedy' | 'drama' | 'fantasy' | 'sci-fi' | 'sports' | 'mystery';
 
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+
 export interface Product {
   id: string;
   sku: string;
+  slug: string;
   title: string;
   editorial: string;
   author: string;
@@ -33,7 +46,8 @@ export const products: Product[] = [
   // Editorial Argentina - Ivrea Argentina
   {
     id: "1",
-    sku: "NMC-JJK-001",
+    sku: "ncm-jujutsu-kaisen-vol-1",
+    slug: "jujutsu-kaisen-vol-1",
     title: "Jujutsu Kaisen Vol. 1",
     editorial: "Ivrea Argentina",
     author: "Gege Akutami",
@@ -58,7 +72,8 @@ export const products: Product[] = [
   },
   {
     id: "2",
-    sku: "NMC-CSM-002",
+    sku: "ncm-chainsaw-man-vol-2",
+    slug: "ncm-chainsaw-man-vol-2",
     title: "Chainsaw Man Vol. 2",
     editorial: "Ivrea Argentina",
     author: "Tatsuki Fujimoto",
@@ -83,7 +98,8 @@ export const products: Product[] = [
   },
   {
     id: "3",
-    sku: "NMC-MHA-005",
+    sku: "ncm-my-hero-academia-vol-5",
+    slug: "ncm-my-hero-academia-vol-5",
     title: "My Hero Academia Vol. 5",
     editorial: "Ivrea Argentina",
     author: "Kohei Horikoshi",
@@ -108,7 +124,8 @@ export const products: Product[] = [
   },
   {
     id: "4",
-    sku: "NMC-DN-003",
+    sku: "ncm-death-note-vol-3",
+    slug: "ncm-death-note-vol-3",
     title: "Death Note Vol. 3",
     editorial: "Ivrea Argentina",
     author: "Tsugumi Ohba / Takeshi Obata",
@@ -133,7 +150,8 @@ export const products: Product[] = [
   },
   {
     id: "5",
-    sku: "NMC-VS-001",
+    sku: "ncm-vinland-saga-vol-1",
+    slug: "ncm-vinland-saga-vol-1",
     title: "Vinland Saga Vol. 1",
     editorial: "Ovni Press",
     author: "Makoto Yukimura",
@@ -158,7 +176,8 @@ export const products: Product[] = [
   },
   {
     id: "6",
-    sku: "NMC-AOT-008",
+    sku: "ncm-attack-on-titan-vol-8",
+    slug: "ncm-attack-on-titan-vol-8",
     title: "Attack on Titan Vol. 8",
     editorial: "Ovni Press",
     author: "Hajime Isayama",
@@ -184,7 +203,8 @@ export const products: Product[] = [
   },
   {
     id: "7",
-    sku: "NMC-DS-001",
+    sku: "ncm-demon-slayer-vol-1",
+    slug: "ncm-demon-slayer-vol-1",
     title: "Demon Slayer Vol. 1",
     editorial: "Ovni Press",
     author: "Koyoharu Gotouge",
@@ -209,7 +229,8 @@ export const products: Product[] = [
   },
   {
     id: "8",
-    sku: "NMC-TG-004",
+    sku: "ncm-tokyo-ghoul-vol-4",
+    slug: "ncm-tokyo-ghoul-vol-4",
     title: "Tokyo Ghoul Vol. 4",
     editorial: "Ovni Press",
     author: "Sui Ishida",
@@ -234,7 +255,8 @@ export const products: Product[] = [
   },
   {
     id: "9",
-    sku: "NMC-OP-100",
+    sku: "ncm-one-piece-vol-100",
+    slug: "ncm-one-piece-vol-100",
     title: "One Piece Vol. 100",
     editorial: "Panini MX",
     author: "Eiichiro Oda",
@@ -259,7 +281,8 @@ export const products: Product[] = [
   },
   {
     id: "10",
-    sku: "NMC-NRT-045",
+    sku: "ncm-naruto-shippuden-vol-45",
+    slug: "ncm-naruto-shippuden-vol-45",
     title: "Naruto Shippuden Vol. 45",
     editorial: "Panini MX",
     author: "Masashi Kishimoto",
@@ -284,7 +307,8 @@ export const products: Product[] = [
   },
   {
     id: "11",
-    sku: "NMC-BC-025",
+    sku: "ncm-black-clover-vol-25",
+    slug: "ncm-black-clover-vol-25",
     title: "Black Clover Vol. 25",
     editorial: "Panini MX",
     author: "Yuki Tabata",
@@ -309,7 +333,8 @@ export const products: Product[] = [
   },
   {
     id: "12",
-    sku: "NMC-TPN-015",
+    sku: "ncm-the-promised-neverland-vol-15",
+    slug: "ncm-the-promised-neverland-vol-15",
     title: "The Promised Neverland Vol. 15",
     editorial: "Panini MX",
     author: "Kaiu Shirai / Posuka Demizu",
@@ -334,7 +359,8 @@ export const products: Product[] = [
   },
   {
     id: "13",
-    sku: "NMC-DBS-010",
+    sku: "ncm-dragon-ball-super-vol-10",
+    slug: "ncm-dragon-ball-super-vol-10",
     title: "Dragon Ball Super Vol. 10",
     editorial: "Viz Media México",
     author: "Akira Toriyama / Toyotarou",
@@ -359,7 +385,8 @@ export const products: Product[] = [
   },
   {
     id: "14",
-    sku: "NMC-SG-003",
+    sku: "ncm-steins-gate-manga-vol-3",
+    slug: "ncm-steins-gate-manga-vol-3",
     title: "Steins; Gate Manga Vol. 3",
     editorial: "Viz Media México",
     author: "5pb. / Yomi Sarachi",
@@ -385,7 +412,8 @@ export const products: Product[] = [
   },
   {
     id: "15",
-    sku: "NMC-SAO-012",
+    sku: "ncm-sword-art-online-vol-12",
+    slug: "ncm-sword-art-online-vol-12",
     title: "Sword Art Online Vol. 12",
     editorial: "Viz Media México",
     author: "Reki Kawahara / abec",
@@ -412,7 +440,8 @@ export const products: Product[] = [
   },
   {
     id: "16",
-    sku: "NMC-RZ-005",
+    sku: "ncm-rezero-vol-5",
+    slug: "ncm-rezero-vol-5",
     title: "Re:ZERO Vol. 5",
     editorial: "Viz Media México",
     author: "Tappei Nagatsuki / Shinichirou Otsuka",
@@ -493,17 +522,20 @@ export function getProductById(id: string): Product | undefined {
   return products.find((p) => p.id === id);
 }
 
+export function getProductBySlug(slug: string): Product | undefined {
+  return products.find((p) => p.slug === slug);
+}
+
 export function getAllEditorials(): string[] {
   return Array.from(new Set(products.map((p) => p.editorial))).sort();
 }
 
-export function getRelatedProducts(productId: string, limit: number = 4): Product[] {
-  const product = getProductById(productId);
+export function getRelatedProducts(slug: string, limit: number = 4): Product[] {
+  const product = getProductBySlug(slug);
   if (!product) return [];
 
-  // Get products from same category or editorial, excluding current product
   return products
-    .filter(p => p.id !== productId && (p.category === product.category || p.editorial === product.editorial))
+    .filter(p => p.slug !== slug && (p.category === product.category || p.editorial === product.editorial))
     .slice(0, limit);
 }
 

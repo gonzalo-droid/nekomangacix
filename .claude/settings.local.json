@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(find /Users/gonzalo/DocsNeko/webs/nekomangacix -maxdepth 3 -type d -not -path */node_modules/* -not -path */.next/*)",
+      "Bash(npm run:*)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f 'next dev')"
     ]
   }
 }

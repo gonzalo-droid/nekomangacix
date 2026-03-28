@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useProducts, getCategoryLabel, getStockStatusLabel } from '@/hooks/useProducts';
@@ -21,9 +22,9 @@ import {
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const productId = params.id as string;
-  const { getProductById, getRelatedProducts } = useProducts();
-  const product = getProductById(productId);
+  const slug = params.slug as string;
+  const { getProductBySlug, getRelatedProducts } = useProducts();
+  const product = getProductBySlug(slug);
 
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -32,15 +33,16 @@ export default function ProductDetailPage() {
   const [activeTab, setActiveTab] = useState<'description' | 'info' | 'reviews'>('description');
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = getRelatedProducts(productId, 4);
+  const relatedProducts = getRelatedProducts(slug, 4);
   const stockInfo = getStockStatusLabel(product.stockStatus);
   const categoryLabel = getCategoryLabel(product.category);
-  const isProductFavorite = isFavorite(productId);
+  const isProductFavorite = isFavorite(product.id);
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
@@ -76,28 +78,47 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 rounded-lg aspect-square flex items-center justify-center overflow-hidden">
-              <div className="text-center p-8">
-                <div className="text-9xl mb-4">📚</div>
-                <p className="text-gray-500 dark:text-gray-400">{product.title}</p>
-                <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                  Imagen {selectedImage + 1} de {product.images.length}
-                </p>
-              </div>
+            <div className="relative bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 rounded-lg aspect-square flex items-center justify-center overflow-hidden">
+              {product.images[selectedImage] && !imgError ? (
+                <Image
+                  src={product.images[selectedImage]}
+                  alt={product.title}
+                  fill
+                  className="object-contain p-4"
+                  onError={() => setImgError(true)}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              ) : (
+                <div className="text-center p-8">
+                  <div className="text-9xl mb-4">📚</div>
+                  <p className="text-gray-500 dark:text-gray-400">{product.title}</p>
+                </div>
+              )}
             </div>
             {product.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {product.images.map((_, idx) => (
+                {product.images.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 transition-all ${
+                    onClick={() => { setSelectedImage(idx); setImgError(false); }}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 transition-all overflow-hidden ${
                       selectedImage === idx
                         ? 'border-[#2b496d] dark:border-[#5a7a9e]'
                         : 'border-gray-200 dark:border-gray-700'
-                    } bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 flex items-center justify-center`}
+                    } bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 relative`}
                   >
-                    <span className="text-2xl">📚</span>
+                    {img ? (
+                      <Image
+                        src={img}
+                        alt={`${product.title} - ${idx + 1}`}
+                        fill
+                        className="object-contain p-1"
+                        sizes="80px"
+                      />
+                    ) : (
+                      <span className="text-2xl flex items-center justify-center h-full">📚</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -228,7 +249,7 @@ export default function ProductDetailPage() {
                 </span>
               </button>
               <button
-                onClick={() => toggleFavorite(productId)}
+                onClick={() => toggleFavorite(product.id)}
                 className={`p-3 rounded-lg border-2 transition-all ${
                   isProductFavorite
                     ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500'
@@ -405,16 +426,26 @@ export default function ProductDetailPage() {
               {relatedProducts.map((relatedProduct) => (
                 <Link
                   key={relatedProduct.id}
-                  href={`/products/${relatedProduct.id}`}
+                  href={`/products/${relatedProduct.slug}`}
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden group"
                 >
-                  <div className="relative w-full h-48 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">📚</div>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm px-4 line-clamp-1">
-                        {relatedProduct.title}
-                      </p>
-                    </div>
+                  <div className="relative w-full h-48 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-700 dark:to-gray-600 flex items-center justify-center overflow-hidden">
+                    {relatedProduct.images[0] ? (
+                      <Image
+                        src={relatedProduct.images[0]}
+                        alt={relatedProduct.title}
+                        fill
+                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">📚</div>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm px-4 line-clamp-1">
+                          {relatedProduct.title}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-gray-900 dark:text-white mb-1 line-clamp-2 group-hover:text-[#2b496d] dark:group-hover:text-[#5a7a9e] transition-colors">

@@ -13,12 +13,17 @@ import {
   Eye,
   Save,
   ChevronLeft,
+  ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
+import CloudinaryUploader from '@/components/CloudinaryUploader';
 
 const STORAGE_KEY = 'neko-manga-uploaded-products';
 
+type AdminTab = 'products' | 'images';
+
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<AdminTab>('products');
   const [uploadedProducts, setUploadedProducts] = useState<Product[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
@@ -128,10 +133,56 @@ export default function AdminPage() {
             Administrar Productos
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Sube un archivo Excel para agregar o actualizar productos en la tienda.
+            Gestiona productos e imagenes de tu tienda.
           </p>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="mb-8 border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`pb-3 px-2 font-medium transition-colors flex items-center gap-2 ${
+                activeTab === 'products'
+                  ? 'border-b-2 border-[#2b496d] text-[#2b496d] dark:border-[#5a7a9e] dark:text-[#5a7a9e]'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <FileSpreadsheet size={20} />
+              Productos (Excel)
+            </button>
+            <button
+              onClick={() => setActiveTab('images')}
+              className={`pb-3 px-2 font-medium transition-colors flex items-center gap-2 ${
+                activeTab === 'images'
+                  ? 'border-b-2 border-[#2b496d] text-[#2b496d] dark:border-[#5a7a9e] dark:text-[#5a7a9e]'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <ImageIcon size={20} />
+              Imagenes (Cloudinary)
+            </button>
+          </nav>
+        </div>
+
+        {/* Images Tab */}
+        {activeTab === 'images' && (
+          <div>
+            <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-400 mb-2">Como funciona</h3>
+              <ol className="list-decimal list-inside space-y-1 text-blue-800 dark:text-blue-300 text-sm">
+                <li>Sube las imagenes de tus mangas aqui. Dale un nombre descriptivo (ej: <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">jjk-vol1</code>).</li>
+                <li>Copia el nombre de la imagen subida.</li>
+                <li>En tu Excel, en la columna <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">images</code>, pega ese nombre.</li>
+                <li>Si un producto tiene varias imagenes, separalas con coma: <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">jjk-vol1,jjk-vol1-back</code></li>
+              </ol>
+            </div>
+            <CloudinaryUploader />
+          </div>
+        )}
+
+        {/* Products Tab */}
+        {activeTab === 'products' && (<>
         {/* Messages */}
         {errors.length > 0 && (
           <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -368,6 +419,7 @@ export default function AdminPage() {
             </p>
           </div>
         </div>
+        </>)}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
-import { Product, StockStatus, Category } from './products';
+import { Product, StockStatus, Category, generateSlug } from './products';
+import { getCloudinaryUrl } from './cloudinary';
 
 export interface ExcelRow {
   id?: string;
@@ -89,12 +90,18 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
       // Parse tags (comma-separated)
       const tags = row.tags ? row.tags.split(',').map(t => t.trim()).filter(t => t) : [];
 
-      // Parse images (comma-separated)
-      const images = row.images ? row.images.split(',').map(i => i.trim()).filter(i => i) : ['/images/products/placeholder.jpg'];
+      // Parse images (comma-separated) and resolve to Cloudinary URLs
+      const rawImages = row.images ? row.images.split(',').map(i => i.trim()).filter(i => i) : [];
+      const images = rawImages.length > 0
+        ? rawImages.map(img => getCloudinaryUrl(img))
+        : [];
+
+      const slug = generateSlug(row.title);
 
       const product: Product = {
         id: String(row.id),
-        sku: row.sku || `NMC-${String(row.id).padStart(3, '0')}`,
+        sku: row.sku ?? `NMC-${String(row.id).padStart(6, '0')}`,
+        slug,
         title: row.title,
         editorial: row.editorial,
         author: row.author || 'Autor desconocido',
@@ -134,6 +141,7 @@ export function generateExcelTemplate(): ArrayBuffer {
     {
       id: '1',
       sku: 'NMC-JJK-001',
+      slug : "jujutsu-kaises-vol-1",
       title: 'Jujutsu Kaisen Vol. 1',
       editorial: 'Ivrea Argentina',
       author: 'Gege Akutami',
@@ -159,6 +167,7 @@ export function generateExcelTemplate(): ArrayBuffer {
     {
       id: '2',
       sku: 'NMC-SAO-012',
+      slug : "jujutsu-kaises-vol-1",
       title: 'Sword Art Online Vol. 12',
       editorial: 'Viz Media Mexico',
       author: 'Reki Kawahara',
@@ -191,6 +200,7 @@ export function generateExcelTemplate(): ArrayBuffer {
   worksheet['!cols'] = [
     { wch: 5 },   // id
     { wch: 15 },  // sku
+    { wch: 15 },  // slug
     { wch: 30 },  // title
     { wch: 20 },  // editorial
     { wch: 20 },  // author

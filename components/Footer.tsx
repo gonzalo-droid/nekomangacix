@@ -16,7 +16,7 @@ export default function Footer() {
               alt="Neko Manga Cix"
               width={150}
               height={40}
-              className="h-10 w-auto mb-4"
+              className="h-30 w-auto mb-4"
             />
             <p className="text-gray-400 text-sm">
               Tu tienda de manga online de confianza. Envíos a todo Perú.

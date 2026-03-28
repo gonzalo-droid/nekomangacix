@@ -1,31 +1,37 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 
 interface ProductCardProps {
   id: string;
+  slug: string;
   title: string;
   editorial: string;
   pricePEN: number;
   stock: number;
   tags: string[];
   description: string;
+  images?: string[];
 }
 
 export default function ProductCard({
   id,
+  slug,
   title,
   editorial,
   pricePEN,
   stock,
   tags,
   description,
+  images,
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const [addedToCart, setAddedToCart] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,18 +42,30 @@ export default function ProductCard({
   };
 
   const isOutOfStock = stock === 0;
+  const hasImage = images && images.length > 0 && images[0] && !imgError;
 
   return (
     <Link
-      href={`/products/${id}`}
+      href={`/products/${slug}`}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full group"
     >
       {/* Product Image */}
       <div className="relative w-full h-48 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] flex items-center justify-center overflow-hidden">
-        <div className="text-center">
-          <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">📚</div>
-          <p className="text-gray-500 dark:text-gray-600 text-sm">{title}</p>
-        </div>
+        {hasImage ? (
+          <Image
+            src={images[0]}
+            alt={title}
+            fill
+            className="object-contain group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImgError(true)}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="text-center">
+            <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">📚</div>
+            <p className="text-gray-500 dark:text-gray-600 text-sm">{title}</p>
+          </div>
+        )}
         {tags.length > 0 && (
           <div className="absolute top-2 right-2 space-y-1">
             {tags.map((tag, idx) => (
