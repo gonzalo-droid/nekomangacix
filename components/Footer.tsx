@@ -57,12 +57,12 @@ export default function Footer() {
               <li className="flex items-center space-x-2">
                 <MessageCircle size={16} className="text-green-400" />
                 <a
-                  href="https://wa.me/51924462641"
+                  href="https://wa.me/51924262747"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-green-400 transition-colors"
                 >
-                  (+51) 924 462 641
+                  (+51) 924 262 747
                 </a>
               </li>
               <li className="flex items-center space-x-2">
@@ -88,24 +88,24 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Información</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
+                <Link href="/terms" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Términos y Condiciones
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
+                <Link href="/privacy" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Política de Privacidad
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
+                <Link href="/shipping" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Políticas de Envío
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
+                <Link href="/faq" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
                   Preguntas Frecuentes
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

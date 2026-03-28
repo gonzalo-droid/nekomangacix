@@ -14,6 +14,7 @@ import {
   Save,
   ChevronLeft,
   ImageIcon,
+  ShoppingBag,
 } from 'lucide-react';
 import Link from 'next/link';
 import CloudinaryUploader from '@/components/CloudinaryUploader';
@@ -135,6 +136,17 @@ export default function AdminPage() {
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Gestiona productos e imagenes de tu tienda.
           </p>
+        </div>
+
+        {/* Quick link to orders */}
+        <div className="mb-6">
+          <Link
+            href="/admin/orders"
+            className="inline-flex items-center gap-2 bg-[#2b496d] hover:bg-[#1e3550] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            <ShoppingBag size={16} />
+            Ver Pedidos
+          </Link>
         </div>
 
         {/* Tab Navigation */}

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { Menu, X, Search, ShoppingCart } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import UserMenu from './UserMenu';
 
 export default function Header() {
   const { getTotalItems } = useCart();
@@ -116,6 +117,7 @@ export default function Header() {
               )}
             </Link>
 
+            <UserMenu />
             <ThemeToggle />
           </div>
 

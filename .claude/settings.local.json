@@ -6,7 +6,8 @@
       "Bash(find /Users/gonzalo/DocsNeko/webs/nekomangacix -maxdepth 3 -type d -not -path */node_modules/* -not -path */.next/*)",
       "Bash(npm run:*)",
       "Bash(pkill -f \"next dev\")",
-      "Bash(pkill -f 'next dev')"
+      "Bash(pkill -f 'next dev')",
+      "Bash(npm list:*)"
     ]
   }
 }
