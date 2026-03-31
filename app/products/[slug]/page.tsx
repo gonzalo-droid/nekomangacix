@@ -1,26 +1,33 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { products, getProductBySlug, getRelatedProducts } from '@/lib/products';
 import { getCloudinaryUrl } from '@/lib/cloudinary';
+import {
+  getAllProductSlugs,
+  getProductBySlugServer,
+  getRelatedProductsServer,
+} from '@/lib/productsServer';
 import ProductDetailClient from './ProductDetailClient';
 
 type Props = { params: Promise<{ slug: string }> };
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nekomangacix.com';
 
+// ISR: revalida cada 60 segundos para reflejar cambios del admin sin rebuild
+export const revalidate = 60;
+
 export async function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+  const slugs = await getAllProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlugServer(slug);
   if (!product) return { title: 'Producto no encontrado — NekoMangaCix' };
 
   const title = `${product.title} — NekoMangaCix`;
   const description = `${product.description} | ${product.editorial} | S/ ${product.pricePEN.toFixed(2)} | Envíos a todo Perú.`;
 
-  // Usar URL absoluta para OG (requerido por redes sociales)
   const firstImage = product.images[0];
   const ogImageRaw = firstImage ? getCloudinaryUrl(firstImage) : null;
   const ogImage =
@@ -31,9 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: {
-      canonical: `${SITE_URL}/products/${slug}`,
-    },
+    alternates: { canonical: `${SITE_URL}/products/${slug}` },
     openGraph: {
       title,
       description,
@@ -54,10 +59,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlugServer(slug);
   if (!product) notFound();
 
-  const relatedProducts = getRelatedProducts(slug, 4);
+  const relatedProducts = await getRelatedProductsServer(slug, 4);
 
   const availability =
     product.stockStatus === 'in_stock'

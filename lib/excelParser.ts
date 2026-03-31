@@ -3,8 +3,6 @@ import { Product, StockStatus, Category, generateSlug } from './products';
 import { getCloudinaryUrl } from './cloudinary';
 
 export interface ExcelRow {
-  id?: string;
-  sku?: string;
   title?: string;
   editorial?: string;
   author?: string;
@@ -49,14 +47,11 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
       const rowNum = index + 2; // +2 because Excel is 1-indexed and has header row
 
       // Validate required fields
-      if (!row.id) {
-        errors.push(`Fila ${rowNum}: Falta el campo 'id'`);
-        return;
-      }
       if (!row.title) {
         errors.push(`Fila ${rowNum}: Falta el campo 'title'`);
         return;
       }
+      /*
       if (!row.editorial) {
         errors.push(`Fila ${rowNum}: Falta el campo 'editorial'`);
         return;
@@ -64,7 +59,7 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
       if (row.pricePEN === undefined || row.pricePEN === null) {
         errors.push(`Fila ${rowNum}: Falta el campo 'pricePEN'`);
         return;
-      }
+      }*/
 
       // Validate stockStatus
       const stockStatus = (row.stockStatus || 'in_stock') as StockStatus;
@@ -99,13 +94,13 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
       const slug = generateSlug(row.title);
 
       const product: Product = {
-        id: String(row.id),
-        sku: row.sku ?? `NMC-${String(row.id).padStart(6, '0')}`,
+        id: crypto.randomUUID(),
+        sku: '', // generado internamente al insertar en Supabase
         slug,
         title: row.title,
-        editorial: row.editorial,
+        editorial: row.editorial || 'Ivrea Argentina',
         author: row.author || 'Autor desconocido',
-        pricePEN: Number(row.pricePEN),
+        pricePEN: row.pricePEN != null && !isNaN(Number(row.pricePEN)) ? Number(row.pricePEN) : 99.99,
         stock: Number(row.stock) || 0,
         stockStatus,
         estimatedArrival: row.estimatedArrival,
@@ -119,8 +114,8 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
           language: row.language || 'Espanol',
           isbn: row.isbn,
           releaseDate: row.releaseDate,
-          dimensions: row.dimensions,
-          weight: row.weight,
+          dimensions: row.dimensions || '13.5 x 19 cm',
+          weight: row.weight || '200g',
         },
         images,
         category,
@@ -139,9 +134,6 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
 export function generateExcelTemplate(): ArrayBuffer {
   const templateData = [
     {
-      id: '1',
-      sku: 'NMC-JJK-001',
-      slug : "jujutsu-kaises-vol-1",
       title: 'Jujutsu Kaisen Vol. 1',
       editorial: 'Ivrea Argentina',
       author: 'Gege Akutami',
@@ -160,14 +152,11 @@ export function generateExcelTemplate(): ArrayBuffer {
       releaseDate: '2023-05-15',
       dimensions: '13.5 x 19 cm',
       weight: '180g',
-      images: '/images/products/jjk-1.jpg,/images/products/jjk-1-back.jpg',
+      images: 'jjk-vol1,jjk-vol1-back',
       category: 'shonen',
       countryGroup: 'Argentina',
     },
     {
-      id: '2',
-      sku: 'NMC-SAO-012',
-      slug : "jujutsu-kaises-vol-1",
       title: 'Sword Art Online Vol. 12',
       editorial: 'Viz Media Mexico',
       author: 'Reki Kawahara',
@@ -186,7 +175,7 @@ export function generateExcelTemplate(): ArrayBuffer {
       releaseDate: '2024-03-15',
       dimensions: '13.5 x 19 cm',
       weight: '185g',
-      images: '/images/products/sao-12.jpg',
+      images: 'sao-vol12',
       category: 'isekai',
       countryGroup: 'Mexico',
     },
@@ -196,11 +185,7 @@ export function generateExcelTemplate(): ArrayBuffer {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
 
-  // Set column widths
   worksheet['!cols'] = [
-    { wch: 5 },   // id
-    { wch: 15 },  // sku
-    { wch: 15 },  // slug
     { wch: 30 },  // title
     { wch: 20 },  // editorial
     { wch: 20 },  // author
@@ -219,7 +204,7 @@ export function generateExcelTemplate(): ArrayBuffer {
     { wch: 12 },  // releaseDate
     { wch: 15 },  // dimensions
     { wch: 10 },  // weight
-    { wch: 50 },  // images
+    { wch: 40 },  // images
     { wch: 12 },  // category
     { wch: 12 },  // countryGroup
   ];

@@ -46,12 +46,13 @@ function dbRowToProduct(row: Record<string, unknown>): Product {
 }
 
 export function useProducts() {
-  const [products, setProducts] = useState<Product[]>(defaultProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadProducts() {
-      // 1. Intentar cargar desde Supabase
+      // 1. Supabase es la fuente principal. Si está configurado y responde sin error,
+      //    usar su resultado aunque esté vacío (productos eliminados = lista vacía).
       if (isSupabaseConfigured()) {
         try {
           const supabase = createSupabaseClient();
@@ -61,17 +62,17 @@ export function useProducts() {
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
-          if (!error && data && data.length > 0) {
+          if (!error && data !== null) {
             setProducts(data.map(dbRowToProduct));
             setIsLoading(false);
             return;
           }
         } catch {
-          // Supabase falló, seguir con fallback
+          // Error de red o configuración — caer al fallback
         }
       }
 
-      // 2. Fallback: localStorage (admin Excel import)
+      // 2. Fallback solo si Supabase no está configurado o lanzó excepción
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
@@ -86,7 +87,7 @@ export function useProducts() {
         // localStorage falló
       }
 
-      // 3. Último fallback: array estático
+      // 3. Último fallback: array estático (solo si Supabase no está configurado)
       setProducts(defaultProducts);
       setIsLoading(false);
     }
