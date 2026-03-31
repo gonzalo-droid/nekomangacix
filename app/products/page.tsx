@@ -107,21 +107,39 @@ function ProductsPageContent() {
                   </button>
 
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-10 h-10 rounded-lg transition-colors ${
-                          currentPage === i + 1
-                            ? 'bg-[#2b496d] text-white'
-                            : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
-                        aria-label={`Página ${i + 1}`}
-                        aria-current={currentPage === i + 1 ? 'page' : undefined}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
+                    {(() => {
+                      const pages: (number | '...')[] = [];
+                      if (totalPages <= 7) {
+                        for (let i = 1; i <= totalPages; i++) pages.push(i);
+                      } else {
+                        pages.push(1);
+                        if (currentPage > 3) pages.push('...');
+                        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+                          pages.push(i);
+                        }
+                        if (currentPage < totalPages - 2) pages.push('...');
+                        pages.push(totalPages);
+                      }
+                      return pages.map((p, i) =>
+                        p === '...' ? (
+                          <span key={`ellipsis-${i}`} className="w-10 h-10 flex items-center justify-center text-gray-400">…</span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => setCurrentPage(p)}
+                            className={`w-10 h-10 rounded-lg transition-colors ${
+                              currentPage === p
+                                ? 'bg-[#2b496d] text-white'
+                                : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                            aria-label={`Página ${p}`}
+                            aria-current={currentPage === p ? 'page' : undefined}
+                          >
+                            {p}
+                          </button>
+                        )
+                      );
+                    })()}
                   </div>
 
                   <button
