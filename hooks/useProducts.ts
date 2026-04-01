@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Product, products as defaultProducts, StockStatus, Category } from '@/lib/products';
 import { createSupabaseClient } from '@/core/supabase/client';
+import { getCloudinaryUrl } from '@/lib/cloudinary';
 
 const STORAGE_KEY = 'neko-manga-uploaded-products';
 
@@ -39,9 +40,10 @@ function dbRowToProduct(row: Record<string, unknown>): Product {
       dimensions: specs.dimensions as string | undefined,
       weight: specs.weight as string | undefined,
     },
-    images: (row.images as string[]) ?? [],
+    series: (row.series as string) ?? undefined,
+    images: ((row.images as string[]) ?? []).map(getCloudinaryUrl).filter(Boolean),
     category: row.category as Category,
-    countryGroup: row.country_group as 'Argentina' | 'México',
+    countryGroup: row.country_group as 'Argentina' | 'México' | 'Coleccionables',
   };
 }
 
@@ -111,22 +113,35 @@ export function useProducts() {
 
   const filterProducts = (
     query?: string,
-    editorial?: string,
+    categories?: string[],
+    editorials?: string[],
     minPrice?: number,
     maxPrice?: number,
-    inStockOnly?: boolean
+    author?: string,
+    countryGroups?: string[],
   ) => {
     let filtered = [...products];
     if (query) {
       const q = query.toLowerCase();
       filtered = filtered.filter(
-        (p) => p.title.toLowerCase().includes(q) || p.editorial.toLowerCase().includes(q)
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.editorial.toLowerCase().includes(q) ||
+          p.author.toLowerCase().includes(q)
       );
     }
-    if (editorial) filtered = filtered.filter((p) => p.editorial === editorial);
+    if (categories && categories.length > 0)
+      filtered = filtered.filter((p) => categories.includes(p.category));
+    if (editorials && editorials.length > 0)
+      filtered = filtered.filter((p) => editorials.includes(p.editorial));
+    if (countryGroups && countryGroups.length > 0)
+      filtered = filtered.filter((p) => countryGroups.includes(p.countryGroup));
+    if (author) {
+      const a = author.toLowerCase();
+      filtered = filtered.filter((p) => p.author.toLowerCase().includes(a));
+    }
     if (minPrice !== undefined) filtered = filtered.filter((p) => p.pricePEN >= minPrice);
     if (maxPrice !== undefined) filtered = filtered.filter((p) => p.pricePEN <= maxPrice);
-    if (inStockOnly) filtered = filtered.filter((p) => p.stock > 0);
     return filtered;
   };
 

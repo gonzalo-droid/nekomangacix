@@ -1,5 +1,4 @@
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
-const PRODUCTS_FOLDER = 'neko-manga/products';
 
 /**
  * Construye la URL de Cloudinary para un public_id dado.
@@ -14,7 +13,7 @@ export function getCloudinaryUrl(imageRef: string): string {
   if (imageRef.startsWith('/')) {
     return imageRef;
   }
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${PRODUCTS_FOLDER}/${imageRef}`;
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${imageRef}`;
 }
 
 /**

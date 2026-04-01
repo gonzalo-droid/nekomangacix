@@ -36,9 +36,10 @@ export interface Product {
     dimensions?: string;
     weight?: string;
   };
+  series?: string;
   images: string[];
   category: Category;
-  countryGroup: 'Argentina' | 'México';
+  countryGroup: 'Argentina' | 'México' | 'Coleccionables';
 }
 
 // Fuente de datos: Supabase (ver hooks/useProducts.ts y lib/productsServer.ts)

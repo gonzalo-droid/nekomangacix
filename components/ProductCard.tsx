@@ -50,15 +50,15 @@ export default function ProductCard({
       className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full group"
     >
       {/* Product Image */}
-      <div className="relative w-full h-48 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] flex items-center justify-center overflow-hidden">
+      <div className="relative w-full aspect-[2/3] bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] flex items-center justify-center overflow-hidden">
         {hasImage ? (
           <Image
             src={images[0]}
             alt={title}
             fill
-            className="object-contain group-hover:scale-105 transition-transform duration-300"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
             onError={() => setImgError(true)}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         ) : (
           <div className="text-center">

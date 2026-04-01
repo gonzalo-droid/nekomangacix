@@ -2,6 +2,10 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 :root {
   /* Paleta principal basada en el logo */
   --color-primary: #2b496d;

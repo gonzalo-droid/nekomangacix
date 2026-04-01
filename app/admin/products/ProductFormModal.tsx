@@ -20,7 +20,7 @@ interface Props {
 }
 
 const EMPTY: Partial<AdminProduct> = {
-  title: '', sku: '', editorial: '', author: '',
+  title: '', sku: '', editorial: '', author: '', series: null,
   price_pen: 0, stock: 0, stock_status: 'in_stock',
   category: 'shonen', country_group: 'Argentina',
   description: '', full_description: '',
@@ -119,6 +119,10 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                   </div>
                 </>
               )}
+              <div>
+                <label className={labelClass}>Serie</label>
+                <input className={inputClass} placeholder="ej: Jujutsu Kaisen" value={form.series ?? ''} onChange={(e) => set('series', e.target.value || null)} />
+              </div>
               <div>
                 <label className={labelClass}>Editorial *</label>
                 <input className={inputClass} required value={form.editorial ?? ''} onChange={(e) => set('editorial', e.target.value)} />

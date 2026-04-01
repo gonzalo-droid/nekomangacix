@@ -12,18 +12,22 @@ function ProductsPageContent() {
   const { filterProducts, getAllEditorials, isLoading } = useProducts();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [selectedEditorial, setSelectedEditorial] = useState(searchParams.get('editorial') || '');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedEditorials, setSelectedEditorials] = useState<string[]>([]);
+  const [selectedSections, setSelectedSections] = useState<string[]>(
+    searchParams.get('countryGroup') ? [searchParams.get('countryGroup')!] : []
+  );
+  const [authorQuery, setAuthorQuery] = useState('');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(Infinity);
-  const [inStockOnly, setInStockOnly] = useState(false);
   const [itemsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
 
   const editorials = getAllEditorials();
 
   const filteredProducts = useMemo(() => {
-    return filterProducts(searchQuery, selectedEditorial, minPrice, maxPrice, inStockOnly);
-  }, [searchQuery, selectedEditorial, minPrice, maxPrice, inStockOnly, filterProducts]);
+    return filterProducts(searchQuery, selectedCategories, selectedEditorials, minPrice, maxPrice, authorQuery, selectedSections);
+  }, [searchQuery, selectedCategories, selectedEditorials, minPrice, maxPrice, authorQuery, selectedSections, filterProducts]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
@@ -36,19 +40,29 @@ function ProductsPageContent() {
     setCurrentPage(1);
   };
 
-  const handleEditorialChange = (editorial: string) => {
-    setSelectedEditorial(editorial);
+  const handleCategoryChange = (categories: string[]) => {
+    setSelectedCategories(categories);
+    setCurrentPage(1);
+  };
+
+  const handleEditorialChange = (editorials: string[]) => {
+    setSelectedEditorials(editorials);
+    setCurrentPage(1);
+  };
+
+  const handleSectionChange = (sections: string[]) => {
+    setSelectedSections(sections);
+    setCurrentPage(1);
+  };
+
+  const handleAuthorChange = (author: string) => {
+    setAuthorQuery(author);
     setCurrentPage(1);
   };
 
   const handlePriceChange = (min: number, max: number) => {
     setMinPrice(min);
     setMaxPrice(max);
-    setCurrentPage(1);
-  };
-
-  const handleStockChange = (inStockOnly: boolean) => {
-    setInStockOnly(inStockOnly);
     setCurrentPage(1);
   };
 
@@ -61,9 +75,11 @@ function ProductsPageContent() {
         <aside className="md:col-span-1">
           <Filters
             onSearch={handleSearch}
+            onCategoryChange={handleCategoryChange}
             onEditorialChange={handleEditorialChange}
+            onAuthorChange={handleAuthorChange}
             onPriceChange={handlePriceChange}
-            onStockChange={handleStockChange}
+            onSectionChange={handleSectionChange}
             editorials={editorials}
           />
         </aside>

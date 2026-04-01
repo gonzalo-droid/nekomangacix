@@ -18,6 +18,7 @@ export interface AdminProduct {
   description: string | null;
   full_description: string | null;
   specifications: Record<string, string | number> | null;
+  series: string | null;
   images: string[];
   category: string;
   country_group: string;

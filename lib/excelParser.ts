@@ -21,6 +21,7 @@ export interface ExcelRow {
   releaseDate?: string;
   dimensions?: string;
   weight?: string;
+  series?: string;
   images?: string;
   category?: string;
   countryGroup?: string;
@@ -117,6 +118,7 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
           dimensions: row.dimensions || '13.5 x 19 cm',
           weight: row.weight || '200g',
         },
+        series: row.series?.trim() || undefined,
         images,
         category,
         countryGroup: countryGroup === 'Mexico' ? 'México' : countryGroup,
@@ -152,6 +154,7 @@ export function generateExcelTemplate(): ArrayBuffer {
       releaseDate: '2023-05-15',
       dimensions: '13.5 x 19 cm',
       weight: '180g',
+      series: 'Jujutsu Kaisen',
       images: 'jjk-vol1,jjk-vol1-back',
       category: 'shonen',
       countryGroup: 'Argentina',
@@ -175,6 +178,7 @@ export function generateExcelTemplate(): ArrayBuffer {
       releaseDate: '2024-03-15',
       dimensions: '13.5 x 19 cm',
       weight: '185g',
+      series: 'Sword Art Online',
       images: 'sao-vol12',
       category: 'isekai',
       countryGroup: 'Mexico',

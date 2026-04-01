@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Product, StockStatus, Category } from './products';
 import { products as staticProducts } from './products';
+import { getCloudinaryUrl } from './cloudinary';
 
 function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -35,9 +36,10 @@ function dbRowToProduct(row: Record<string, unknown>): Product {
       dimensions: specs.dimensions as string | undefined,
       weight: specs.weight as string | undefined,
     },
-    images: (row.images as string[]) ?? [],
+    series: (row.series as string) ?? undefined,
+    images: ((row.images as string[]) ?? []).map(getCloudinaryUrl).filter(Boolean),
     category: row.category as Category,
-    countryGroup: row.country_group as 'Argentina' | 'México',
+    countryGroup: row.country_group as 'Argentina' | 'México' | 'Coleccionables',
   };
 }
 
