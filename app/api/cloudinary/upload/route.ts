@@ -7,7 +7,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const PRODUCTS_FOLDER = 'neko-manga/products';
+const PRODUCTS_FOLDER = 'neko-manga';
 
 export async function POST(request: NextRequest) {
   try {

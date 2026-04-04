@@ -30,4 +30,4 @@ export function isCloudinaryUrl(url: string): boolean {
   return url.includes('res.cloudinary.com');
 }
 
-export { CLOUD_NAME, PRODUCTS_FOLDER };
+export { CLOUD_NAME };
