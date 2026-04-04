@@ -8,7 +8,8 @@
       "Bash(pkill -f \"next dev\")",
       "Bash(pkill -f 'next dev')",
       "Bash(npm list:*)",
-      "Bash(head -60 /Users/gonzalo/DocsNeko/webs/nekomangacix/app/products/[slug]/page.tsx)"
+      "Bash(head -60 /Users/gonzalo/DocsNeko/webs/nekomangacix/app/products/[slug]/page.tsx)",
+      "Bash(npm show:*)"
     ]
   }
 }
