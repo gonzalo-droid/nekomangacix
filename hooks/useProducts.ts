@@ -70,6 +70,7 @@ export function useProducts() {
             return;
           }
         } catch {
+          console.warn('Error al cargar productos desde Supabase. Usando fallback.');
           // Error de red o configuración — caer al fallback
         }
       }
@@ -86,7 +87,7 @@ export function useProducts() {
           }
         }
       } catch {
-        // localStorage falló
+        console.warn('Error al cargar productos desde localStorage. Usando fallback estático.');
       }
 
       // 3. Último fallback: array estático (solo si Supabase no está configurado)
