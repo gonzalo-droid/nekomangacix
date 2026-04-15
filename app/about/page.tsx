@@ -1,199 +1,286 @@
 import Link from 'next/link';
 import FairGallery from '@/components/FairGallery';
-import Image from 'next/image';
+import PageHero from '@/components/PageHero';
+import TrustBadges from '@/components/TrustBadges';
+import Wordmark from '@/components/Wordmark';
+import {
+  Gem,
+  Handshake,
+  HeartPulse,
+  Truck,
+  MessageCircle,
+  BookOpenText,
+  Ticket,
+  MapPin,
+  Instagram,
+  ArrowRight,
+} from 'lucide-react';
 
 export const metadata = {
-  title: 'Nosotros - Neko Manga Cix',
-  description: 'Conoce más sobre Neko Manga Cix, tu tienda de manga online en Perú.',
+  title: 'Nosotros — Neko Manga Cix',
+  description:
+    'Conoce la historia y los valores detrás de Neko Manga Cix, tu tienda de manga y coleccionables en Perú.',
 };
+
+const VALUES = [
+  {
+    icon: Gem,
+    title: 'Calidad',
+    desc: 'Solo productos originales y verificados antes del envío. Cuidamos cada tomo como si fuera para nosotros.',
+    accent: 'text-[#eab308]',
+    bg: 'bg-[#eab308]/10',
+    ring: 'ring-[#eab308]/20',
+  },
+  {
+    icon: Handshake,
+    title: 'Confianza',
+    desc: 'Transparencia total: precios claros, stock real, entrega puntual. Sin letras chicas.',
+    accent: 'text-[#06b6d4]',
+    bg: 'bg-[#06b6d4]/10',
+    ring: 'ring-[#06b6d4]/20',
+  },
+  {
+    icon: HeartPulse,
+    title: 'Pasión',
+    desc: 'Somos fans de manga como tú. Curamos cada recomendación con el corazón.',
+    accent: 'text-[#ec4899]',
+    bg: 'bg-[#ec4899]/10',
+    ring: 'ring-[#ec4899]/20',
+  },
+];
+
+const SERVICES = [
+  { icon: Truck,        title: 'Envío a todo el Perú',     desc: 'Olva Courier y Shalom. Empaque resistente que cuida cada tomo.' },
+  { icon: Ticket,       title: 'Precios competitivos',      desc: 'Ofertas regulares y preventas con descuentos para miembros.' },
+  { icon: MessageCircle, title: 'Atención por WhatsApp',    desc: 'Preguntas, recomendaciones y preventas — respondemos rápido.' },
+  { icon: BookOpenText,  title: 'Catálogo curado',          desc: 'Editoriales argentina, mexicana y española + coleccionables originales.' },
+];
+
+const STATS = [
+  { n: '1000+', label: 'Títulos en catálogo' },
+  { n: '24',    label: 'Provincias con envío' },
+  { n: '4',     label: 'Ediciones regionales' },
+  { n: '★ 4.9', label: 'Rating promedio' },
+];
 
 export default function AboutPage() {
   return (
     <div className="w-full">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-[#2b496d] to-[#3d6491] text-white py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Sobre Neko Manga Cix</h1>
-          <p className="text-lg md:text-xl text-blue-100">
-            Somos más que una tienda. Somos una comunidad apasionada por el manga y el anime.
-          </p>
+      <PageHero
+        eyebrow="Sobre nosotros"
+        title={
+          <>
+            Más que una tienda:{' '}
+            <span className="text-neko-gradient">una comunidad manga</span>.
+          </>
+        }
+        subtitle="Desde Chiclayo al resto del Perú. Desde 2023 acercando el mejor manga y coleccionables a fans como tú."
+      />
+
+      {/* Stats */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-10 relative z-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-white/5 p-4 sm:p-6">
+          {STATS.map((s, i) => (
+            <div key={s.label} className={`text-center ${i > 0 ? 'sm:border-l border-gray-100 dark:border-white/5' : ''}`}>
+              <p className="text-2xl sm:text-3xl font-extrabold text-neko-gradient">{s.n}</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* About Content */}
+      {/* Misión */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Nuestra Misión
+            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-2">
+              {'// Nuestra misión'}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+              Acercar el manga a todo el Perú.
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">
-              En Neko Manga Cix, creemos que el manga es más que simple entretenimiento. Es una forma de arte, una ventana a diferentes culturas y una fuente de inspiración infinita.
-            </p>
-            <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">
-              Nuestra misión es hacer accesible el manga a todos los amantes de esta increíble industria en Perú, proporcionando una amplia selección de títulos, precios competitivos y un servicio al cliente excepcional.
-            </p>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">
-              Nos esforzamos por ser la tienda de manga más confiable y amigable de Chiclayo y el Perú.
-            </p>
-          </div>
-          <div className="bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 rounded-lg p-12 flex items-center justify-center min-h-64">
-              
-            <Image
-                         src="/images/logo-light.png"
-                         alt="Neko Manga Cix"
-                         width={300}
-                         height={100}
-                         className="h-auto w-auto dark:hidden"
-                         priority
-                       />         
-          </div>
-        </div>
+            <span
+              className="block mt-3 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
+              aria-hidden="true"
+            />
 
-        {/* Values Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 hover:shadow-lg transition-shadow">
-            <div className="text-5xl mb-4">💎</div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Calidad</h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              Nos comprometemos a ofrecerte solo productos auténticos y en perfecto estado. Cada manga es verificado antes de ser enviado.
-            </p>
+            <div className="mt-6 space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p>
+                El manga es más que entretenimiento: es arte, cultura y un universo de historias.
+                Queremos que acceder a él en Perú sea fácil, confiable y asequible.
+              </p>
+              <p>
+                Trabajamos directo con editoriales y distribuidores oficiales para garantizar
+                originalidad. Cuidamos el empaque para que tu tomo llegue impecable, y mantenemos
+                contacto cercano por WhatsApp en todo el proceso.
+              </p>
+            </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 hover:shadow-lg transition-shadow">
-            <div className="text-5xl mb-4">🤝</div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Confianza</h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              La relación con nuestros clientes es lo más importante. Nos comprometemos a ser transparentes y honestos en todas nuestras operaciones.
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 hover:shadow-lg transition-shadow">
-            <div className="text-5xl mb-4">❤️</div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pasión</h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              Somos fans de manga como tú. Nuestro amor por esta industria impulsa todo lo que hacemos.
-            </p>
-          </div>
-        </div>
 
-        {/* Fair Gallery Section */}
-        <div className="mb-16">
-          <FairGallery />
-        </div>
+          {/* Card decorativa con gradiente y halftone */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2b496d] via-[#1e3550] to-[#0a0a0f] p-10 sm:p-14 min-h-[300px] text-white shadow-xl">
+            <div className="absolute inset-0 bg-halftone opacity-50 pointer-events-none" aria-hidden="true" />
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#ec4899] opacity-30 blur-3xl" aria-hidden="true" />
+            <div className="absolute -bottom-20 -left-12 w-60 h-60 rounded-full bg-[#06b6d4] opacity-25 blur-3xl" aria-hidden="true" />
 
-        {/* Services Section */}
-        <div className="bg-gradient-to-r from-[#e8eef4] to-[#f0f4f8] dark:from-gray-800 dark:to-gray-800 rounded-lg p-12 mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12">Nuestros Servicios</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex gap-4">
-              <div className="text-3xl flex-shrink-0">🚚</div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Envío a Nivel Nacional</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Enviamos a todo Perú con empaque seguro que protege tus mangas. Contamos con diferentes opciones de envío.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="text-3xl flex-shrink-0">💝</div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Precios Competitivos</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Ofrecemos los mejores precios del mercado sin comprometer la calidad de nuestros productos.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="text-3xl flex-shrink-0">💬</div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Atención al Cliente 24/7</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Contacta con nosotros por WhatsApp en cualquier momento para consultas y soporte.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="text-3xl flex-shrink-0">📚</div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Amplio Catálogo</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Desde clásicos hasta lanzamientos recientes. Títulos de editoriales argentinas, mexicanas y más.
-                </p>
+            <div className="relative">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-3">
+                Chiclayo, Perú · Desde 2023
+              </p>
+              <Wordmark size="2xl" tone="dark" layout="stacked" as="div" className="mb-4" />
+              <p className="text-white/70 max-w-md">
+                Sirviendo a la comunidad otaku peruana con ediciones originales y coleccionables
+                oficiales.
+              </p>
+              <div className="mt-8 flex items-center gap-3 text-sm">
+                <MapPin size={16} className="text-[#ec4899]" />
+                <span className="text-white/80">Chiclayo · envíos a nivel nacional</span>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Location Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
-          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-12 flex items-center justify-center min-h-64 border-2 border-red-200 dark:border-red-800">
-            <div className="text-center">
-              <div className="text-8xl mb-4">📍</div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ubicación</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-lg">Chiclayo, Perú</p>
-              <p className="text-gray-500 dark:text-gray-400 mt-2">Sirviendo a todo el país</p>
-            </div>
-          </div>
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Contáctanos
+      {/* Valores */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mb-8 relative">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-2">
+            {'// Nuestros valores'}
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
+            Lo que nos mueve
+          </h2>
+          <span
+            className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
+            aria-hidden="true"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+          {VALUES.map((v) => {
+            const Icon = v.icon;
+            return (
+              <div
+                key={v.title}
+                className={`group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 hover:-translate-y-1 transition-all ring-1 ${v.ring} hover:shadow-xl`}
+              >
+                <div
+                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${v.bg} ${v.accent} mb-4 transition-transform group-hover:scale-110`}
+                >
+                  <Icon size={22} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1.5">{v.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{v.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Servicios */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2b496d]/[0.04] via-transparent to-[#ec4899]/[0.05] dark:from-[#06b6d4]/[0.05] dark:to-[#ec4899]/[0.05] border border-gray-100 dark:border-white/5 p-8 sm:p-12">
+          <div className="mb-8">
+            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#06b6d4] mb-2">
+              {'// Qué ofrecemos'}
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
+              Todo lo que necesitas, en un solo lugar
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
-              ¿Tienes preguntas o deseas hacer un pedido? Contacta con nosotros a través de WhatsApp. Nuestro equipo está disponible para ayudarte.
-            </p>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Información de Contacto</h3>
-              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
-                <li className="flex items-center gap-2">
-                  <span className="text-2xl">💬</span>
-                  <a
-                    href="https://wa.me/51924462641"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#1e3550] dark:hover:text-[#7a9abe] font-semibold"
-                  >
-                    (+51) 924 462 641
-                  </a>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-2xl">📍</span>
-                  Chiclayo, Perú
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-2xl">🌐</span>
-                  <a
-                    href="https://www.instagram.com/neko.manga.cix/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#1e3550] dark:hover:text-[#7a9abe] font-semibold"
-                  >
-                    @neko.manga.cix
-                  </a>
-                </li>
-              </ul>
-            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {SERVICES.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.title} className="flex gap-4 items-start">
+                  <div className="flex-shrink-0 w-11 h-11 rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 flex items-center justify-center text-[#2b496d] dark:text-[#5a7a9e]">
+                    <Icon size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-gray-900 dark:text-white">{s.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                      {s.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Galería de ferias */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <FairGallery />
+      </section>
+
+      {/* Trust Badges */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <TrustBadges variant="full" />
+      </section>
+
+      {/* Contacto rápido + CTA */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 sm:p-8">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Contacto directo
+            </h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a
+                  href="https://wa.me/51924262747"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-[#25D366] transition-colors"
+                >
+                  <MessageCircle size={18} className="text-[#25D366]" />
+                  <span>(+51) 924 262 747</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/neko.manga.cix/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-[#ec4899] transition-colors"
+                >
+                  <Instagram size={18} className="text-[#ec4899]" />
+                  <span>@neko.manga.cix</span>
+                </a>
+              </li>
+              <li className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                <MapPin size={18} className="text-[#06b6d4]" />
+                <span>Chiclayo, Perú</span>
+              </li>
+            </ul>
             <Link
               href="/contact"
-              className="inline-block bg-[#2b496d] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#1e3550] transition-colors"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#ec4899] transition-colors"
             >
-              Enviar Mensaje
+              Envíanos un mensaje <ArrowRight size={16} />
             </Link>
           </div>
-        </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-[#2b496d] to-[#3d6491] rounded-lg p-12 text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            ¿Listo para tu próxima aventura manga?
-          </h2>
-          <p className="text-blue-100 mb-8 text-lg">
-            Explora nuestra colección y encuentra tus títulos favoritos.
-          </p>
-          <Link
-            href="/products"
-            className="inline-block bg-[#f97316] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#ea580c] transition-colors"
-          >
-            Ver Todos los Productos
-          </Link>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0a0f] via-[#1e3550] to-[#0a0a0f] text-white p-6 sm:p-8 flex flex-col justify-between">
+            <div className="absolute inset-0 bg-halftone opacity-40 pointer-events-none" aria-hidden="true" />
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#ec4899] opacity-30 blur-3xl" aria-hidden="true" />
+
+            <div className="relative">
+              <h3 className="text-xl sm:text-2xl font-extrabold mb-2">
+                ¿Listo para tu próxima lectura?
+              </h3>
+              <p className="text-white/75 text-sm">
+                Mira nuestro catálogo completo — shōnen, seinen, shōjo, coleccionables y más.
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="relative mt-6 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-xl shadow-[#ec4899]/30 hover:shadow-[#ec4899]/50 hover:scale-[1.02] active:scale-[0.98] transition-all self-start"
+            >
+              Ver catálogo <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

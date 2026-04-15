@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { createSupabaseClient } from '@/core/supabase/client';
 
@@ -16,22 +16,26 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return Boolean(url && !url.includes('tu-proyecto') && key && !key.includes('tu-anon'));
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // Si Supabase no está configurado, loading arranca en false desde el inicio
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => isSupabaseConfigured());
+  const configured = useRef(isSupabaseConfigured());
 
   useEffect(() => {
-    // Si Supabase no está configurado, salimos sin errores
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || url.includes('tu-proyecto') || !key || key.includes('tu-anon')) {
-      setLoading(false);
-      return;
-    }
+    if (!configured.current) return;
 
     const supabase = createSupabaseClient();
+    let mounted = true;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -40,7 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

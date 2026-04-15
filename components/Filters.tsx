@@ -3,6 +3,38 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
+interface SectionHeaderProps {
+  id: string;
+  title: string;
+  badge?: number;
+  open: boolean;
+  onToggle: (id: string) => void;
+}
+
+function SectionHeader({ id, title, badge, open, onToggle }: SectionHeaderProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(id)}
+      className="w-full flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2"
+      aria-expanded={open}
+    >
+      <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        {title}
+        {badge != null && badge > 0 && (
+          <span className="text-xs font-bold bg-[#2b496d] text-white rounded-full px-1.5 py-0.5 leading-none">
+            {badge}
+          </span>
+        )}
+      </span>
+      <ChevronDown
+        size={18}
+        className={`transition-transform text-gray-500 ${open ? 'rotate-180' : ''}`}
+      />
+    </button>
+  );
+}
+
 const PRICE_MIN = 0;
 const PRICE_MAX = 300;
 
@@ -28,6 +60,7 @@ const DEMOGRAPHICS: { value: string; label: string }[] = [
 const SECTIONS = [
   { value: 'Argentina', label: 'Editorial Argentina' },
   { value: 'México', label: 'Editorial México' },
+  { value: 'España', label: 'Editorial España' },
   { value: 'Coleccionables', label: 'Coleccionables' },
 ];
 
@@ -63,7 +96,11 @@ export default function Filters({
   const toggle = (section: string) =>
     setOpenSections((prev) => {
       const next = new Set(prev);
-      next.has(section) ? next.delete(section) : next.add(section);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        next.add(section);
+      }
       return next;
     });
 
@@ -146,35 +183,6 @@ export default function Filters({
   const minPct = ((priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
   const maxPct = ((priceRange[1] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
 
-  const SectionHeader = ({
-    id,
-    title,
-    badge,
-  }: {
-    id: string;
-    title: string;
-    badge?: number;
-  }) => (
-    <button
-      onClick={() => toggle(id)}
-      className="w-full flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2"
-      aria-expanded={isOpen(id)}
-    >
-      <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-        {title}
-        {badge != null && badge > 0 && (
-          <span className="text-xs font-bold bg-[#2b496d] text-white rounded-full px-1.5 py-0.5 leading-none">
-            {badge}
-          </span>
-        )}
-      </span>
-      <ChevronDown
-        size={18}
-        className={`transition-transform text-gray-500 ${isOpen(id) ? 'rotate-180' : ''}`}
-      />
-    </button>
-  );
-
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-1">
       {/* Header */}
@@ -192,7 +200,7 @@ export default function Filters({
 
       {/* ── Búsqueda ── */}
       <section>
-        <SectionHeader id="search" title="Búsqueda" />
+        <SectionHeader id="search" title="Búsqueda" open={isOpen('search')} onToggle={toggle} />
         {isOpen('search') && (
           <div className="mt-3">
             <input
@@ -208,7 +216,7 @@ export default function Filters({
 
       {/* ── Sección ── */}
       <section>
-        <SectionHeader id="section" title="Sección" badge={selectedSections.length} />
+        <SectionHeader id="section" title="Sección" badge={selectedSections.length} open={isOpen('section')} onToggle={toggle} />
         {isOpen('section') && (
           <div className="mt-3 space-y-1">
             {SECTIONS.map(({ value, label }) => (
@@ -231,7 +239,7 @@ export default function Filters({
 
       {/* ── Demografía ── */}
       <section>
-        <SectionHeader id="category" title="Demografía" badge={selectedCategories.length} />
+        <SectionHeader id="category" title="Demografía" badge={selectedCategories.length} open={isOpen('category')} onToggle={toggle} />
         {isOpen('category') && (
           <div className="mt-3 space-y-1 max-h-52 overflow-y-auto pr-1">
             {DEMOGRAPHICS.map(({ value, label }) => (
@@ -254,7 +262,7 @@ export default function Filters({
 
       {/* ── Editorial ── */}
       <section>
-        <SectionHeader id="editorial" title="Editorial" badge={selectedEditorials.length} />
+        <SectionHeader id="editorial" title="Editorial" badge={selectedEditorials.length} open={isOpen('editorial')} onToggle={toggle} />
         {isOpen('editorial') && (
           <div className="mt-3 space-y-1 max-h-52 overflow-y-auto pr-1">
             {editorials.length === 0 ? (
@@ -281,7 +289,7 @@ export default function Filters({
 
       {/* ── Autor ── */}
       <section>
-        <SectionHeader id="author" title="Autor" />
+        <SectionHeader id="author" title="Autor" open={isOpen('author')} onToggle={toggle} />
         {isOpen('author') && (
           <div className="mt-3">
             <input
@@ -297,7 +305,7 @@ export default function Filters({
 
       {/* ── Precio ── */}
       <section>
-        <SectionHeader id="price" title="Precio" />
+        <SectionHeader id="price" title="Precio" open={isOpen('price')} onToggle={toggle} />
         {isOpen('price') && (
           <div className="mt-4 px-1">
             <div className="flex justify-between text-sm font-semibold text-[#2b496d] dark:text-blue-300 mb-3">

@@ -1,46 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Product, StockStatus, Category } from './products';
+import type { Product } from './products';
 import { products as staticProducts } from './products';
-import { getCloudinaryUrl } from './cloudinary';
+import { dbRowToProduct } from './productMappers';
 
 function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || url.includes('tu-proyecto') || !key || key.includes('tu-anon')) return null;
   return createClient(url, key);
-}
-
-function dbRowToProduct(row: Record<string, unknown>): Product {
-  const specs = (row.specifications as Record<string, unknown>) ?? {};
-  return {
-    id: row.id as string,
-    sku: row.sku as string,
-    slug: row.slug as string,
-    title: row.title as string,
-    editorial: row.editorial as string,
-    author: (row.author as string) ?? '',
-    pricePEN: row.price_pen as number,
-    stock: row.stock as number,
-    stockStatus: row.stock_status as StockStatus,
-    estimatedArrival: (row.estimated_arrival as string) ?? undefined,
-    preorderDeposit: (row.preorder_deposit as number) ?? undefined,
-    tags: (row.tags as string[]) ?? [],
-    description: (row.description as string) ?? '',
-    fullDescription: (row.full_description as string) ?? '',
-    specifications: {
-      pages: specs.pages as number | undefined,
-      format: specs.format as string | undefined,
-      language: specs.language as string | undefined,
-      isbn: specs.isbn as string | undefined,
-      releaseDate: specs.releaseDate as string | undefined,
-      dimensions: specs.dimensions as string | undefined,
-      weight: specs.weight as string | undefined,
-    },
-    series: (row.series as string) ?? undefined,
-    images: ((row.images as string[]) ?? []).map(getCloudinaryUrl).filter(Boolean),
-    category: row.category as Category,
-    countryGroup: row.country_group as 'Argentina' | 'México' | 'Coleccionables',
-  };
 }
 
 export async function getAllActiveProducts(): Promise<Product[]> {
@@ -76,7 +43,29 @@ export async function getProductBySlugServer(slug: string): Promise<Product | nu
   return staticProducts.find((p) => p.slug === slug) ?? null;
 }
 
-export async function getRelatedProductsServer(slug: string, limit = 4): Promise<Product[]> {
+/**
+ * Ordena relacionados: primero misma serie, luego misma demografía/categoría,
+ * y rellena con la misma editorial si sigue faltando. Nunca incluye el producto actual.
+ */
+function pickRelated(all: Product[], current: Product, limit: number): Product[] {
+  const others = all.filter((p) => p.slug !== current.slug);
+  const seen = new Set<string>();
+  const pick = (p: Product) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  };
+
+  const sameSeries = current.series
+    ? others.filter((p) => p.series === current.series).filter(pick)
+    : [];
+  const sameCategory = others.filter((p) => p.category === current.category).filter(pick);
+  const sameEditorial = others.filter((p) => p.editorial === current.editorial).filter(pick);
+
+  return [...sameSeries, ...sameCategory, ...sameEditorial].slice(0, limit);
+}
+
+export async function getRelatedProductsServer(slug: string, limit = 6): Promise<Product[]> {
   const product = await getProductBySlugServer(slug);
   if (!product) return [];
 
@@ -88,19 +77,21 @@ export async function getRelatedProductsServer(slug: string, limit = 4): Promise
         .select('*')
         .eq('is_active', true)
         .neq('slug', slug)
-        .limit(limit * 4);
+        .limit(limit * 6);
       if (data && data.length > 0) {
         const all = (data as Record<string, unknown>[]).map(dbRowToProduct);
-        const related = all.filter(
-          (p) => p.category === product.category || p.editorial === product.editorial
-        );
-        return (related.length >= limit ? related : all).slice(0, limit);
+        const related = pickRelated(all, product, limit);
+        // Si no alcanzamos limit con los filtros, rellenamos con el resto
+        if (related.length < limit) {
+          const fill = all.filter((p) => p.slug !== slug && !related.some((r) => r.id === p.id));
+          return [...related, ...fill].slice(0, limit);
+        }
+        return related;
       }
     } catch { /* fall through */ }
   }
-  return staticProducts
-    .filter((p) => p.slug !== slug && (p.category === product.category || p.editorial === product.editorial))
-    .slice(0, limit);
+
+  return pickRelated(staticProducts, product, limit);
 }
 
 export async function getAllProductSlugs(): Promise<string[]> {

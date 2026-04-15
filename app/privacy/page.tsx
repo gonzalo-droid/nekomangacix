@@ -1,110 +1,128 @@
 import type { Metadata } from 'next';
+import LegalShell, { LegalSection } from '@/components/LegalShell';
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad',
   description: 'Política de privacidad y tratamiento de datos personales de NekoMangaCix.',
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-8">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{title}</h2>
-      <div className="text-gray-700 dark:text-gray-300 space-y-2 text-sm leading-relaxed">{children}</div>
-    </section>
-  );
-}
+const SECTIONS = [
+  { id: 'responsable',    title: 'Responsable del tratamiento' },
+  { id: 'datos',          title: 'Datos que recopilamos' },
+  { id: 'finalidad',      title: 'Finalidad del tratamiento' },
+  { id: 'base-legal',     title: 'Base legal' },
+  { id: 'comparticion',   title: 'Compartición de datos' },
+  { id: 'cookies',        title: 'Cookies' },
+  { id: 'retencion',      title: 'Retención de datos' },
+  { id: 'derechos',       title: 'Tus derechos' },
+  { id: 'seguridad',      title: 'Seguridad' },
+  { id: 'cambios',        title: 'Cambios en esta política' },
+];
 
 export default function PrivacyPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Política de Privacidad</h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">Última actualización: marzo 2026</p>
-
-      <Section title="1. Responsable del tratamiento">
+    <LegalShell
+      eyebrow="Legal"
+      heroTitle={
+        <>
+          Política de <span className="text-neko-gradient">privacidad</span>
+        </>
+      }
+      heroSubtitle="Qué datos recopilamos, para qué los usamos y cuáles son tus derechos."
+      updatedAt="marzo 2026"
+      sections={SECTIONS}
+    >
+      <LegalSection id="responsable" number="01" title="Responsable del tratamiento">
         <p>
           NekoMangaCix, con domicilio en Chiclayo, Perú, es el responsable del tratamiento de tus datos
-          personales. Contacto: <strong>contacto@nekomangacix.com</strong>
+          personales. Contacto:{' '}
+          <a href="mailto:contacto@nekomangacix.com" className="text-[#ec4899] font-semibold hover:underline">
+            contacto@nekomangacix.com
+          </a>
         </p>
-      </Section>
+      </LegalSection>
 
-      <Section title="2. Datos que recopilamos">
+      <LegalSection id="datos" number="02" title="Datos que recopilamos">
         <p>Recopilamos la siguiente información:</p>
-        <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Nombre completo y datos de contacto (email, teléfono) al realizar un pedido</li>
-          <li>Dirección de entrega para el envío</li>
-          <li>Datos de navegación y uso del sitio (cookies técnicas)</li>
-          <li>Información de la cuenta de usuario (si creas una cuenta)</li>
+        <ul className="list-disc list-inside space-y-1 ml-1 marker:text-[#ec4899]">
+          <li>Nombre completo y datos de contacto (email, teléfono) al realizar un pedido.</li>
+          <li>Dirección de entrega para el envío.</li>
+          <li>Datos de navegación y uso del sitio (cookies técnicas).</li>
+          <li>Información de la cuenta de usuario (si creas una cuenta).</li>
         </ul>
-      </Section>
+      </LegalSection>
 
-      <Section title="3. Finalidad del tratamiento">
+      <LegalSection id="finalidad" number="03" title="Finalidad del tratamiento">
         <p>Usamos tus datos para:</p>
-        <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Procesar y gestionar tus pedidos</li>
-          <li>Coordinar el envío y la entrega</li>
-          <li>Comunicarnos contigo sobre tu pedido</li>
-          <li>Mejorar nuestros servicios y la experiencia en el sitio</li>
-          <li>Cumplir obligaciones legales</li>
+        <ul className="list-disc list-inside space-y-1 ml-1 marker:text-[#06b6d4]">
+          <li>Procesar y gestionar tus pedidos.</li>
+          <li>Coordinar el envío y la entrega.</li>
+          <li>Comunicarnos contigo sobre tu pedido.</li>
+          <li>Mejorar nuestros servicios y tu experiencia en el sitio.</li>
+          <li>Cumplir obligaciones legales.</li>
         </ul>
-      </Section>
+      </LegalSection>
 
-      <Section title="4. Base legal">
+      <LegalSection id="base-legal" number="04" title="Base legal">
         <p>
           El tratamiento de tus datos se basa en la ejecución del contrato de compraventa y en el
           consentimiento que otorgas al usar nuestros servicios.
         </p>
-      </Section>
+      </LegalSection>
 
-      <Section title="5. Compartición de datos">
-        <p>
-          No vendemos ni cedemos tus datos a terceros con fines comerciales. Solo compartimos datos con:
-        </p>
-        <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Empresas de courier para la entrega de pedidos</li>
-          <li>Proveedores de servicios técnicos (hosting, emails) bajo acuerdo de confidencialidad</li>
-          <li>Autoridades competentes cuando sea requerido por ley</li>
+      <LegalSection id="comparticion" number="05" title="Compartición de datos">
+        <p>No vendemos ni cedemos tus datos a terceros con fines comerciales. Solo compartimos datos con:</p>
+        <ul className="list-disc list-inside space-y-1 ml-1 marker:text-[#ec4899]">
+          <li>Empresas de courier para la entrega de pedidos.</li>
+          <li>Proveedores de servicios técnicos (hosting, emails) bajo acuerdo de confidencialidad.</li>
+          <li>Autoridades competentes cuando sea requerido por ley.</li>
         </ul>
-      </Section>
+      </LegalSection>
 
-      <Section title="6. Cookies">
+      <LegalSection id="cookies" number="06" title="Cookies">
         <p>
           Usamos cookies técnicas necesarias para el funcionamiento del sitio (carrito de compras, sesión)
           y cookies analíticas para entender el uso del sitio. Puedes desactivar las cookies no esenciales
           desde la configuración de tu navegador.
         </p>
-      </Section>
+      </LegalSection>
 
-      <Section title="7. Retención de datos">
+      <LegalSection id="retencion" number="07" title="Retención de datos">
         <p>
           Conservamos tus datos mientras sea necesario para los fines descritos o mientras la ley lo requiera.
           Los datos de pedidos se conservan por un mínimo de 5 años por motivos contables y legales.
         </p>
-      </Section>
+      </LegalSection>
 
-      <Section title="8. Tus derechos">
+      <LegalSection id="derechos" number="08" title="Tus derechos">
         <p>Tienes derecho a:</p>
-        <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Acceder a tus datos personales</li>
-          <li>Rectificar datos inexactos</li>
-          <li>Solicitar la eliminación de tus datos</li>
-          <li>Oponerte al tratamiento en ciertos casos</li>
+        <ul className="list-disc list-inside space-y-1 ml-1 marker:text-[#06b6d4]">
+          <li>Acceder a tus datos personales.</li>
+          <li>Rectificar datos inexactos.</li>
+          <li>Solicitar la eliminación de tus datos.</li>
+          <li>Oponerte al tratamiento en ciertos casos.</li>
         </ul>
-        <p className="mt-2">Para ejercer estos derechos, contáctanos en <strong>contacto@nekomangacix.com</strong>.</p>
-      </Section>
+        <p className="mt-3">
+          Para ejercer estos derechos, contáctanos en{' '}
+          <a href="mailto:contacto@nekomangacix.com" className="text-[#ec4899] font-semibold hover:underline">
+            contacto@nekomangacix.com
+          </a>.
+        </p>
+      </LegalSection>
 
-      <Section title="9. Seguridad">
+      <LegalSection id="seguridad" number="09" title="Seguridad">
         <p>
           Implementamos medidas técnicas y organizativas para proteger tus datos contra acceso no
           autorizado, pérdida o alteración. Sin embargo, ningún sistema es 100% seguro.
         </p>
-      </Section>
+      </LegalSection>
 
-      <Section title="10. Cambios en esta política">
+      <LegalSection id="cambios" number="10" title="Cambios en esta política">
         <p>
           Podemos actualizar esta política. Te notificaremos de cambios significativos por email
           o mediante un aviso destacado en el sitio.
         </p>
-      </Section>
-    </div>
+      </LegalSection>
+    </LegalShell>
   );
 }

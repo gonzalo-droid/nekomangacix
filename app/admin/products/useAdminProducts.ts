@@ -92,6 +92,9 @@ export function useAdminProducts(toast: ToastFn) {
   }, []);
 
   useEffect(() => {
+    // Efecto legítimo de data-fetching: dispara GET al cambiar paginación/filtros/orden.
+    // El setState ocurre dentro de fetchProducts (loading + resultado), no sincronamente aquí.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProducts(page, filters, sort);
   }, [page, filters, sort, fetchProducts]);
 

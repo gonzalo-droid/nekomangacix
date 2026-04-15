@@ -12,6 +12,11 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
+  /**
+   * false en SSR y primera renderización del cliente (antes de sincronizar con localStorage);
+   * true después de montar. Úsalo para no renderizar contadores/badges hasta que matchee.
+   */
+  isHydrated: boolean;
   addToCart: (productId: string, title: string, price: number, editorial: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -22,27 +27,31 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'neko-manga-cart';
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  // Empezamos en [] en cliente y SSR — coinciden. Leemos localStorage tras montar
+  // para evitar mismatch de hidratación (ver PR review).
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Cargar carrito del localStorage en el cliente
   useEffect(() => {
-    const savedCart = localStorage.getItem('neko-manga-cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error loading cart:', error);
-      }
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved) setItems(JSON.parse(saved) as CartItem[]);
+    } catch (error) {
+      console.error('Error loading cart:', error);
+    } finally {
+      setIsHydrated(true);
     }
-    setIsHydrated(true);
   }, []);
 
-  // Guardar carrito en localStorage cuando cambia
   useEffect(() => {
-    if (isHydrated) {
-      localStorage.setItem('neko-manga-cart', JSON.stringify(items));
+    if (!isHydrated) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch (error) {
+      console.error('Error saving cart:', error);
     }
   }, [items, isHydrated]);
 
@@ -78,18 +87,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   };
 
-  const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantity, 0);
-  };
+  const getTotalItems = () => items.reduce((total, item) => total + item.quantity, 0);
 
-  const getTotalPrice = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  const getTotalPrice = () =>
+    items.reduce((total, item) => total + item.price * item.quantity, 0);
 
   return (
     <CartContext.Provider
       value={{
         items,
+        isHydrated,
         addToCart,
         removeFromCart,
         updateQuantity,

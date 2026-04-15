@@ -24,6 +24,22 @@ const STATUS_COLORS: Record<string, string> = {
   out_of_stock: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
+// Hoisted: evita lint `react-hooks/static-components` (crear componentes durante render)
+function SortIcon({
+  field,
+  sortField,
+  sortOrder,
+}: {
+  field: string;
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+}) {
+  if (sortField !== field) return <ChevronUp size={13} className="text-gray-300 dark:text-gray-600" />;
+  return sortOrder === 'asc'
+    ? <ChevronUp size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />
+    : <ChevronDown size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />;
+}
+
 export default function ProductsManager() {
   const { toasts, toast, dismiss } = useToast();
   const {
@@ -37,13 +53,6 @@ export default function ProductsManager() {
   const [showImport, setShowImport] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<AdminProduct | null>(null);
-
-  const SortIcon = ({ field }: { field: string }) => {
-    if (sort.field !== field) return <ChevronUp size={13} className="text-gray-300 dark:text-gray-600" />;
-    return sort.order === 'asc'
-      ? <ChevronUp size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />
-      : <ChevronDown size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />;
-  };
 
   const thClass = 'px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide';
   const tdClass = 'px-3 py-3 text-sm text-gray-700 dark:text-gray-300';
@@ -145,17 +154,17 @@ export default function ProductsManager() {
               <tr>
                 <th className={thClass}>Img</th>
                 <th className={`${thClass} cursor-pointer select-none`} onClick={() => applySort('sku')}>
-                  <span className="flex items-center gap-1">SKU <SortIcon field="sku" /></span>
+                  <span className="flex items-center gap-1">SKU <SortIcon field="sku" sortField={sort.field} sortOrder={sort.order} /></span>
                 </th>
                 <th className={`${thClass} cursor-pointer select-none`} onClick={() => applySort('title')}>
-                  <span className="flex items-center gap-1">Título <SortIcon field="title" /></span>
+                  <span className="flex items-center gap-1">Título <SortIcon field="title" sortField={sort.field} sortOrder={sort.order} /></span>
                 </th>
                 <th className={thClass}>Editorial</th>
                 <th className={`${thClass} cursor-pointer select-none`} onClick={() => applySort('price_pen')}>
-                  <span className="flex items-center gap-1">Precio <SortIcon field="price_pen" /></span>
+                  <span className="flex items-center gap-1">Precio <SortIcon field="price_pen" sortField={sort.field} sortOrder={sort.order} /></span>
                 </th>
                 <th className={`${thClass} cursor-pointer select-none`} onClick={() => applySort('stock')}>
-                  <span className="flex items-center gap-1">Stock <SortIcon field="stock" /></span>
+                  <span className="flex items-center gap-1">Stock <SortIcon field="stock" sortField={sort.field} sortOrder={sort.order} /></span>
                 </th>
                 <th className={thClass}>Estado</th>
                 <th className={thClass}>Visible</th>

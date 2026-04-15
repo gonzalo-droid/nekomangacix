@@ -1,194 +1,23 @@
-'use client';
-
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useState, useMemo } from 'react';
-import ProductCard from '@/components/ProductCard';
-import Filters from '@/components/Filters';
-import { useProducts } from '@/hooks/useProducts';
+import { getAllActiveProducts } from '@/lib/productsServer';
+import ProductsClient from './ProductsClient';
 
-function ProductsPageContent() {
-  const searchParams = useSearchParams();
-  const { filterProducts, getAllEditorials, isLoading } = useProducts();
+export const metadata: Metadata = {
+  title: 'Productos',
+  description: 'Explora nuestro catálogo de manga y coleccionables con filtros por editorial, género y precio.',
+};
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedEditorials, setSelectedEditorials] = useState<string[]>([]);
-  const [selectedSections, setSelectedSections] = useState<string[]>(
-    searchParams.get('countryGroup') ? [searchParams.get('countryGroup')!] : []
-  );
-  const [authorQuery, setAuthorQuery] = useState('');
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(Infinity);
-  const [itemsPerPage] = useState(12);
-  const [currentPage, setCurrentPage] = useState(1);
+// ISR: la lista cambia poco; se revalida cada 5 minutos
+export const revalidate = 300;
 
-  const editorials = getAllEditorials();
+export default async function ProductsPage() {
+  const products = await getAllActiveProducts();
+  const editorials = Array.from(new Set(products.map((p) => p.editorial))).sort();
 
-  const filteredProducts = useMemo(() => {
-    return filterProducts(searchQuery, selectedCategories, selectedEditorials, minPrice, maxPrice, authorQuery, selectedSections);
-  }, [searchQuery, selectedCategories, selectedEditorials, minPrice, maxPrice, authorQuery, selectedSections, filterProducts]);
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  const handleCategoryChange = (categories: string[]) => {
-    setSelectedCategories(categories);
-    setCurrentPage(1);
-  };
-
-  const handleEditorialChange = (editorials: string[]) => {
-    setSelectedEditorials(editorials);
-    setCurrentPage(1);
-  };
-
-  const handleSectionChange = (sections: string[]) => {
-    setSelectedSections(sections);
-    setCurrentPage(1);
-  };
-
-  const handleAuthorChange = (author: string) => {
-    setAuthorQuery(author);
-    setCurrentPage(1);
-  };
-
-  const handlePriceChange = (min: number, max: number) => {
-    setMinPrice(min);
-    setMaxPrice(max);
-    setCurrentPage(1);
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-12">Productos</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Sidebar Filters */}
-        <aside className="md:col-span-1">
-          <Filters
-            onSearch={handleSearch}
-            onCategoryChange={handleCategoryChange}
-            onEditorialChange={handleEditorialChange}
-            onAuthorChange={handleAuthorChange}
-            onPriceChange={handlePriceChange}
-            onSectionChange={handleSectionChange}
-            editorials={editorials}
-          />
-        </aside>
-
-        {/* Products Grid */}
-        <main className="md:col-span-3">
-          {/* Results Info */}
-          <div className="mb-6 flex justify-between items-center">
-            <p className="text-gray-600 dark:text-gray-300">
-              Mostrando{' '}
-              <span className="font-semibold">
-                {paginatedProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
-              </span>{' '}
-              a{' '}
-              <span className="font-semibold">
-                {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
-              </span>{' '}
-              de{' '}
-              <span className="font-semibold">{filteredProducts.length}</span> productos
-            </p>
-          </div>
-
-          {paginatedProducts.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {paginatedProducts.map((product) => (
-                  <ProductCard key={product.id} {...product} />
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-12">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Página anterior"
-                  >
-                    ← Anterior
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    {(() => {
-                      const pages: (number | '...')[] = [];
-                      if (totalPages <= 7) {
-                        for (let i = 1; i <= totalPages; i++) pages.push(i);
-                      } else {
-                        pages.push(1);
-                        if (currentPage > 3) pages.push('...');
-                        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-                          pages.push(i);
-                        }
-                        if (currentPage < totalPages - 2) pages.push('...');
-                        pages.push(totalPages);
-                      }
-                      return pages.map((p, i) =>
-                        p === '...' ? (
-                          <span key={`ellipsis-${i}`} className="w-10 h-10 flex items-center justify-center text-gray-400">…</span>
-                        ) : (
-                          <button
-                            key={p}
-                            onClick={() => setCurrentPage(p)}
-                            className={`w-10 h-10 rounded-lg transition-colors ${
-                              currentPage === p
-                                ? 'bg-[#2b496d] text-white'
-                                : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
-                            aria-label={`Página ${p}`}
-                            aria-current={currentPage === p ? 'page' : undefined}
-                          >
-                            {p}
-                          </button>
-                        )
-                      );
-                    })()}
-                  </div>
-
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Próxima página"
-                  >
-                    Siguiente →
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">
-                No se encontraron productos que coincidan con tu búsqueda.
-              </p>
-              <p className="text-gray-500 dark:text-gray-400">
-                Intenta ajustar los filtros o la búsqueda.
-              </p>
-            </div>
-          )}
-        </main>
-      </div>
-    </div>
-  );
-}
-
-export default function ProductsPage() {
   return (
     <Suspense fallback={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">Cargando...</div>}>
-      <ProductsPageContent />
+      <ProductsClient products={products} editorials={editorials} />
     </Suspense>
   );
 }

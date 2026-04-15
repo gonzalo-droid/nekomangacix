@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { generateSlug } from '@/lib/products';
+
+// Revalidar rutas estáticas que listan productos tras mutaciones
+function revalidateProductCaches() {
+  revalidatePath('/');
+  revalidatePath('/products');
+  revalidatePath('/sitemap.xml');
+}
 
 function generateSku(title: string): string {
   const acronym = title
@@ -77,6 +85,7 @@ export async function POST(req: NextRequest) {
     }));
     const { data, error } = await db.insert(rows).select('id, sku');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateProductCaches();
     return NextResponse.json({ data, inserted: data?.length ?? 0 });
   }
 
@@ -89,5 +98,6 @@ export async function POST(req: NextRequest) {
   };
   const { data, error } = await db.insert(enriched).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateProductCaches();
   return NextResponse.json({ data });
 }

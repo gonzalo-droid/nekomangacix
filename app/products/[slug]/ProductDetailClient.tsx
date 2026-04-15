@@ -3,13 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { getCategoryLabel, getStockStatusLabel } from '@/hooks/useProducts';
 import { Product } from '@/lib/products';
+import MangaFormatGuide from '@/components/MangaFormatGuide';
+import TrustBadges from '@/components/TrustBadges';
+import ProductCard from '@/components/ProductCard';
 import {
   Heart,
   ShoppingCart,
+  Zap,
   Minus,
   Plus,
   ChevronLeft,
@@ -27,7 +32,8 @@ interface Props {
 
 export default function ProductDetailClient({ product, relatedProducts }: Props) {
   const { addToCart } = useCart();
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite, isHydrated: favHydrated } = useFavorites();
+  const router = useRouter();
 
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'info' | 'reviews'>('description');
@@ -35,9 +41,16 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
   const [addedToCart, setAddedToCart] = useState(false);
   const [imgError, setImgError] = useState(false);
 
+  const handleBuyNow = () => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product.id, product.title, product.pricePEN, product.editorial);
+    }
+    router.push('/cart');
+  };
+
   const stockInfo = getStockStatusLabel(product.stockStatus);
   const categoryLabel = getCategoryLabel(product.category);
-  const isProductFavorite = isFavorite(product.id);
+  const isProductFavorite = favHydrated && isFavorite(product.id);
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
@@ -222,39 +235,59 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!canAddToCart}
+                  className={`flex-1 py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
+                    addedToCart
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                      : !canAddToCart
+                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30 active:scale-95'
+                  }`}
+                >
+                  <ShoppingCart size={20} />
+                  <span>
+                    {addedToCart
+                      ? '¡Agregado!'
+                      : product.stockStatus === 'preorder'
+                        ? `Reservar (S/ ${product.preorderDeposit?.toFixed(2) || product.pricePEN.toFixed(2)})`
+                        : 'Agregar al carrito'}
+                  </span>
+                </button>
+                <button
+                  onClick={() => toggleFavorite(product.id)}
+                  className={`p-3 rounded-lg border-2 transition-all active:scale-95 ${
+                    isProductFavorite
+                      ? 'border-[#ec4899] bg-[#ec4899]/10 text-[#ec4899]'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-[#ec4899] hover:text-[#ec4899]'
+                  }`}
+                  aria-label={isProductFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                >
+                  <Heart size={24} fill={isProductFavorite ? 'currentColor' : 'none'} />
+                </button>
+              </div>
               <button
-                onClick={handleAddToCart}
+                onClick={handleBuyNow}
                 disabled={!canAddToCart}
-                className={`flex-1 py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
-                  addedToCart
-                    ? 'bg-green-500 text-white'
-                    : !canAddToCart
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                      : 'bg-[#f97316] text-white hover:bg-[#ea580c] active:scale-95'
+                className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
+                  !canAddToCart
+                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    : 'bg-[#2b496d] text-white hover:bg-[#1e3550] active:scale-95 shadow-md hover:shadow-lg'
                 }`}
               >
-                <ShoppingCart size={20} />
-                <span>
-                  {addedToCart
-                    ? '¡Agregado!'
-                    : product.stockStatus === 'preorder'
-                      ? `Reservar (S/ ${product.preorderDeposit?.toFixed(2) || product.pricePEN.toFixed(2)})`
-                      : 'Agregar al carrito'}
-                </span>
+                <Zap size={18} />
+                <span>Comprar ahora</span>
               </button>
-              <button
-                onClick={() => toggleFavorite(product.id)}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  isProductFavorite
-                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-red-500 hover:text-red-500'
-                }`}
-                aria-label={isProductFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-              >
-                <Heart size={24} fill={isProductFavorite ? 'currentColor' : 'none'} />
-              </button>
+
+              {/* Guía de Formatos — botón destacado */}
+              <MangaFormatGuide variant="ghost" className="w-full justify-center" />
             </div>
+
+            {/* Trust Badges (compact) */}
+            <TrustBadges variant="compact" />
 
             {/* Payment Methods */}
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
@@ -360,47 +393,30 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* Productos Relacionados — grid responsivo 6 por fila */}
         {relatedProducts.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Productos Relacionados
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <section className="mb-8 relative">
+            <div className="mb-6 relative">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-1.5">
+                {'// También te puede gustar'}
+              </span>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">
+                {product.series ? `Más de la serie ${product.series}` : 'Más en esta categoría'}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {product.series
+                  ? `Y otros de ${getCategoryLabel(product.category)}`
+                  : `Géneros y editoriales similares`}
+              </p>
+              <span
+                className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {relatedProducts.map((related) => (
-                <Link
-                  key={related.id}
-                  href={`/products/${related.slug}`}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden group"
-                >
-                  <div className="relative w-full h-48 bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-700 dark:to-gray-600 flex items-center justify-center overflow-hidden">
-                    {related.images[0] ? (
-                      <Image
-                        src={related.images[0]}
-                        alt={related.title}
-                        fill
-                        className="object-contain group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">📚</div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm px-4 line-clamp-1">
-                          {related.title}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-1 line-clamp-2 group-hover:text-[#2b496d] dark:group-hover:text-[#5a7a9e] transition-colors">
-                      {related.title}
-                    </h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{related.editorial}</p>
-                    <p className="text-lg font-bold text-[#2b496d] dark:text-[#5a7a9e]">
-                      S/ {related.pricePEN.toFixed(2)}
-                    </p>
-                  </div>
-                </Link>
+                <ProductCard key={related.id} {...related} variant="compact" />
               ))}
             </div>
           </section>

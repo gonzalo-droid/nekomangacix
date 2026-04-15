@@ -1,16 +1,21 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
-export default function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+// Subscribe no-op; returns true en cliente, false en SSR. Sustituye el patrón setMounted-en-useEffect.
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+function useMounted() {
+  return useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
+}
+
+export default function ThemeToggle() {
+  const { setTheme, resolvedTheme } = useTheme();
+  const mounted = useMounted();
 
   if (!mounted) {
     return (

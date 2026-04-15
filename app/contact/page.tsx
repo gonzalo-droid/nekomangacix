@@ -1,7 +1,61 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, MessageCircle, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import PageHero from '@/components/PageHero';
+import { Mail, MessageCircle, MapPin, Clock, CheckCircle2, AlertCircle, Send } from 'lucide-react';
+
+const FAQS = [
+  {
+    q: '¿Cuánto tiempo demora el envío?',
+    a: 'En promedio 2–5 días hábiles a nivel nacional vía Olva/Shalom. Coordinamos contigo por WhatsApp antes de despachar.',
+  },
+  {
+    q: '¿Puedo devolver mi compra?',
+    a: 'Aceptamos devoluciones de productos en perfecto estado dentro de 7 días desde la recepción.',
+  },
+  {
+    q: '¿Qué métodos de pago aceptan?',
+    a: 'Yape, Plin y transferencia bancaria (BCP). También efectivo al recoger. Siempre confirmamos antes del envío.',
+  },
+  {
+    q: '¿Tienen promociones?',
+    a: 'Lanzamos ofertas regulares y preventas con descuento. Escríbenos por WhatsApp para conocer las vigentes.',
+  },
+];
+
+const CHANNELS = [
+  {
+    Icon: MessageCircle,
+    title: 'WhatsApp',
+    detail: '(+51) 924 262 747',
+    sub: 'Disponible todos los días',
+    href: 'https://wa.me/51924262747',
+    accent: 'text-[#25D366]',
+    bg: 'bg-[#25D366]/10',
+    ring: 'ring-[#25D366]/20',
+  },
+  {
+    Icon: Mail,
+    title: 'Email',
+    detail: 'contacto@nekomangacix.com',
+    sub: 'Respuesta en 24 h',
+    href: 'mailto:contacto@nekomangacix.com',
+    accent: 'text-[#06b6d4]',
+    bg: 'bg-[#06b6d4]/10',
+    ring: 'ring-[#06b6d4]/20',
+  },
+  {
+    Icon: MapPin,
+    title: 'Ubicación',
+    detail: 'Chiclayo, Perú',
+    sub: 'Envíos a nivel nacional',
+    href: null,
+    accent: 'text-[#ec4899]',
+    bg: 'bg-[#ec4899]/10',
+    ring: 'ring-[#ec4899]/20',
+  },
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
@@ -39,12 +93,7 @@ export default function ContactPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Error desconocido');
-      }
-
+      if (!res.ok) throw new Error('Error al enviar');
       setStatus('success');
       setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
     } catch {
@@ -53,137 +102,259 @@ export default function ContactPage() {
   };
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2b496d] transition-colors dark:bg-gray-700 dark:text-white dark:border-gray-600 ${
-      errors[field] ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'border-gray-300 bg-white'
+    `w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 ${
+      errors[field]
+        ? 'border-red-400 bg-red-50 dark:bg-red-900/10'
+        : 'border-gray-200 dark:border-white/10 focus:border-[#06b6d4]'
     }`;
+
+  const labelClass = 'block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5';
 
   return (
     <div className="w-full">
-      <section className="bg-gradient-to-r from-[#2b496d] to-[#3d6491] text-white py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Contacto</h1>
-          <p className="text-lg md:text-xl text-blue-100">¿Tienes dudas o sugerencias? Nos encanta escucharte.</p>
+      <PageHero
+        eyebrow="Contacto"
+        title={
+          <>
+            Hablemos de{' '}
+            <span className="text-neko-gradient">manga</span>.
+          </>
+        }
+        subtitle="Pregunta, sugiere o pide una recomendación — respondemos a todos los mensajes."
+      />
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12 relative z-10">
+        {/* Canales */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {CHANNELS.map(({ Icon, title, detail, sub, href, accent, bg, ring }) => {
+            const content = (
+              <div
+                className={`h-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5 transition-all ring-1 ${ring} ${
+                  href ? 'hover:-translate-y-1 hover:shadow-xl cursor-pointer' : ''
+                }`}
+              >
+                <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${bg} ${accent} mb-3`}>
+                  <Icon size={20} />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">{detail}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center gap-1">
+                  <Clock size={12} /> {sub}
+                </p>
+              </div>
+            );
+            return href ? (
+              <a key={title} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">
+                {content}
+              </a>
+            ) : (
+              <div key={title}>{content}</div>
+            );
+          })}
         </div>
       </section>
 
+      {/* Form + sidebar */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
-          {/* Info */}
-          <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Información</h2>
-            <div className="space-y-4">
-              <a
-                href="https://wa.me/51924262747"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex gap-4 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md hover:bg-green-50 dark:hover:bg-green-900/10 transition-all"
-              >
-                <MessageCircle size={28} className="text-green-500 flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">WhatsApp</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">(+51) 924 262 747</p>
-                  <p className="text-xs text-gray-500 mt-1">Disponible todos los días</p>
-                </div>
-              </a>
-
-              <div className="flex gap-4 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                <Mail size={28} className="text-[#2b496d] dark:text-[#5a7a9e] flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">Email</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">contacto@nekomangacix.com</p>
-                  <p className="text-xs text-gray-500 mt-1">Respuesta en 24h</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                <MapPin size={28} className="text-red-500 flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">Ubicación</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">Chiclayo, Perú</p>
-                  <p className="text-xs text-gray-500 mt-1">Envíos a nivel nacional</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Envíanos un Mensaje</h2>
+            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="mb-6 relative">
+                <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-1.5">
+                  {'// Formulario'}
+                </span>
+                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
+                  Envíanos un mensaje
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Te respondemos al email en un máximo de 24 horas.
+                </p>
+              </div>
 
               {status === 'success' && (
-                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex gap-3">
-                  <span className="text-xl">✅</span>
+                <div
+                  className="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 flex gap-3 animate-tilt-in"
+                  role="status"
+                >
+                  <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-green-900 dark:text-green-400">Mensaje enviado</p>
-                    <p className="text-green-800 dark:text-green-300 text-sm">Nos pondremos en contacto pronto.</p>
+                    <p className="font-semibold text-emerald-900 dark:text-emerald-300 text-sm">
+                      Mensaje enviado correctamente
+                    </p>
+                    <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-0.5">
+                      Te responderemos pronto. Gracias.
+                    </p>
                   </div>
                 </div>
               )}
 
               {status === 'error' && (
-                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-red-800 dark:text-red-400 text-sm">
-                    Hubo un error al enviar el mensaje. Contáctanos directamente por WhatsApp.
-                  </p>
+                <div
+                  className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex gap-3"
+                  role="alert"
+                >
+                  <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-red-900 dark:text-red-300 text-sm">
+                      Ocurrió un error
+                    </p>
+                    <p className="text-red-700 dark:text-red-400 text-xs mt-0.5">
+                      Contáctanos directamente por WhatsApp mientras lo resolvemos.
+                    </p>
+                  </div>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="nombre" className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Nombre *</label>
-                    <input id="nombre" name="nombre" type="text" value={formData.nombre} onChange={handleChange} placeholder="Tu nombre" className={inputClass('nombre')} />
-                    {errors.nombre && <p className="text-red-600 text-xs mt-1">{errors.nombre}</p>}
+                    <label htmlFor="nombre" className={labelClass}>Nombre *</label>
+                    <input
+                      id="nombre"
+                      name="nombre"
+                      type="text"
+                      value={formData.nombre}
+                      onChange={handleChange}
+                      placeholder="Tu nombre"
+                      className={inputClass('nombre')}
+                    />
+                    {errors.nombre && <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>}
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Email *</label>
-                    <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="tu@email.com" className={inputClass('email')} />
-                    {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email}</p>}
+                    <label htmlFor="email" className={labelClass}>Email *</label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="tu@email.com"
+                      className={inputClass('email')}
+                    />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="asunto" className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Asunto *</label>
-                  <input id="asunto" name="asunto" type="text" value={formData.asunto} onChange={handleChange} placeholder="Asunto de tu consulta" className={inputClass('asunto')} />
-                  {errors.asunto && <p className="text-red-600 text-xs mt-1">{errors.asunto}</p>}
+                  <label htmlFor="asunto" className={labelClass}>Asunto *</label>
+                  <input
+                    id="asunto"
+                    name="asunto"
+                    type="text"
+                    value={formData.asunto}
+                    onChange={handleChange}
+                    placeholder="¿Sobre qué nos escribes?"
+                    className={inputClass('asunto')}
+                  />
+                  {errors.asunto && <p className="text-red-500 text-xs mt-1">{errors.asunto}</p>}
                 </div>
 
                 <div>
-                  <label htmlFor="mensaje" className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Mensaje *</label>
-                  <textarea id="mensaje" name="mensaje" rows={5} value={formData.mensaje} onChange={handleChange} placeholder="Cuéntanos lo que necesitas..." className={`${inputClass('mensaje')} resize-none`} />
-                  {errors.mensaje && <p className="text-red-600 text-xs mt-1">{errors.mensaje}</p>}
+                  <label htmlFor="mensaje" className={labelClass}>Mensaje *</label>
+                  <textarea
+                    id="mensaje"
+                    name="mensaje"
+                    rows={5}
+                    value={formData.mensaje}
+                    onChange={handleChange}
+                    placeholder="Cuéntanos en detalle..."
+                    className={`${inputClass('mensaje')} resize-none`}
+                  />
+                  {errors.mensaje && <p className="text-red-500 text-xs mt-1">{errors.mensaje}</p>}
                 </div>
 
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="w-full bg-[#2b496d] text-white font-bold py-3 rounded-lg hover:bg-[#1e3550] disabled:opacity-60 transition-colors"
+                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:scale-100 transition-all"
                 >
-                  {status === 'loading' ? 'Enviando...' : 'Enviar Mensaje'}
+                  <Send size={16} className="transition-transform group-hover:translate-x-0.5" />
+                  {status === 'loading' ? 'Enviando...' : 'Enviar mensaje'}
                 </button>
               </form>
             </div>
           </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-1 space-y-4">
+            {/* WhatsApp bloque destacado */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0a0f] via-[#1e3550] to-[#0a0a0f] text-white p-6">
+              <div className="absolute inset-0 bg-halftone opacity-40 pointer-events-none" aria-hidden="true" />
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#25D366] opacity-25 blur-2xl" aria-hidden="true" />
+              <div className="relative">
+                <h3 className="text-lg font-extrabold mb-1">¿Apurado?</h3>
+                <p className="text-sm text-white/75 mb-4">
+                  Escríbenos por WhatsApp y te respondemos en minutos.
+                </p>
+                <a
+                  href="https://wa.me/51924262747?text=Hola%20Neko%20Manga%20Cix"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm transition-all active:scale-95"
+                >
+                  <MessageCircle size={16} /> Abrir WhatsApp
+                </a>
+              </div>
+            </div>
+
+            {/* Horario */}
+            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <Clock size={16} className="text-[#06b6d4]" />
+                Horario de atención
+              </h3>
+              <dl className="text-sm text-gray-600 dark:text-gray-400 space-y-1.5">
+                <div className="flex justify-between">
+                  <dt>Lun — Vie</dt><dd className="font-medium text-gray-900 dark:text-white">9:00 — 20:00</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Sábado</dt><dd className="font-medium text-gray-900 dark:text-white">10:00 — 18:00</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Domingo</dt><dd className="font-medium text-gray-900 dark:text-white">11:00 — 16:00</dd>
+                </div>
+              </dl>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="mb-8 relative">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-2">
+            {'// Preguntas frecuentes'}
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
+            Dudas rápidas
+          </h2>
+          <span
+            className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
+            aria-hidden="true"
+          />
         </div>
 
-        {/* FAQ */}
-        <div className="bg-gradient-to-r from-[#e8eef4] to-[#f0f4f8] dark:from-gray-800 dark:to-gray-900 rounded-xl p-10">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">Preguntas Frecuentes</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              { q: '¿Cuánto tiempo demora el envío?', a: 'En promedio 2-5 días hábiles a nivel nacional. Coordinaremos contigo por WhatsApp.' },
-              { q: '¿Puedo devolver mi compra?', a: 'Sí, aceptamos devoluciones de productos en perfecto estado dentro de 7 días de la compra.' },
-              { q: '¿Qué métodos de pago aceptan?', a: 'Aceptamos Yape, Plin y transferencia bancaria BCP. Siempre coordinamos antes del envío.' },
-              { q: '¿Tienen promociones especiales?', a: 'Sí, ofrecemos promociones regulares. Contáctanos por WhatsApp para conocer las ofertas vigentes.' },
-            ].map(({ q, a }) => (
-              <div key={q}>
-                <h3 className="font-bold text-gray-900 dark:text-white mb-2">{q}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">{a}</p>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          {FAQS.map(({ q, a }) => (
+            <div
+              key={q}
+              className="group bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-xl p-5 hover:border-[#ec4899]/40 transition-all"
+            >
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1.5 group-hover:text-[#ec4899] transition-colors">
+                {q}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{a}</p>
+            </div>
+          ))}
         </div>
+
+        <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          ¿No encuentras tu respuesta?{' '}
+          <Link href="/faq" className="text-[#ec4899] font-semibold hover:underline">
+            Ver FAQ completa
+          </Link>
+        </p>
       </section>
     </div>
   );

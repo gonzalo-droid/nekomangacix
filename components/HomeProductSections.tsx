@@ -1,60 +1,7 @@
-'use client';
-
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
-import { useProducts } from '@/hooks/useProducts';
+import { getAllActiveProducts } from '@/lib/productsServer';
 import type { Product } from '@/lib/products';
-
-function CardSkeleton() {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col h-full">
-      {/* Image */}
-      <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
-        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-      </div>
-      {/* Body */}
-      <div className="p-4 flex flex-col gap-3 flex-grow">
-        <div className="relative overflow-hidden rounded bg-gray-200 dark:bg-gray-700 h-4 w-3/4">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-        <div className="relative overflow-hidden rounded bg-gray-200 dark:bg-gray-700 h-4 w-1/2">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-        <div className="relative overflow-hidden rounded bg-gray-200 dark:bg-gray-700 h-3 w-full mt-1">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-        <div className="relative overflow-hidden rounded bg-gray-200 dark:bg-gray-700 h-7 w-1/3 mt-auto">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-        <div className="relative overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-10 w-full">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionSkeleton() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      {/* Heading skeleton */}
-      <div className="mb-8 space-y-3">
-        <div className="relative overflow-hidden rounded bg-gray-200 dark:bg-gray-700 h-8 w-64">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-        <div className="relative overflow-hidden rounded bg-gray-200 dark:bg-gray-700 h-4 w-96 max-w-full">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
-      </div>
-      {/* Cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <CardSkeleton key={i} />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 interface ProductSectionProps {
   title: string;
@@ -63,90 +10,132 @@ interface ProductSectionProps {
   linkHref: string;
   linkLabel: string;
   variant?: 'default' | 'tinted';
+  priorityFirst?: boolean;
 }
 
-function ProductSection({ title, description, products, linkHref, linkLabel, variant = 'default' }: ProductSectionProps) {
+function ProductSection({
+  title,
+  description,
+  products,
+  linkHref,
+  linkLabel,
+  variant = 'default',
+  priorityFirst = false,
+}: ProductSectionProps) {
   return (
     <section
-      className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 ${
+      className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 ${
         variant === 'tinted'
-          ? 'bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 rounded-lg'
+          ? 'my-6 rounded-3xl bg-gradient-to-br from-[#2b496d]/[0.03] via-transparent to-[#ec4899]/[0.04] dark:from-[#06b6d4]/[0.04] dark:to-[#ec4899]/[0.05]'
           : ''
       }`}
     >
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          {title}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300">{description}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-8">
+        <div className="relative">
+          {/* Badge decorativo superior */}
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-2">
+            {'// Catálogo'}
+          </span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+            {title}
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2 max-w-2xl">
+            {description}
+          </p>
+          {/* Accent underline */}
+          <span className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" aria-hidden="true" />
+        </div>
+
+        {products.length > 0 && (
+          <Link
+            href={linkHref}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-colors group"
+          >
+            {linkLabel}
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+          </Link>
+        )}
       </div>
 
       {products.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} {...product} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            {products.map((product, idx) => (
+              <ProductCard
+                key={product.id}
+                {...product}
+                variant="compact"
+                priority={priorityFirst && idx < 6}
+              />
             ))}
           </div>
-          <div className="text-center">
+
+          {/* CTA mobile (para sm< donde el link del header no aparece) */}
+          <div className="sm:hidden mt-6 text-center">
             <Link
               href={linkHref}
-              className="inline-block bg-[#2b496d] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#1e3550] transition-colors duration-300"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#2b496d] to-[#3d6491] text-white text-sm font-semibold hover:shadow-lg transition-all"
             >
-              {linkLabel}
+              {linkLabel} →
             </Link>
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-          <span className="text-5xl mb-4">📦</span>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Próximamente</p>
-          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Estamos preparando productos para esta sección</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02]">
+          <span className="text-5xl mb-4 opacity-70">📦</span>
+          <p className="text-gray-700 dark:text-gray-300 font-semibold">Próximamente</p>
+          <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">
+            Estamos preparando productos para esta sección
+          </p>
         </div>
       )}
     </section>
   );
 }
 
-export default function HomeProductSections() {
-  const { products, isLoading } = useProducts();
+export default async function HomeProductSections() {
+  const products = await getAllActiveProducts();
 
-  if (isLoading) {
-    return (
-      <>
-        <SectionSkeleton />
-        <SectionSkeleton />
-      </>
-    );
-  }
-
-  const argentinaProducts = products.filter((p) => p.countryGroup === 'Argentina').slice(0, 8);
-  const mexicoProducts = products.filter((p) => p.countryGroup === 'México').slice(0, 8);
-  const coleccionablesProducts = products.filter((p) => p.countryGroup === 'Coleccionables').slice(0, 8);
+  // Máximo 6 para mostrar una sola fila en xl (6 columnas)
+  const argentina = products.filter((p) => p.countryGroup === 'Argentina').slice(0, 6);
+  const mexico = products.filter((p) => p.countryGroup === 'México').slice(0, 6);
+  const espana = products.filter((p) => p.countryGroup === 'España').slice(0, 6);
+  const coleccionables = products.filter((p) => p.countryGroup === 'Coleccionables').slice(0, 6);
 
   return (
     <>
       <ProductSection
         title="Editorial Argentina"
         description="Descubre las editoriales argentinas: Ivrea Argentina, Ovni Press y más."
-        products={argentinaProducts}
+        products={argentina}
         linkHref="/products?countryGroup=Argentina"
         linkLabel="Ver más manga argentino"
+        priorityFirst
       />
       <ProductSection
         title="Editorial México"
         description="Explora editoriales mexicanas: Panini MX, Viz Media y otros."
-        products={mexicoProducts}
-        linkHref="/products?countryGroup=México"
+        products={mexico}
+        linkHref="/products?countryGroup=M%C3%A9xico"
         linkLabel="Ver más manga mexicano"
         variant="tinted"
       />
+      {espana.length > 0 && (
+        <ProductSection
+          title="Editorial España"
+          description="Ediciones españolas: Planeta Cómic, Norma Editorial y más."
+          products={espana}
+          linkHref="/products?countryGroup=Espa%C3%B1a"
+          linkLabel="Ver más manga español"
+        />
+      )}
       <ProductSection
         title="Coleccionables"
         description="Figuras y artículos coleccionables de tus series favoritas."
-        products={coleccionablesProducts}
+        products={coleccionables}
         linkHref="/products?countryGroup=Coleccionables"
         linkLabel="Ver más coleccionables"
+        variant="tinted"
       />
     </>
   );
