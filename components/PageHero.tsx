@@ -55,7 +55,7 @@ export default function PageHero({
 
       {/* Gradiente inferior de transición */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-[#0a0a0f] to-transparent pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white dark:from-[#0a0a0f] to-transparent pointer-events-none"
         aria-hidden="true"
       />
 

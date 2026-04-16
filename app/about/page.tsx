@@ -75,19 +75,7 @@ export default function AboutPage() {
           </>
         }
         subtitle="Desde Chiclayo al resto del Perú. Desde 2023 acercando el mejor manga y coleccionables a fans como tú."
-      />
-
-      {/* Stats */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-10 relative z-10">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-white/5 p-4 sm:p-6">
-          {STATS.map((s, i) => (
-            <div key={s.label} className={`text-center ${i > 0 ? 'sm:border-l border-gray-100 dark:border-white/5' : ''}`}>
-              <p className="text-2xl sm:text-3xl font-extrabold text-neko-gradient">{s.n}</p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      />  
 
       {/* Misión */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
