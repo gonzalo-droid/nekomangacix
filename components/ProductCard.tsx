@@ -18,6 +18,7 @@ export interface ProductCardData {
   description: string;
   images?: string[];
   stockStatus?: 'in_stock' | 'on_demand' | 'preorder' | 'out_of_stock';
+  preorderDeposit?: number;
 }
 
 interface Props extends ProductCardData {
@@ -31,6 +32,8 @@ interface Props extends ProductCardData {
   onRemove?: (id: string) => void;
   showFavoriteToggle?: boolean;
   sizes?: string;
+  /** Muestra un botón "Agregar"/"Reservar" en la variante compact. Default: false */
+  showQuickAdd?: boolean;
 }
 
 // Paleta de acentos para tags (rotación determinística por hash del tag)
@@ -61,24 +64,27 @@ export default function ProductCard({
   description,
   images,
   stockStatus,
+  preorderDeposit,
   variant = 'default',
   priority = false,
   onRemove,
   showFavoriteToggle = false,
   sizes,
+  showQuickAdd = false,
 }: Props) {
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite, isHydrated: favHydrated } = useFavorites();
   const [added, setAdded] = useState(false);
 
   const isOutOfStock = stockStatus ? stockStatus === 'out_of_stock' : stock === 0;
+  const isPreorder = stockStatus === 'preorder';
   // Antes de hidratar, siempre false para matchear SSR (localStorage aún no leído)
   const fav = favHydrated && isFavorite(id);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(id, title, pricePEN, editorial);
+    addToCart(id, title, pricePEN, editorial, { stockStatus, preorderDeposit, slug });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -145,9 +151,43 @@ export default function ProductCard({
             {title}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-1 line-clamp-1">{editorial}</p>
-          <p className="mt-auto text-sm sm:text-base font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
-            S/ {pricePEN.toFixed(2)}
-          </p>
+          <div className="mt-auto flex items-baseline justify-between gap-1">
+            <p className="text-sm sm:text-base font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+              S/ {pricePEN.toFixed(2)}
+            </p>
+            {isPreorder && (
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#06b6d4]">
+                Preventa
+              </span>
+            )}
+          </div>
+
+          {showQuickAdd && (
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={isOutOfStock}
+              className={`mt-2 w-full py-1.5 px-2 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all active:scale-95 ${
+                added
+                  ? 'bg-emerald-500 text-white shadow'
+                  : isOutOfStock
+                    ? 'bg-gray-200 dark:bg-gray-800 text-gray-500 cursor-not-allowed'
+                    : isPreorder
+                      ? 'bg-gradient-to-r from-[#06b6d4] to-[#2b496d] text-white hover:shadow hover:shadow-[#06b6d4]/30'
+                      : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow hover:shadow-[#ec4899]/30'
+              }`}
+              aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
+            >
+              <ShoppingCart size={12} />
+              <span>
+                {added
+                  ? '¡Agregado!'
+                  : isPreorder
+                    ? `Reservar S/ ${(preorderDeposit ?? 10).toFixed(2)}`
+                    : 'Agregar'}
+              </span>
+            </button>
+          )}
         </div>
       </Link>
     );
@@ -280,17 +320,27 @@ export default function ProductCard({
             </p>
 
             {/* Stock inline */}
-            {!isOutOfStock && stock > 0 && stock < 5 && (
+            {isPreorder ? (
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#06b6d4]">
+                Preventa
+              </span>
+            ) : !isOutOfStock && stock > 0 && stock < 5 ? (
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#eab308]">
                 ¡últimas {stock}!
               </span>
-            )}
-            {!isOutOfStock && stock >= 5 && (
+            ) : !isOutOfStock && stock >= 5 ? (
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">
                 En stock
               </span>
-            )}
+            ) : null}
           </div>
+
+          {/* Hint reserva preventa */}
+          {isPreorder && (
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+              Reserva S/ {(preorderDeposit ?? 10).toFixed(2)} y paga el resto al llegar.
+            </p>
+          )}
 
           <button
             type="button"
@@ -301,12 +351,20 @@ export default function ProductCard({
                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                 : isOutOfStock
                   ? 'bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-600 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
+                  : isPreorder
+                    ? 'bg-gradient-to-r from-[#06b6d4] to-[#2b496d] text-white hover:shadow-lg hover:shadow-[#06b6d4]/30'
+                    : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
             }`}
-            aria-label={`Agregar ${title} al carrito`}
+            aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
           >
             <ShoppingCart size={16} />
-            <span>{added ? '¡Agregado!' : 'Agregar al carrito'}</span>
+            <span>
+              {added
+                ? '¡Agregado!'
+                : isPreorder
+                  ? `Reservar S/ ${(preorderDeposit ?? 10).toFixed(2)}`
+                  : 'Agregar al carrito'}
+            </span>
           </button>
         </div>
       </div>

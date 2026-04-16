@@ -43,7 +43,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
 
   const handleBuyNow = () => {
     for (let i = 0; i < quantity; i++) {
-      addToCart(product.id, product.title, product.pricePEN, product.editorial);
+      addToCart(product.id, product.title, product.pricePEN, product.editorial, {
+        stockStatus: product.stockStatus,
+        preorderDeposit: product.preorderDeposit,
+        slug: product.slug,
+      });
     }
     router.push('/cart');
   };
@@ -61,7 +65,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addToCart(product.id, product.title, product.pricePEN, product.editorial);
+      addToCart(product.id, product.title, product.pricePEN, product.editorial, {
+        stockStatus: product.stockStatus,
+        preorderDeposit: product.preorderDeposit,
+        slug: product.slug,
+      });
     }
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);

@@ -1,6 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { StockStatus } from '@/lib/products';
+
+/** Depósito por defecto (S/) por unidad de preventa si el producto no define preorderDeposit propio */
+export const DEFAULT_PREORDER_DEPOSIT = 10;
 
 export interface CartItem {
   productId: string;
@@ -8,16 +12,29 @@ export interface CartItem {
   price: number;
   quantity: number;
   editorial: string;
+  /** Se añaden para diferenciar pago completo vs reserva. Opcionales para compatibilidad con items viejos en localStorage. */
+  stockStatus?: StockStatus;
+  preorderDeposit?: number;
+  /** Slug para enlazar al detalle sin lookup extra */
+  slug?: string;
+}
+
+interface AddToCartOptions {
+  stockStatus?: StockStatus;
+  preorderDeposit?: number;
+  slug?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
-  /**
-   * false en SSR y primera renderización del cliente (antes de sincronizar con localStorage);
-   * true después de montar. Úsalo para no renderizar contadores/badges hasta que matchee.
-   */
   isHydrated: boolean;
-  addToCart: (productId: string, title: string, price: number, editorial: string) => void;
+  addToCart: (
+    productId: string,
+    title: string,
+    price: number,
+    editorial: string,
+    options?: AddToCartOptions
+  ) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -30,8 +47,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = 'neko-manga-cart';
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  // Empezamos en [] en cliente y SSR — coinciden. Leemos localStorage tras montar
-  // para evitar mismatch de hidratación (ver PR review).
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -55,15 +70,42 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isHydrated]);
 
-  const addToCart = (productId: string, title: string, price: number, editorial: string) => {
+  const addToCart = (
+    productId: string,
+    title: string,
+    price: number,
+    editorial: string,
+    options?: AddToCartOptions
+  ) => {
     setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.productId === productId);
-      if (existingItem) {
+      const existing = prevItems.find((item) => item.productId === productId);
+      if (existing) {
         return prevItems.map((item) =>
-          item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item
+          item.productId === productId
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                // Si el producto venía sin metadata en localStorage, la completamos ahora
+                stockStatus: item.stockStatus ?? options?.stockStatus,
+                preorderDeposit: item.preorderDeposit ?? options?.preorderDeposit,
+                slug: item.slug ?? options?.slug,
+              }
+            : item
         );
       }
-      return [...prevItems, { productId, title, price, quantity: 1, editorial }];
+      return [
+        ...prevItems,
+        {
+          productId,
+          title,
+          price,
+          quantity: 1,
+          editorial,
+          stockStatus: options?.stockStatus,
+          preorderDeposit: options?.preorderDeposit,
+          slug: options?.slug,
+        },
+      ];
     });
   };
 
@@ -116,4 +158,27 @@ export function useCart() {
     throw new Error('useCart must be used within CartProvider');
   }
   return context;
+}
+
+/**
+ * Helpers para cálculos de pago "hoy" vs "al llegar".
+ * Un item de preventa reserva con preorderDeposit (o DEFAULT_PREORDER_DEPOSIT);
+ * el resto de estados pagan el precio completo.
+ */
+export function getItemPaymentSplit(item: CartItem) {
+  const isPreorder = item.stockStatus === 'preorder';
+  const unitDeposit = isPreorder
+    ? item.preorderDeposit ?? DEFAULT_PREORDER_DEPOSIT
+    : 0;
+  const unitNow = isPreorder ? unitDeposit : item.price;
+  const unitLater = isPreorder ? Math.max(0, item.price - unitDeposit) : 0;
+  return {
+    isPreorder,
+    unitDeposit,
+    unitNow,
+    unitLater,
+    now: unitNow * item.quantity,
+    later: unitLater * item.quantity,
+    full: item.price * item.quantity,
+  };
 }

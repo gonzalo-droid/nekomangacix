@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useCart } from '@/context/CartContext';
+import { useMemo, useState } from 'react';
+import { useCart, getItemPaymentSplit, DEFAULT_PREORDER_DEPOSIT } from '@/context/CartContext';
 import Link from 'next/link';
 import Wordmark from '@/components/Wordmark';
+import CartSuggestions from './CartSuggestions';
 import {
   Trash2,
   Plus,
@@ -15,6 +16,8 @@ import {
   Truck,
   MessageCircle,
   ArrowLeft,
+  Clock,
+  Info,
 } from 'lucide-react';
 
 type PaymentMethod = 'yape' | 'plin' | 'transferencia' | null;
@@ -47,16 +50,40 @@ const PAYMENT_INFO = {
 } as const;
 
 export default function CartPage() {
-  const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart } = useCart();
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [orderSent, setOrderSent] = useState(false);
   const [placing, setPlacing] = useState(false);
 
-  const subtotal = getTotalPrice();
-  const shipping = subtotal > 0 ? SHIPPING_COST : 0;
-  const total = subtotal + shipping;
+  // ── Cálculos por item + totales ────────────────────────────────────────
+  const lines = useMemo(
+    () => items.map((item) => ({ item, split: getItemPaymentSplit(item) })),
+    [items]
+  );
+
+  const hasPreorder = lines.some((l) => l.split.isPreorder);
+  const hasInStock = lines.some((l) => !l.split.isPreorder);
+
+  const productsSubtotal = lines.reduce((t, l) => t + l.split.full, 0);
+  const depositsSubtotal = lines.reduce((t, l) => t + (l.split.isPreorder ? l.split.now : 0), 0);
+  const inStockSubtotal = lines.reduce((t, l) => t + (l.split.isPreorder ? 0 : l.split.now), 0);
+  const pendingSubtotal = lines.reduce((t, l) => t + l.split.later, 0);
+
+  const shipping = items.length > 0 ? SHIPPING_COST : 0;
+
+  // Regla: si todo el carrito es preventa, el envío se cobra al llegar.
+  // Si hay al menos un item en stock, el envío se cobra hoy (se envía ese paquete).
+  const shippingNow = hasInStock ? shipping : 0;
+  const shippingLater = hasPreorder && !hasInStock ? shipping : 0;
+  // Si mezclado: un envío ahora (in-stock) + cuando llegue la preventa, el cliente puede optar
+  // por un 2do envío coordinando por WhatsApp. Simplificamos mostrando shippingNow; el mensaje
+  // WhatsApp aclarará la coordinación.
+
+  const payNow = depositsSubtotal + inStockSubtotal + shippingNow;
+  const payLater = pendingSubtotal + shippingLater;
+
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
   async function handleWhatsAppOrder() {
@@ -85,27 +112,43 @@ export default function CartPage() {
     }
 
     const paymentLabel = PAYMENT_INFO[selectedPayment].label;
-    const cartDetails = items
-      .map((i) => `• ${i.title} (${i.quantity}x) — S/ ${(i.price * i.quantity).toFixed(2)}`)
+    const cartDetails = lines
+      .map(({ item, split }) => {
+        const base = `• ${item.title} (${item.quantity}x) — S/ ${split.full.toFixed(2)}`;
+        if (split.isPreorder) {
+          return `${base}\n   [Preventa] Reserva: S/ ${split.now.toFixed(2)} · Saldo: S/ ${split.later.toFixed(2)}`;
+        }
+        return base;
+      })
       .join('\n');
 
-    const message = [
+    const lines_msg: (string | false)[] = [
       `Hola, quiero realizar este pedido 🛒`,
       ``,
       cartDetails,
       ``,
-      `Subtotal: S/ ${subtotal.toFixed(2)}`,
-      `Envío: S/ ${shipping.toFixed(2)}`,
-      `*Total: S/ ${total.toFixed(2)}*`,
+      `Subtotal productos: S/ ${productsSubtotal.toFixed(2)}`,
+      hasInStock && `Envío hoy: S/ ${shippingNow.toFixed(2)}`,
+      hasPreorder && !hasInStock && `Envío al llegar: S/ ${shippingLater.toFixed(2)}`,
+      hasPreorder && `Saldo al llegar: S/ ${pendingSubtotal.toFixed(2)}`,
+      ``,
+      `*A pagar hoy: S/ ${payNow.toFixed(2)}*`,
+      hasPreorder && `*Pendiente al llegar: S/ ${payLater.toFixed(2)}*`,
       ``,
       `Método de pago: ${paymentLabel}`,
-      customerName ? `Nombre: ${customerName}` : '',
-      customerPhone ? `Teléfono: ${customerPhone}` : '',
-    ]
-      .filter(Boolean)
+      customerName && `Nombre: ${customerName}`,
+      customerPhone && `Teléfono: ${customerPhone}`,
+    ];
+    const message = lines_msg.filter((l): l is string => typeof l === 'string' && l !== '').join('\n');
+    // Nota: líneas vacías "" también pasan, perdemos los saltos. Re-construimos respetando vacíos:
+    const finalMessage = (lines_msg as (string | false)[])
+      .filter((l): l is string => l !== false)
       .join('\n');
 
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(finalMessage)}`,
+      '_blank'
+    );
     clearCart();
     setPlacing(false);
     setOrderSent(true);
@@ -133,8 +176,8 @@ export default function CartPage() {
               ¡Pedido enviado!
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
-              Te redirigimos a WhatsApp para coordinar la entrega y confirmar el pago. Gracias por
-              elegir <Wordmark size="xs" as="span" gradientAccent={false} className="!text-gray-700 dark:!text-gray-200" />.
+              Te redirigimos a WhatsApp para coordinar la entrega y confirmar el pago. Gracias por elegir{' '}
+              <Wordmark size="xs" as="span" gradientAccent={false} className="!text-gray-700 dark:!text-gray-200" />.
             </p>
             <Link
               href="/products"
@@ -187,7 +230,7 @@ export default function CartPage() {
           Tu <span className="text-neko-gradient">carrito</span>
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {itemCount} {itemCount === 1 ? 'producto' : 'productos'} listos para pedir.
+          {itemCount} {itemCount === 1 ? 'producto' : 'productos'} · {hasPreorder ? 'incluye preventas' : 'todo en stock'}
         </p>
         <span
           className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
@@ -195,23 +238,62 @@ export default function CartPage() {
         />
       </div>
 
+      {/* Banner de preventa cuando aplica */}
+      {hasPreorder && (
+        <div className="mb-6 relative overflow-hidden rounded-xl border border-[#06b6d4]/30 bg-gradient-to-r from-[#06b6d4]/10 to-[#ec4899]/5 p-4 flex gap-3 animate-tilt-in">
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-[#06b6d4]/20 text-[#06b6d4] flex items-center justify-center">
+            <Clock size={18} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
+              Tu carrito incluye artículos de preventa
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed">
+              Reservas con S/ {DEFAULT_PREORDER_DEPOSIT.toFixed(2)} por unidad y pagas el saldo cuando llegue el pedido.
+              Coordinamos el envío por WhatsApp apenas lo tengamos en stock.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Items */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm divide-y divide-gray-100 dark:divide-white/5 overflow-hidden">
-            {items.map((item) => (
+            {lines.map(({ item, split }) => (
               <div key={item.productId} className="p-5 flex gap-4 items-start group">
                 <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gradient-to-br from-[#ec4899]/10 via-[#06b6d4]/5 to-[#eab308]/10 rounded-lg flex items-center justify-center flex-shrink-0 text-2xl border border-gray-100 dark:border-white/5">
                   📚
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ec4899] transition-colors">
-                    {item.title}
-                  </h3>
+                  <div className="flex items-start gap-2 flex-wrap">
+                    {item.slug ? (
+                      <Link
+                        href={`/products/${item.slug}`}
+                        className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ec4899] transition-colors"
+                      >
+                        {item.title}
+                      </Link>
+                    ) : (
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">{item.title}</h3>
+                    )}
+                    {split.isPreorder && (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
+                        <Clock size={10} /> Preventa
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{item.editorial}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-500">
                     S/ {item.price.toFixed(2)} c/u
                   </p>
+
+                  {split.isPreorder && (
+                    <p className="text-[11px] text-[#06b6d4] mt-1 font-medium">
+                      Reserva S/ {split.unitDeposit.toFixed(2)} · Saldo S/ {(item.price - split.unitDeposit).toFixed(2)} al llegar
+                    </p>
+                  )}
+
                   <div className="inline-flex items-center border border-gray-200 dark:border-white/10 rounded-lg mt-3 overflow-hidden">
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
@@ -234,9 +316,19 @@ export default function CartPage() {
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
-                  <p className="font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
-                    S/ {(item.price * item.quantity).toFixed(2)}
-                  </p>
+                  {split.isPreorder ? (
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase tracking-wider text-gray-400">Hoy</p>
+                      <p className="font-extrabold text-[#06b6d4]">
+                        S/ {split.now.toFixed(2)}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
+                    </div>
+                  ) : (
+                    <p className="font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+                      S/ {split.full.toFixed(2)}
+                    </p>
+                  )}
                   <button
                     onClick={() => removeFromCart(item.productId)}
                     className="text-gray-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -256,7 +348,6 @@ export default function CartPage() {
             <ArrowLeft size={14} /> Continuar comprando
           </Link>
 
-          {/* Trust row */}
           <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100 dark:border-white/5">
             <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
               <ShieldCheck size={14} className="text-[#06b6d4]" />
@@ -279,21 +370,60 @@ export default function CartPage() {
                 {itemCount} {itemCount === 1 ? 'ítem' : 'ítems'}
               </span>
             </h2>
-            <div className="space-y-2 text-sm mb-4">
+
+            <div className="space-y-2 text-sm mb-3">
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Subtotal</span>
-                <span>S/ {subtotal.toFixed(2)}</span>
+                <span>Subtotal productos</span>
+                <span>S/ {productsSubtotal.toFixed(2)}</span>
               </div>
+
+              {hasPreorder && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    Reservas <Clock size={11} className="text-[#06b6d4]" />
+                  </span>
+                  <span>S/ {depositsSubtotal.toFixed(2)}</span>
+                </div>
+              )}
+
+              {hasInStock && hasPreorder && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>En stock (pago completo)</span>
+                  <span>S/ {inStockSubtotal.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Envío</span>
+                <span>Envío {hasPreorder && !hasInStock ? '(al llegar)' : ''}</span>
                 <span>S/ {shipping.toFixed(2)}</span>
               </div>
             </div>
-            <div className="flex justify-between items-baseline pt-3 border-t border-gray-100 dark:border-white/5">
-              <span className="font-bold text-gray-900 dark:text-white">Total</span>
-              <span className="text-2xl font-extrabold text-neko-gradient">
-                S/ {total.toFixed(2)}
-              </span>
+
+            {/* A pagar hoy */}
+            <div className="pt-3 border-t border-gray-100 dark:border-white/5">
+              <div className="flex justify-between items-baseline">
+                <span className="font-bold text-gray-900 dark:text-white text-sm">A pagar hoy</span>
+                <span className="text-2xl font-extrabold text-neko-gradient">
+                  S/ {payNow.toFixed(2)}
+                </span>
+              </div>
+
+              {hasPreorder && (
+                <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-white/10">
+                  <div className="flex justify-between items-baseline text-xs">
+                    <span className="flex items-center gap-1.5 font-semibold text-[#06b6d4]">
+                      <Clock size={12} /> Pendiente al llegar
+                    </span>
+                    <span className="font-bold text-[#06b6d4]">
+                      S/ {payLater.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-2 leading-relaxed flex gap-1.5">
+                    <Info size={11} className="flex-shrink-0 mt-0.5" />
+                    Coordinamos el pago del saldo y envío por WhatsApp cuando llegue el preorder.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -343,9 +473,7 @@ export default function CartPage() {
                         {info.number} · {info.holder}
                       </p>
                     </div>
-                    {isSelected && (
-                      <CheckCircle2 size={18} className="text-[#ec4899] flex-shrink-0" />
-                    )}
+                    {isSelected && <CheckCircle2 size={18} className="text-[#ec4899] flex-shrink-0" />}
                   </button>
                 );
               })}
@@ -357,7 +485,7 @@ export default function CartPage() {
                   {PAYMENT_INFO[selectedPayment].hint}
                 </p>
                 <p className="text-xs font-bold text-[#06b6d4] mt-1.5">
-                  Monto a transferir: S/ {total.toFixed(2)}
+                  Monto a transferir hoy: S/ {payNow.toFixed(2)}
                 </p>
               </div>
             )}
@@ -370,7 +498,7 @@ export default function CartPage() {
             className="w-full bg-[#25D366] hover:bg-[#1ebe5a] disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-white disabled:text-gray-500 font-bold py-3.5 rounded-xl shadow-lg shadow-[#25D366]/25 hover:shadow-[#25D366]/45 disabled:shadow-none hover:scale-[1.01] active:scale-[0.98] disabled:scale-100 transition-all flex items-center justify-center gap-2 text-base"
           >
             <MessageCircle size={18} />
-            {placing ? 'Procesando...' : 'Confirmar por WhatsApp'}
+            {placing ? 'Procesando...' : hasPreorder ? 'Reservar por WhatsApp' : 'Confirmar por WhatsApp'}
           </button>
           {!selectedPayment && (
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
@@ -379,6 +507,9 @@ export default function CartPage() {
           )}
         </aside>
       </div>
+
+      {/* Sugerencias — productos de misma serie/categoría que los del carrito */}
+      <CartSuggestions items={items} />
     </div>
   );
 }
