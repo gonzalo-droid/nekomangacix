@@ -110,8 +110,9 @@ export default function Hero() {
           >
             Catálogo de editoriales <strong className="text-white">Argentina</strong>,{' '}
             <strong className="text-white">México</strong>,{' '}
-            <strong className="text-white">España</strong> y figuras coleccionables.
-            Sumérgete en miles de historias — del shōnen clásico a lo más nuevo.
+            <strong className="text-white">España</strong> y 
+            <strong className="text-white">figuras coleccionables</strong>.
+            Sumérgete en miles de historias.
           </p>
 
           {/* CTAs */}

@@ -184,7 +184,7 @@ export default function ProductCard({
                   ? '¡Agregado!'
                   : isPreorder
                     ? `Reservar S/ ${(preorderDeposit ?? 10).toFixed(2)}`
-                    : 'Agregar'}
+                    : 'Agregar al carrito'}
               </span>
             </button>
           )}

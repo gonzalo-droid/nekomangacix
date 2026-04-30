@@ -66,6 +66,7 @@ function ProductSection({
                 {...product}
                 variant="compact"
                 priority={priorityFirst && idx < 6}
+                showQuickAdd
               />
             ))}
           </div>
