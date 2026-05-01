@@ -70,12 +70,12 @@ export default function Footer() {
             <Image
               src="/images/logo-dark.png"
               alt=""
-              width={120}
-              height={40}
-              className="h-10 w-auto mb-3"
+              width={180}
+              height={60}
+              className="h-16 w-auto mb-3"
               aria-hidden="true"
             />
-            <Wordmark size="lg" tone="dark" className="mb-2" as="div" />
+            <Wordmark size="xl" tone="dark" className="mb-2" as="div" />
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-500 mb-4">
               Manga · Coleccionables · Perú
             </p>
@@ -123,8 +123,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/products?countryGroup=Coleccionables" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
-                  Coleccionables
+                <Link href="/products?countryGroup=Jap%C3%B3n" className="text-gray-400 hover:text-[#5a7a9e] transition-colors">
+                  Editorial Japón
                 </Link>
               </li>
             </ul>

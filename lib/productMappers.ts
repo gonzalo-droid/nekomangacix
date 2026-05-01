@@ -1,7 +1,7 @@
-import type { Product, StockStatus, Category } from './products';
+import type { Product, StockStatus, Category, SeriesStatus } from './products';
 import { getCloudinaryUrl } from './cloudinary';
 
-type CountryGroup = 'Argentina' | 'México' | 'España' | 'Coleccionables';
+type CountryGroup = 'Argentina' | 'México' | 'España' | 'Japón';
 
 export function dbRowToProduct(row: Record<string, unknown>): Product {
   const specs = (row.specifications as Record<string, unknown>) ?? {};
@@ -30,6 +30,7 @@ export function dbRowToProduct(row: Record<string, unknown>): Product {
       weight: specs.weight as string | undefined,
     },
     series: (row.series as string) ?? undefined,
+    seriesStatus: (row.series_status as SeriesStatus) ?? undefined,
     images: ((row.images as string[]) ?? []).map(getCloudinaryUrl).filter(Boolean),
     category: row.category as Category,
     countryGroup: row.country_group as CountryGroup,

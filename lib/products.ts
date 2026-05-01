@@ -1,5 +1,6 @@
 export type StockStatus = 'in_stock' | 'on_demand' | 'preorder' | 'out_of_stock';
 export type Category = 'shonen' | 'seinen' | 'shojo' | 'josei' | 'kodomo' | 'isekai' | 'slice_of_life' | 'horror' | 'romance' | 'action' | 'comedy' | 'drama' | 'fantasy' | 'sci-fi' | 'sports' | 'mystery';
+export type SeriesStatus = 'single' | 'ongoing' | 'completed';
 
 export function generateSlug(title: string): string {
   return title
@@ -37,9 +38,10 @@ export interface Product {
     weight?: string;
   };
   series?: string;
+  seriesStatus?: SeriesStatus;
   images: string[];
   category: Category;
-  countryGroup: 'Argentina' | 'México' | 'España' | 'Coleccionables';
+  countryGroup: 'Argentina' | 'México' | 'España' | 'Japón';
 }
 
 // Fuente de datos: Supabase (ver hooks/useProducts.ts y lib/productsServer.ts)

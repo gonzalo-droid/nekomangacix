@@ -61,7 +61,7 @@ const SECTIONS = [
   { value: 'Argentina', label: 'Editorial Argentina' },
   { value: 'México', label: 'Editorial México' },
   { value: 'España', label: 'Editorial España' },
-  { value: 'Coleccionables', label: 'Coleccionables' },
+  { value: 'Japón', label: 'Editorial Japón' },
 ];
 
 interface FiltersProps {

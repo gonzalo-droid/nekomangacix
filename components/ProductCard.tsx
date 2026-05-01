@@ -19,6 +19,7 @@ export interface ProductCardData {
   images?: string[];
   stockStatus?: 'in_stock' | 'on_demand' | 'preorder' | 'out_of_stock';
   preorderDeposit?: number;
+  seriesStatus?: 'single' | 'ongoing' | 'completed';
 }
 
 interface Props extends ProductCardData {
@@ -65,6 +66,7 @@ export default function ProductCard({
   images,
   stockStatus,
   preorderDeposit,
+  seriesStatus,
   variant = 'default',
   priority = false,
   onRemove,
@@ -314,6 +316,17 @@ export default function ProductCard({
         )}
 
         <div className="mt-auto space-y-2.5">
+          {seriesStatus && (
+            <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+              seriesStatus === 'single'
+                ? 'bg-[#eab308]/15 text-[#eab308] dark:bg-[#eab308]/20'
+                : seriesStatus === 'completed'
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 dark:bg-emerald-500/20'
+                  : 'bg-[#ec4899]/15 text-[#ec4899] dark:bg-[#ec4899]/20'
+            }`}>
+              {seriesStatus === 'single' ? 'Tomo único' : seriesStatus === 'completed' ? 'Completado' : 'En curso'}
+            </span>
+          )}
           <div className="flex items-baseline justify-between gap-2">
             <p className="text-2xl font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
               S/ {pricePEN.toFixed(2)}

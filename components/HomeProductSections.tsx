@@ -101,7 +101,7 @@ export default async function HomeProductSections() {
   const argentina = products.filter((p) => p.countryGroup === 'Argentina').slice(0, 6);
   const mexico = products.filter((p) => p.countryGroup === 'México').slice(0, 6);
   const espana = products.filter((p) => p.countryGroup === 'España').slice(0, 6);
-  const coleccionables = products.filter((p) => p.countryGroup === 'Coleccionables').slice(0, 6);
+  const japon = products.filter((p) => p.countryGroup === 'Japón').slice(0, 6);
 
   return (
     <>
@@ -130,14 +130,16 @@ export default async function HomeProductSections() {
           linkLabel="Ver más manga español"
         />
       )}
-      <ProductSection
-        title="Coleccionables"
-        description="Figuras y artículos coleccionables de tus series favoritas."
-        products={coleccionables}
-        linkHref="/products?countryGroup=Coleccionables"
-        linkLabel="Ver más coleccionables"
-        variant="tinted"
-      />
+      {japon.length > 0 && (
+        <ProductSection
+          title="Editorial Japón"
+          description="Ediciones japonesas originales: Shueisha, Kodansha, Square Enix y más."
+          products={japon}
+          linkHref="/products?countryGroup=Jap%C3%B3n"
+          linkLabel="Ver más manga japonés"
+          variant="tinted"
+        />
+      )}
     </>
   );
 }

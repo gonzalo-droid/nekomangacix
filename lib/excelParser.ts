@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { Product, StockStatus, Category, generateSlug } from './products';
+import { Product, StockStatus, Category, SeriesStatus, generateSlug } from './products';
 import { getCloudinaryUrl } from './cloudinary';
 
 export interface ExcelRow {
@@ -22,17 +22,19 @@ export interface ExcelRow {
   dimensions?: string;
   weight?: string;
   series?: string;
+  seriesStatus?: string;
   images?: string;
   category?: string;
   countryGroup?: string;
 }
 
 const validStockStatuses: StockStatus[] = ['in_stock', 'on_demand', 'preorder', 'out_of_stock'];
+const validSeriesStatuses: SeriesStatus[] = ['single', 'ongoing', 'completed'];
 const validCategories: Category[] = [
   'shonen', 'seinen', 'shojo', 'josei', 'kodomo', 'isekai', 'slice_of_life',
   'horror', 'romance', 'action', 'comedy', 'drama', 'fantasy', 'sci-fi', 'sports', 'mystery'
 ];
-const validCountryGroups = ['Argentina', 'Mexico'] as const;
+const validCountryGroups = ['Argentina', 'Mexico', 'España', 'Japón'] as const;
 
 export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors: string[] } {
   const errors: string[] = [];
@@ -76,8 +78,17 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
         return;
       }
 
+      // Validate seriesStatus (optional)
+      const seriesStatus = row.seriesStatus
+        ? (row.seriesStatus.trim() as SeriesStatus)
+        : undefined;
+      if (seriesStatus && !validSeriesStatuses.includes(seriesStatus)) {
+        errors.push(`Fila ${rowNum}: seriesStatus invalido '${row.seriesStatus}'. Valores validos: ${validSeriesStatuses.join(', ')}`);
+        return;
+      }
+
       // Validate countryGroup
-      const countryGroup = (row.countryGroup || 'Argentina') as 'Argentina' | 'Mexico';
+      const countryGroup = (row.countryGroup || 'Argentina') as typeof validCountryGroups[number];
       if (!validCountryGroups.includes(countryGroup)) {
         errors.push(`Fila ${rowNum}: countryGroup invalido '${row.countryGroup}'. Valores validos: ${validCountryGroups.join(', ')}`);
         return;
@@ -119,9 +130,10 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
           weight: row.weight || '200g',
         },
         series: row.series?.trim() || undefined,
+        seriesStatus,
         images,
         category,
-        countryGroup: countryGroup === 'Mexico' ? 'México' : countryGroup,
+        countryGroup: (countryGroup === 'Mexico' ? 'México' : countryGroup) as Product['countryGroup'],
       };
 
       products.push(product);
@@ -155,6 +167,7 @@ export function generateExcelTemplate(): ArrayBuffer {
       dimensions: '13.5 x 19 cm',
       weight: '180g',
       series: 'Jujutsu Kaisen',
+      seriesStatus: 'ongoing',
       images: 'jjk-vol1,jjk-vol1-back',
       category: 'shonen',
       countryGroup: 'Argentina',
@@ -179,6 +192,7 @@ export function generateExcelTemplate(): ArrayBuffer {
       dimensions: '13.5 x 19 cm',
       weight: '185g',
       series: 'Sword Art Online',
+      seriesStatus: 'ongoing',
       images: 'sao-vol12',
       category: 'isekai',
       countryGroup: 'Mexico',
@@ -211,6 +225,7 @@ export function generateExcelTemplate(): ArrayBuffer {
     { wch: 40 },  // images
     { wch: 12 },  // category
     { wch: 12 },  // countryGroup
+    { wch: 12 },  // seriesStatus
   ];
 
   return XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });

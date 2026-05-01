@@ -11,7 +11,10 @@
       "Bash(head -60 /Users/gonzalo/DocsNeko/webs/nekomangacix/app/products/[slug]/page.tsx)",
       "Bash(npm show:*)",
       "Bash(npx tsc *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "mcp__plugin_supabase_supabase__list_tables",
+      "mcp__plugin_supabase_supabase__execute_sql"
     ]
   }
 }

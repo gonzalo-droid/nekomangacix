@@ -169,10 +169,24 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
             </div>
 
             {/* SKU & Category */}
-            <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
               <span>SKU: <span className="font-medium">{product.sku}</span></span>
               <span>|</span>
               <span>Categoria: <span className="font-medium">{categoryLabel}</span></span>
+              {product.seriesStatus && (
+                <>
+                  <span>|</span>
+                  <span className={`font-semibold ${
+                    product.seriesStatus === 'single'
+                      ? 'text-[#eab308]'
+                      : product.seriesStatus === 'completed'
+                        ? 'text-emerald-500'
+                        : 'text-[#ec4899]'
+                  }`}>
+                    {product.seriesStatus === 'single' ? 'Tomo único' : product.seriesStatus === 'completed' ? 'Serie completada' : 'En curso'}
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Price */}
