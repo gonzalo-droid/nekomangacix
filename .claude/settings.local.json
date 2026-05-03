@@ -14,7 +14,8 @@
       "Bash(echo \"exit=$?\")",
       "mcp__plugin_supabase_supabase__list_projects",
       "mcp__plugin_supabase_supabase__list_tables",
-      "mcp__plugin_supabase_supabase__execute_sql"
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "mcp__plugin_supabase_supabase__list_migrations"
     ]
   }
 }
