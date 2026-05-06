@@ -51,22 +51,13 @@ export default function Header() {
             className="group flex-shrink-0 flex items-center gap-2.5 transition-opacity hover:opacity-95"
             aria-label="Neko Manga Cix — Ir al inicio"
           >
-            <div className="relative">
+            <div className="relative">      
               <Image
-                src="/images/logo-light.png"
+                src="/images/brand/logo-dark.png"
                 alt=""
                 width={120}
                 height={40}
-                className="h-9 w-auto dark:hidden"
-                priority
-                aria-hidden="true"
-              />
-              <Image
-                src="/images/logo-dark.png"
-                alt=""
-                width={120}
-                height={40}
-                className="h-9 w-auto hidden dark:block"
+                className="h-9 w-auto hidden"
                 priority
                 aria-hidden="true"
               />

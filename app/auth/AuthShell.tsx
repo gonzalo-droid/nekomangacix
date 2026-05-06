@@ -20,7 +20,7 @@ interface Props {
  */
 export default function AuthShell({ title, subtitle, children }: Props) {
   return (
-    <div className="relative min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-[#0a0a0f]">
+    <div className="relative h-screen grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-[#0a0a0f]">
       {/* Salida rápida — fixed para que aparezca en todos los scrolls y layouts */}
       <Link
         href="/"
@@ -87,7 +87,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
             aria-label="Neko Manga Cix — Volver al inicio"
           >
             <Image
-              src="/images/logo-dark.png"
+              src="/images/brand/logo-dark.png"
               alt=""
               width={120}
               height={40}
@@ -129,7 +129,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
       </aside>
 
       {/* ── Columna del formulario ──────────────────────────────────────── */}
-      <main className="relative flex items-center justify-center px-4 py-10 sm:py-14 bg-gradient-to-b from-white via-gray-50 to-white dark:from-[#0a0a0f] dark:via-[#0f0f1a] dark:to-[#0a0a0f]">
+      <main className="relative flex items-center justify-center px-4 py-10 sm:py-14 overflow-y-auto bg-gradient-to-b from-white via-gray-50 to-white dark:from-[#0a0a0f] dark:via-[#0f0f1a] dark:to-[#0a0a0f]">
         {/* Halftone mobile-only */}
         <div
           className="absolute inset-0 bg-halftone opacity-30 lg:hidden pointer-events-none"
@@ -151,21 +151,13 @@ export default function AuthShell({ title, subtitle, children }: Props) {
             className="lg:hidden flex flex-col items-center gap-2 mb-6"
             aria-label="Neko Manga Cix — Volver al inicio"
           >
+    
             <Image
-              src="/images/logo-light.png"
+              src="/images/brand/logo-dark.png"
               alt=""
               width={120}
               height={40}
-              className="h-9 w-auto dark:hidden"
-              priority
-              aria-hidden="true"
-            />
-            <Image
-              src="/images/logo-dark.png"
-              alt=""
-              width={120}
-              height={40}
-              className="h-9 w-auto hidden dark:block"
+              className="h-9 w-auto hidden"
               priority
               aria-hidden="true"
             />
