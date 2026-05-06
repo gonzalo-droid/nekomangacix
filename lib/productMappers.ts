@@ -29,6 +29,7 @@ export function dbRowToProduct(row: Record<string, unknown>): Product {
       dimensions: specs.dimensions as string | undefined,
       weight: specs.weight as string | undefined,
     },
+    volume: (row.volume as number) ?? undefined,
     series: (row.series as string) ?? undefined,
     seriesStatus: (row.series_status as SeriesStatus) ?? undefined,
     images: ((row.images as string[]) ?? []).map(getCloudinaryUrl).filter(Boolean),

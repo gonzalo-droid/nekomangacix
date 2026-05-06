@@ -37,6 +37,7 @@ export interface Product {
     dimensions?: string;
     weight?: string;
   };
+  volume?: number;
   series?: string;
   seriesStatus?: SeriesStatus;
   images: string[];
