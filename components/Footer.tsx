@@ -68,7 +68,7 @@ export default function Footer() {
           {/* Sobre Nosotros + Redes */}
           <div>
             <Image
-              src="/images/logo-dark.png"
+              src="/images/brand/logo-dark.png"
               alt=""
               width={180}
               height={60}

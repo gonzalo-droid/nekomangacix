@@ -57,7 +57,7 @@ export default function Header() {
                 alt=""
                 width={120}
                 height={40}
-                className="h-9 w-auto hidden"
+                className="h-9 w-auto"
                 priority
                 aria-hidden="true"
               />
