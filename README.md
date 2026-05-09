@@ -1,155 +1,130 @@
-# Neko Manga Cix - Tienda de Manga Online
+# Neko Manga Cix
 
-Una aplicación e-commerce moderna de manga construida con **Next.js 16**, **TypeScript**, **Tailwind CSS** y **React Context** para gestión de estado.
+Tienda de manga online para el mercado peruano. Construida con Next.js 15 App Router, Supabase, Cloudinary y Tailwind CSS 4.
 
-## Características
+## Stack
 
-- ✨ **Diseño moderno y responsivo** - Mobile-first con Tailwind CSS
-- 🛒 **Carrito de compras funcional** - Con persistencia en localStorage
-- 🔍 **Búsqueda y filtros** - Por editorial, precio, disponibilidad
-- 📱 **Header sticky** - Navegación siempre visible
-- 💬 **Integración WhatsApp** - Para consultas y pedidos
-- ♿ **Accesibilidad** - HTML semántico, labels ARIA, navegación por teclado
-- 🇪🇸 **Contenido en español** - Precios en soles peruanos (S/)
+- **Next.js 15** — App Router, ISR, Server Components
+- **React 19** + **TypeScript**
+- **Tailwind CSS 4**
+- **Supabase** — Auth, base de datos PostgreSQL
+- **Cloudinary** — Almacenamiento y optimización de imágenes
+- **next-themes** — Modo oscuro/claro
 
-## Instalación Rápida
+## Instalación
 
 ```bash
-# Instalar dependencias
 npm install
-
-# Iniciar servidor de desarrollo
-npm run dev
 ```
 
-El servidor estará en **http://localhost:3000**
+Crea `.env.local`:
 
-## Estructura del Proyecto
-
-```
-nekomangacix/
-├── app/                        # App Router pages
-│   ├── layout.tsx              # Layout global
-│   ├── page.tsx                # Home
-│   ├── products/page.tsx       # Productos
-│   ├── cart/page.tsx           # Carrito
-│   ├── about/page.tsx          # Nosotros
-│   └── contact/page.tsx        # Contacto
-├── components/                 # Componentes reutilizables
-│   ├── Header.tsx
-│   ├── Footer.tsx
-│   ├── ProductCard.tsx
-│   ├── Filters.tsx
-│   └── WhatsAppFloatingButton.tsx
-├── context/
-│   └── CartContext.tsx         # Estado del carrito
-├── lib/
-│   └── products.ts             # Mock data
-└── package.json
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+ADMIN_PIN=...
+GMAIL_APP_PASSWORD=...   # opcional — fallback graceful si falta
 ```
 
-## Páginas
-
-| Ruta | Descripción |
-|------|-------------|
-| `/` | Inicio - Hero, secciones editoriales |
-| `/products` | Grid de productos con filtros y búsqueda |
-| `/cart` | Carrito de compras |
-| `/about` | Información de la tienda (Nosotros) |
-| `/contact` | Formulario de contacto |
-
-## Características Principales
-
-### 🛒 Carrito (CartContext)
-- Persistencia en localStorage
-- Hook `useCart()` para acceso global
-- Funciones: add, remove, update, clear
-
-### 🔍 Búsqueda y Filtros
-- Búsqueda por nombre/editorial
-- Filtro por editorial
-- Rango de precio
-- Stock disponible
-- URL params para compartir búsquedas
-
-### 📦 Productos
-- 16 productos mock
-- Editoriales: Argentina (Ivrea, Ovni) y México (Panini, Viz)
-- Tags: nuevo, bestseller, clásico, etc.
-- Placeholders con emojis
-
-### ♿ Accesibilidad
-- Etiquetas ARIA en inputs/buttons
-- HTML semántico
-- Navegación por teclado
-- Alto contraste
-
-### 💬 WhatsApp
-- Botón flotante en todas las páginas
-- Números pre-llenados: +51 924 462 641
-- Carrito integrado con pedido automático
-
-## Datos de Productos
-
-```typescript
-{
-  id: "1",
-  title: "Jujutsu Kaisen Vol. 1",
-  editorial: "Ivrea Argentina",
-  pricePEN: 45.00,
-  stock: 12,
-  tags: ["nuevo"],
-  description: "...",
-  imageUrl: "...",
-  countryGroup: "Argentina"
-}
+```bash
+npm run dev   # http://localhost:3000
 ```
 
 ## Comandos
 
 ```bash
 npm run dev      # Desarrollo
-npm run build    # Build
-npm start        # Producción
-npm run lint     # Linting
+npm run build    # Build producción
+npm run start    # Servidor producción
+npm run lint     # ESLint
 ```
 
-## Tecnologías
+## Estructura
 
-- **Next.js** 16 (App Router)
-- **React** 19
-- **TypeScript**
-- **Tailwind CSS**
-- **Lucide React** (iconos)
-- **Context API** (estado)
+```
+nekomangacix/
+├── app/
+│   ├── auth/           # Login y registro (split-screen con collage manga)
+│   ├── products/       # Grid con filtros + página de detalle [slug]
+│   ├── cart/           # Carrito con integración WhatsApp
+│   ├── profile/        # Datos, favoritos y pedidos del usuario
+│   ├── admin/          # Panel admin (import Excel, gestión de productos)
+│   ├── about/
+│   ├── contact/
+│   ├── faq/
+│   ├── shipping/
+│   ├── terms/
+│   └── privacy/
+├── components/         # Wordmark, ProductCard, Hero, PageHero, etc.
+├── context/            # CartContext, FavoritesContext (localStorage)
+├── hooks/              # useProducts, useDebouncedValue
+├── lib/
+│   ├── products.ts     # Tipos e interfaz Product
+│   ├── productMappers.ts  # DB row → Product
+│   ├── productsServer.ts  # Fetch server-side (ISR)
+│   ├── cloudinary.ts   # Resolución de URLs de imágenes
+│   └── excelParser.ts  # Importación desde Excel
+└── supabase/
+    └── migrations/     # SQL migrations
+```
 
-## Notas
+## Páginas
 
-- Precios en S/ (soles peruanos)
-- Envío base: S/ 20.00
-- Mock data - sin backend real
-- Imágenes placeholders (emojis)
-- Mensajes de contacto simulados
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Home con hero y secciones de productos destacados |
+| `/products` | Grid con filtros por editorial, precio y stock (Server Component, ISR 5 min) |
+| `/products/[slug]` | Detalle de producto |
+| `/auth/login` | Inicio de sesión |
+| `/auth/register` | Registro de cuenta |
+| `/cart` | Carrito con pedido automático por WhatsApp (+51 924 462 641) |
+| `/profile` | Perfil: datos personales, favoritos y pedidos |
+| `/admin` | Panel admin: import Excel, upload Cloudinary, gestión de productos |
 
-## Mejoras Futuras
+## Modelo de Producto
 
-- Backend real
-- Autenticación
-- Base de datos
-- Pasarela de pago
-- Imágenes reales
-- Reseñas
-- Favoritos
+```typescript
+interface Product {
+  id: string;
+  sku: string;
+  slug: string;
+  title: string;
+  editorial: string;
+  author: string;
+  pricePEN: number;
+  stock: number;
+  stockStatus: 'in_stock' | 'on_demand' | 'preorder' | 'out_of_stock';
+  volume?: number;
+  series?: string;
+  seriesStatus?: 'single' | 'ongoing' | 'completed';
+  category: Category;         // 16 géneros manga
+  countryGroup: 'Argentina' | 'México' | 'España' | 'Japón';
+  images: string[];
+  tags: string[];
+  description: string;
+  fullDescription: string;
+  specifications: { pages?, format?, language?, isbn?, releaseDate?, dimensions?, weight? };
+  estimatedArrival?: string;
+  preorderDeposit?: number;
+}
+```
 
-## Licencia
+## Base de Datos (Supabase)
 
-MIT
+Tablas principales: `products`, `profiles`, `orders`, `order_items`.
+
+Para aplicar las migraciones en un proyecto nuevo, ejecuta en orden los archivos de `supabase/migrations/`.
+
+## Imágenes (Cloudinary)
+
+Las imágenes se referencian como public IDs de Cloudinary bajo la carpeta `neko-manga/products`. El helper `getCloudinaryUrl()` resuelve public IDs, rutas locales y URLs completas.
+
+Upload disponible en `/admin` o vía la API route `POST /api/cloudinary/upload`.
 
 ---
 
-🐱 **Neko Manga Cix** - Tienda de manga online 2024
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Neko Manga Cix — Manga original para Perú
