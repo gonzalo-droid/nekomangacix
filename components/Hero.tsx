@@ -89,7 +89,7 @@ export default function Hero() {
           >
             <Sparkles size={14} className="text-[#eab308]" />
             <span className="text-xs font-semibold tracking-wider uppercase text-white/80">
-              Manga original · Envíos a todo el Perú
+              Envíos a todo el Perú
             </span>
           </div>
 
