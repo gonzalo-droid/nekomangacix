@@ -31,7 +31,10 @@
       "Bash(find /Users/gonzalo/DocsNeko/webs/nekomangacix -maxdepth 2 -name \".env*\" 2>/dev/null | head && echo \"---\" && ls -la /Users/gonzalo/DocsNeko/webs/nekomangacix/ | grep env)",
       "Bash(supabase --version)",
       "Bash(git commit -m 'feat\\(seed\\): fake collectibles seed + consolidated apply script *)",
-      "Bash(git commit -m 'chore: update local permissions cache *)"
+      "Bash(git commit -m 'chore: update local permissions cache *)",
+      "mcp__plugin_supabase_supabase__get_project",
+      "mcp__plugin_supabase_supabase__apply_migration",
+      "mcp__plugin_supabase_supabase__get_advisors"
     ]
   }
 }
