@@ -1,10 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useCart, getItemPaymentSplit, DEFAULT_PREORDER_DEPOSIT } from '@/context/CartContext';
+import { useEffect, useMemo, useState } from 'react';
+import { useCart, getItemPaymentSplit } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { createSupabaseClient } from '@/core/supabase/client';
+import { calculateCartTotals } from '@/lib/domain/cart/calculate';
 import Link from 'next/link';
 import Wordmark from '@/components/Wordmark';
 import CartSuggestions from './CartSuggestions';
+import FirstPurchaseDiscountBanner from '@/components/cart/FirstPurchaseDiscountBanner';
 import {
   Trash2,
   Plus,
@@ -18,12 +22,12 @@ import {
   ArrowLeft,
   Clock,
   Info,
+  Tag,
 } from 'lucide-react';
 
 type PaymentMethod = 'yape' | 'plin' | 'transferencia' | null;
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '51924262747';
-const SHIPPING_COST = 15;
 
 const PAYMENT_INFO = {
   yape: {
@@ -51,11 +55,44 @@ const PAYMENT_INFO = {
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { user } = useAuth();
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [orderSent, setOrderSent] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [hasUsedFirstPurchase, setHasUsedFirstPurchase] = useState<boolean | null>(null);
+
+  // Cargar profile.has_used_first_purchase_discount cuando hay usuario
+  useEffect(() => {
+    if (!user) return;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const configured = !!supabaseUrl && !supabaseUrl.includes('tu-proyecto');
+    let mounted = true;
+    if (!configured) {
+      Promise.resolve().then(() => {
+        if (mounted) setHasUsedFirstPurchase(false);
+      });
+      return () => {
+        mounted = false;
+      };
+    }
+    const supabase = createSupabaseClient();
+    supabase
+      .from('profiles')
+      .select('has_used_first_purchase_discount')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }: { data: { has_used_first_purchase_discount: boolean } | null }) => {
+        if (!mounted) return;
+        setHasUsedFirstPurchase(!!data?.has_used_first_purchase_discount);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
+
+  const isFirstPurchase = !!user && hasUsedFirstPurchase === false;
 
   // ── Cálculos por item + totales ────────────────────────────────────────
   const lines = useMemo(
@@ -63,27 +100,13 @@ export default function CartPage() {
     [items]
   );
 
+  const totals = useMemo(
+    () => calculateCartTotals({ items, isFirstPurchase }),
+    [items, isFirstPurchase]
+  );
+
   const hasPreorder = lines.some((l) => l.split.isPreorder);
   const hasInStock = lines.some((l) => !l.split.isPreorder);
-
-  const productsSubtotal = lines.reduce((t, l) => t + l.split.full, 0);
-  const depositsSubtotal = lines.reduce((t, l) => t + (l.split.isPreorder ? l.split.now : 0), 0);
-  const inStockSubtotal = lines.reduce((t, l) => t + (l.split.isPreorder ? 0 : l.split.now), 0);
-  const pendingSubtotal = lines.reduce((t, l) => t + l.split.later, 0);
-
-  const shipping = items.length > 0 ? SHIPPING_COST : 0;
-
-  // Regla: si todo el carrito es preventa, el envío se cobra al llegar.
-  // Si hay al menos un item en stock, el envío se cobra hoy (se envía ese paquete).
-  const shippingNow = hasInStock ? shipping : 0;
-  const shippingLater = hasPreorder && !hasInStock ? shipping : 0;
-  // Si mezclado: un envío ahora (in-stock) + cuando llegue la preventa, el cliente puede optar
-  // por un 2do envío coordinando por WhatsApp. Simplificamos mostrando shippingNow; el mensaje
-  // WhatsApp aclarará la coordinación.
-
-  const payNow = depositsSubtotal + inStockSubtotal + shippingNow;
-  const payLater = pendingSubtotal + shippingLater;
-
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
   async function handleWhatsAppOrder() {
@@ -100,11 +123,12 @@ export default function CartPage() {
             title: i.title,
             quantity: i.quantity,
             price: i.price,
+            stockStatus: i.stockStatus,
           })),
           paymentMethod: selectedPayment,
           customerName: customerName || undefined,
           customerPhone: customerPhone || undefined,
-          shippingCost: shipping,
+          shippingCost: totals.shipping,
         }),
       });
     } catch {
@@ -112,38 +136,40 @@ export default function CartPage() {
     }
 
     const paymentLabel = PAYMENT_INFO[selectedPayment].label;
-    const cartDetails = lines
-      .map(({ item, split }) => {
-        const base = `• ${item.title} (${item.quantity}x) — S/ ${split.full.toFixed(2)}`;
-        if (split.isPreorder) {
-          return `${base}\n   [Preventa] Reserva: S/ ${split.now.toFixed(2)} · Saldo: S/ ${split.later.toFixed(2)}`;
-        }
-        return base;
-      })
-      .join('\n');
 
-    const lines_msg: (string | false)[] = [
+    const stockLines = lines
+      .filter((l) => !l.split.isPreorder)
+      .map(({ item, split }) => `• ${item.title} (${item.quantity}x) — S/ ${split.full.toFixed(2)}`);
+
+    const preorderLines = lines
+      .filter((l) => l.split.isPreorder)
+      .map(
+        ({ item, split }) =>
+          `• ${item.title} (${item.quantity}x) — S/ ${split.full.toFixed(2)}\n   Adelanto: S/ ${split.now.toFixed(2)} · Saldo: S/ ${split.later.toFixed(2)}`
+      );
+
+    const msgParts: (string | false)[] = [
       `Hola, quiero realizar este pedido 🛒`,
       ``,
-      cartDetails,
+      hasInStock && `📦 EN STOCK`,
+      hasInStock && stockLines.join('\n'),
+      hasInStock && hasPreorder && ``,
+      hasPreorder && `🕐 PREVENTA (50% adelanto)`,
+      hasPreorder && preorderLines.join('\n'),
       ``,
-      `Subtotal productos: S/ ${productsSubtotal.toFixed(2)}`,
-      hasInStock && `Envío hoy: S/ ${shippingNow.toFixed(2)}`,
-      hasPreorder && !hasInStock && `Envío al llegar: S/ ${shippingLater.toFixed(2)}`,
-      hasPreorder && `Saldo al llegar: S/ ${pendingSubtotal.toFixed(2)}`,
+      `Subtotal: S/ ${totals.subtotal.toFixed(2)}`,
+      totals.discount > 0 && `Descuento bienvenida (10%): -S/ ${totals.discount.toFixed(2)}`,
+      totals.shipping === 0 ? `Envío: GRATIS 🎁` : `Envío: S/ ${totals.shipping.toFixed(2)}`,
       ``,
-      `*A pagar hoy: S/ ${payNow.toFixed(2)}*`,
-      hasPreorder && `*Pendiente al llegar: S/ ${payLater.toFixed(2)}*`,
+      `💰 Total a pagar ahora: S/ ${totals.totalToPayNow.toFixed(2)}`,
+      hasPreorder && `💳 Saldo al llegar: S/ ${totals.balanceDue.toFixed(2)}`,
       ``,
       `Método de pago: ${paymentLabel}`,
       customerName && `Nombre: ${customerName}`,
       customerPhone && `Teléfono: ${customerPhone}`,
     ];
-    const message = lines_msg.filter((l): l is string => typeof l === 'string' && l !== '').join('\n');
-    // Nota: líneas vacías "" también pasan, perdemos los saltos. Re-construimos respetando vacíos:
-    const finalMessage = (lines_msg as (string | false)[])
-      .filter((l): l is string => l !== false)
-      .join('\n');
+
+    const finalMessage = msgParts.filter((l): l is string => l !== false).join('\n');
 
     window.open(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(finalMessage)}`,
@@ -238,6 +264,9 @@ export default function CartPage() {
         />
       </div>
 
+      {/* Banner de descuento de primera compra */}
+      <FirstPurchaseDiscountBanner isLoggedIn={!!user} eligible={isFirstPurchase} />
+
       {/* Banner de preventa cuando aplica */}
       {hasPreorder && (
         <div className="mb-6 relative overflow-hidden rounded-xl border border-[#06b6d4]/30 bg-gradient-to-r from-[#06b6d4]/10 to-[#ec4899]/5 p-4 flex gap-3 animate-tilt-in">
@@ -249,7 +278,7 @@ export default function CartPage() {
               Tu carrito incluye artículos de preventa
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed">
-              Reservas con S/ {DEFAULT_PREORDER_DEPOSIT.toFixed(2)} por unidad y pagas el saldo cuando llegue el pedido.
+              Reservas con el 50% del precio por unidad y pagas el saldo cuando llegue el pedido.
               Coordinamos el envío por WhatsApp apenas lo tengamos en stock.
             </p>
           </div>
@@ -290,7 +319,7 @@ export default function CartPage() {
 
                   {split.isPreorder && (
                     <p className="text-[11px] text-[#06b6d4] mt-1 font-medium">
-                      Reserva S/ {split.unitDeposit.toFixed(2)} · Saldo S/ {(item.price - split.unitDeposit).toFixed(2)} al llegar
+                      Adelanto S/ {split.unitDeposit.toFixed(2)} (50%) · Saldo S/ {(item.price - split.unitDeposit).toFixed(2)} al llegar
                     </p>
                   )}
 
@@ -372,50 +401,63 @@ export default function CartPage() {
             </h2>
 
             <div className="space-y-2 text-sm mb-3">
-              <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Subtotal productos</span>
-                <span>S/ {productsSubtotal.toFixed(2)}</span>
-              </div>
+              {hasInStock && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Subtotal en stock</span>
+                  <span>S/ {totals.stockSubtotal.toFixed(2)}</span>
+                </div>
+              )}
 
               {hasPreorder && (
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
                   <span className="flex items-center gap-1">
-                    Reservas <Clock size={11} className="text-[#06b6d4]" />
+                    Subtotal preventa <Clock size={11} className="text-[#06b6d4]" />
                   </span>
-                  <span>S/ {depositsSubtotal.toFixed(2)}</span>
+                  <span>S/ {totals.preorderSubtotal.toFixed(2)}</span>
                 </div>
               )}
 
-              {hasInStock && hasPreorder && (
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span>En stock (pago completo)</span>
-                  <span>S/ {inStockSubtotal.toFixed(2)}</span>
+              {totals.discount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="flex items-center gap-1">
+                    <Tag size={11} /> Descuento bienvenida (10%)
+                  </span>
+                  <span>-S/ {totals.discount.toFixed(2)}</span>
                 </div>
               )}
 
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Envío {hasPreorder && !hasInStock ? '(al llegar)' : ''}</span>
-                <span>S/ {shipping.toFixed(2)}</span>
+                <span>Envío</span>
+                <span className={totals.shipping === 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
+                  {totals.shipping === 0 ? 'GRATIS 🎁' : `S/ ${totals.shipping.toFixed(2)}`}
+                </span>
               </div>
+
+              {hasPreorder && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Adelanto preventa (50%)</span>
+                  <span>S/ {totals.preorderDeposit.toFixed(2)}</span>
+                </div>
+              )}
             </div>
 
-            {/* A pagar hoy */}
+            {/* Total a pagar hoy */}
             <div className="pt-3 border-t border-gray-100 dark:border-white/5">
               <div className="flex justify-between items-baseline">
-                <span className="font-bold text-gray-900 dark:text-white text-sm">A pagar hoy</span>
+                <span className="font-bold text-gray-900 dark:text-white text-sm">Total a pagar hoy</span>
                 <span className="text-2xl font-extrabold text-neko-gradient">
-                  S/ {payNow.toFixed(2)}
+                  S/ {totals.totalToPayNow.toFixed(2)}
                 </span>
               </div>
 
               {hasPreorder && (
                 <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-white/10">
-                  <div className="flex justify-between items-baseline text-xs">
-                    <span className="flex items-center gap-1.5 font-semibold text-[#06b6d4]">
-                      <Clock size={12} /> Pendiente al llegar
+                  <div className="flex justify-between items-baseline text-xs text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <Clock size={12} /> Saldo al llegar
                     </span>
-                    <span className="font-bold text-[#06b6d4]">
-                      S/ {payLater.toFixed(2)}
+                    <span className="font-bold">
+                      S/ {totals.balanceDue.toFixed(2)}
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-2 leading-relaxed flex gap-1.5">
@@ -485,7 +527,7 @@ export default function CartPage() {
                   {PAYMENT_INFO[selectedPayment].hint}
                 </p>
                 <p className="text-xs font-bold text-[#06b6d4] mt-1.5">
-                  Monto a transferir hoy: S/ {payNow.toFixed(2)}
+                  Monto a transferir hoy: S/ {totals.totalToPayNow.toFixed(2)}
                 </p>
               </div>
             )}
