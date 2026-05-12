@@ -65,7 +65,7 @@ function ProductSection({
                 key={product.id}
                 {...product}
                 variant="compact"
-                priority={priorityFirst && idx < 6}
+                priority={priorityFirst && idx < 5}
                 showQuickAdd
               />
             ))}
@@ -97,11 +97,11 @@ function ProductSection({
 export default async function HomeProductSections() {
   const products = await getAllActiveProducts();
 
-  // Máximo 6 para mostrar una sola fila en xl (6 columnas)
-  const argentina = products.filter((p) => p.countryGroup === 'Argentina').slice(0, 6);
-  const mexico = products.filter((p) => p.countryGroup === 'México').slice(0, 6);
-  const espana = products.filter((p) => p.countryGroup === 'España').slice(0, 6);
-  const japon = products.filter((p) => p.countryGroup === 'Japón').slice(0, 6);
+  const MAX_ITEM = 5;
+  const argentina = products.filter((p) => p.countryGroup === 'Argentina').slice(0, MAX_ITEM);
+  const mexico = products.filter((p) => p.countryGroup === 'México').slice(0, MAX_ITEM);
+  const espana = products.filter((p) => p.countryGroup === 'España').slice(0, MAX_ITEM);
+  const japon = products.filter((p) => p.countryGroup === 'Japón').slice(0, MAX_ITEM);
 
   return (
     <>
