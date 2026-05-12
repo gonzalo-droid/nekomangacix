@@ -20,7 +20,13 @@
       "Bash(git add *)",
       "Bash(git commit -m 'feat\\(constants\\): add countries, editorials, demographics, product types and order states *)",
       "Bash(git commit -m 'feat\\(db\\): add migrations 005-007 \\(product model, split-payment orders, payment-proofs bucket\\) *)",
-      "Bash(git commit -m 'feat\\(types\\): extend Product, mappers and database types for new business model *)"
+      "Bash(git commit -m 'feat\\(types\\): extend Product, mappers and database types for new business model *)",
+      "Bash(git -C /Users/gonzalo/DocsNeko/webs/nekomangacix/.claude/worktrees/quirky-heyrovsky-86311f add app/admin/products/ProductFormModal.tsx app/admin/products/useAdminProducts.ts app/api/admin/products/route.ts app/api/admin/products/\\\\[id\\\\]/route.ts)",
+      "Bash(git -C /Users/gonzalo/DocsNeko/webs/nekomangacix/.claude/worktrees/quirky-heyrovsky-86311f commit -m ' *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(echo \"TS_EXIT=$?\")",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit -m 'feat\\(products\\): scoring-based related lookup \\(series > demographic > editorial > country > type\\) *)"
     ]
   }
 }

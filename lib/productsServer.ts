@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Product } from './products';
 import { products as staticProducts } from './products';
 import { dbRowToProduct } from './productMappers';
+import { findRelatedProducts } from './domain/products/related';
 
 function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -44,25 +45,17 @@ export async function getProductBySlugServer(slug: string): Promise<Product | nu
 }
 
 /**
- * Ordena relacionados: primero misma serie, luego misma demografía/categoría,
- * y rellena con la misma editorial si sigue faltando. Nunca incluye el producto actual.
+ * Ordena relacionados por score: serie (100) > demografía (30) > editorial (10) >
+ * país (5) > tipo (3). Ver findRelatedProducts. Si no llega al límite, completa
+ * con cualquier otro producto distinto al actual.
  */
 function pickRelated(all: Product[], current: Product, limit: number): Product[] {
-  const others = all.filter((p) => p.slug !== current.slug);
-  const seen = new Set<string>();
-  const pick = (p: Product) => {
-    if (seen.has(p.id)) return false;
-    seen.add(p.id);
-    return true;
-  };
-
-  const sameSeries = current.series
-    ? others.filter((p) => p.series === current.series).filter(pick)
-    : [];
-  const sameCategory = others.filter((p) => p.category === current.category).filter(pick);
-  const sameEditorial = others.filter((p) => p.editorial === current.editorial).filter(pick);
-
-  return [...sameSeries, ...sameCategory, ...sameEditorial].slice(0, limit);
+  const related = findRelatedProducts(current, all, limit);
+  if (related.length >= limit) return related;
+  const fill = all.filter(
+    (p) => p.slug !== current.slug && !related.some((r) => r.id === p.id),
+  );
+  return [...related, ...fill].slice(0, limit);
 }
 
 export async function getRelatedProductsServer(slug: string, limit = 6): Promise<Product[]> {
@@ -80,13 +73,7 @@ export async function getRelatedProductsServer(slug: string, limit = 6): Promise
         .limit(limit * 6);
       if (data && data.length > 0) {
         const all = (data as Record<string, unknown>[]).map(dbRowToProduct);
-        const related = pickRelated(all, product, limit);
-        // Si no alcanzamos limit con los filtros, rellenamos con el resto
-        if (related.length < limit) {
-          const fill = all.filter((p) => p.slug !== slug && !related.some((r) => r.id === p.id));
-          return [...related, ...fill].slice(0, limit);
-        }
-        return related;
+        return pickRelated(all, product, limit);
       }
     } catch { /* fall through */ }
   }
