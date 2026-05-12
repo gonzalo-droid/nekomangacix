@@ -185,16 +185,16 @@ export default function ProductCard({
             <button
               type="button"
               onClick={isOutOfStock ? handleReserve : handleAdd}
-              className={`mt-2 w-full py-1.5 px-2 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all active:scale-95 ${
+              className={`mt-2 w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
                 added
-                  ? 'bg-emerald-500 text-white shadow'
+                  ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
                   : isOutOfStock || isPreorder
-                    ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white hover:shadow hover:shadow-[#ec4899]/30'
-                    : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow hover:shadow-[#ec4899]/30'
+                    ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white hover:shadow-md hover:shadow-[#ec4899]/30'
+                    : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-md hover:shadow-[#ec4899]/30'
               }`}
               aria-label={isOutOfStock || isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
             >
-              <ShoppingCart size={12} />
+              <ShoppingCart size={13} />
               <span>
                 {added
                   ? '¡Agregado!'
