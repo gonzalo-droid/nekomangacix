@@ -26,7 +26,12 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(echo \"TS_EXIT=$?\")",
       "Bash(git commit -m ' *)",
-      "Bash(git commit -m 'feat\\(products\\): scoring-based related lookup \\(series > demographic > editorial > country > type\\) *)"
+      "Bash(git commit -m 'feat\\(products\\): scoring-based related lookup \\(series > demographic > editorial > country > type\\) *)",
+      "Bash(git commit -m 'chore\\(db\\): migration 008 to drop legacy country_group and tighten order status enum *)",
+      "Bash(find /Users/gonzalo/DocsNeko/webs/nekomangacix -maxdepth 2 -name \".env*\" 2>/dev/null | head && echo \"---\" && ls -la /Users/gonzalo/DocsNeko/webs/nekomangacix/ | grep env)",
+      "Bash(supabase --version)",
+      "Bash(git commit -m 'feat\\(seed\\): fake collectibles seed + consolidated apply script *)",
+      "Bash(git commit -m 'chore: update local permissions cache *)"
     ]
   }
 }
