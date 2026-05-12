@@ -55,7 +55,7 @@ export default function ReserveButton({
       ) : (
         <>
           <Clock size={18} />
-          <span>Reservar (50% adelanto)</span>
+          <span>Reservar</span>
         </>
       )}
     </button>

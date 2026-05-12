@@ -99,8 +99,7 @@ export default function ProductCard({
     setTimeout(() => setAdded(false), 1800);
   };
 
-  const reserveLabel = `Reservar S/ ${(pricePEN * 0.5).toFixed(2)}`;
-  const preorderLabel = `Reservar S/ ${(pricePEN * 0.5).toFixed(2)}`;
+  const depositAmount = (pricePEN * 0.5).toFixed(2);
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -164,14 +163,21 @@ export default function ProductCard({
             {title}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-1 line-clamp-1">{editorial}</p>
-          <div className="mt-auto flex items-baseline justify-between gap-1">
-            <p className="text-sm sm:text-base font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
-              S/ {pricePEN.toFixed(2)}
-            </p>
-            {isPreorder && (
-              <span className="text-[9px] font-bold uppercase tracking-wider text-[#06b6d4]">
-                Preventa
-              </span>
+          <div className="mt-auto">
+            <div className="flex items-baseline justify-between gap-1">
+              <p className="text-sm sm:text-base font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+                S/ {pricePEN.toFixed(2)}
+              </p>
+              {isPreorder && (
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#06b6d4]">
+                  Preventa
+                </span>
+              )}
+            </div>
+            {(isPreorder || isOutOfStock) && (
+              <p className="text-[10px] font-bold text-[#ec4899] mt-0.5">
+                Reserva S/ {depositAmount}
+              </p>
             )}
           </div>
 
@@ -193,7 +199,7 @@ export default function ProductCard({
                 {added
                   ? '¡Agregado!'
                   : isOutOfStock || isPreorder
-                    ? reserveLabel
+                    ? 'Reservar'
                     : 'Agregar al carrito'}
               </span>
             </button>
@@ -380,7 +386,7 @@ export default function ProductCard({
               {added
                 ? '¡Agregado!'
                 : isOutOfStock || isPreorder
-                  ? preorderLabel
+                  ? 'Reservar'
                   : 'Agregar al carrito'}
             </span>
           </button>
