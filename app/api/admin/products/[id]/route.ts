@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
+import { getEditorialsForCountry } from '@/lib/constants/editorials';
+import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
+
+const COUNTRY_GROUP_MAP: Record<CountryCode, string> = {
+  AR: 'Argentina',
+  MX: 'México',
+  ES: 'España',
+  JP: 'Japón',
+};
 
 function getClient() {
   return createClient(
@@ -28,10 +37,26 @@ export async function PUT(
   const body = await req.json();
   const supabase = getClient();
 
+  // Sync legacy country_group with country_code (kept until migration 008).
+  // Validate editorial only when both country_code and editorial are sent together.
+  const update: Record<string, unknown> = { ...body };
+  if (typeof update.country_code === 'string' && isCountryCode(update.country_code)) {
+    update.country_group = COUNTRY_GROUP_MAP[update.country_code];
+    if (typeof update.editorial === 'string' && update.editorial) {
+      const allowed = getEditorialsForCountry(update.country_code);
+      if (!allowed.includes(update.editorial)) {
+        return NextResponse.json(
+          { error: `Editorial "${update.editorial}" no pertenece a ${COUNTRY_GROUP_MAP[update.country_code]}` },
+          { status: 400 },
+        );
+      }
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from('products')
-    .update(body)
+    .update(update)
     .eq('id', id)
     .select()
     .single();
