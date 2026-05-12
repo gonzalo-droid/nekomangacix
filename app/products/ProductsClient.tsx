@@ -1,41 +1,62 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Filters from '@/components/Filters';
 import type { Product } from '@/lib/products';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
+import { isProductType, type ProductType } from '@/lib/constants/productTypes';
+import { isDemographic, type Demographic } from '@/lib/constants/demographics';
 
-const ITEMS_PER_PAGE = 16; // 4×4 grid
+const ITEMS_PER_PAGE = 16;
 
 interface Props {
   products: Product[];
-  editorials: string[];
 }
 
-export default function ProductsClient({ products, editorials }: Props) {
+export default function ProductsClient({ products }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const urlCountryGroup = searchParams.get('countryGroup');
+
   const urlSearch = searchParams.get('search') ?? '';
+  const urlType = searchParams.get('type');
+  const urlCountry = searchParams.get('country');
+  const urlEditorial = searchParams.get('editorial');
+  const urlDemographic = searchParams.get('demographic');
+  const urlSeries = searchParams.get('series');
 
   const [searchQuery, setSearchQuery] = useState(urlSearch);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedEditorials, setSelectedEditorials] = useState<string[]>([]);
-  // Overrides del usuario; si es null, cae a la URL. Permite al usuario desmarcar sin perder la URL.
-  const [sectionOverride, setSectionOverride] = useState<string[] | null>(null);
   const [authorQuery, setAuthorQuery] = useState('');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(Infinity);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // selectedSections deriva de URL + override del usuario
-  const selectedSections = useMemo<string[]>(
-    () => sectionOverride ?? (urlCountryGroup ? [urlCountryGroup] : []),
-    [sectionOverride, urlCountryGroup]
+  // La URL es la fuente de verdad de los filtros estructurales (compartibles)
+  const selectedType: ProductType | null = urlType && isProductType(urlType) ? urlType : null;
+  const selectedCountryCode: CountryCode | null =
+    urlCountry && isCountryCode(urlCountry) ? urlCountry : null;
+  const selectedEditorial: string | null = urlEditorial;
+  const selectedDemographic: Demographic | null =
+    urlDemographic && isDemographic(urlDemographic) ? urlDemographic : null;
+  const selectedSeries: string | null = urlSeries;
+
+  // Sincroniza filtros activos a la URL para que sean compartibles/bookmarkeables
+  const syncUrl = useCallback(
+    (patch: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || v === '') params.delete(k);
+        else params.set(k, v);
+      }
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname, searchParams]
   );
 
-  // Debounce inputs de texto — evita re-render por cada tecla
   const dSearch = useDebouncedValue(searchQuery, 250);
   const dAuthor = useDebouncedValue(authorQuery, 250);
   const dMin = useDebouncedValue(minPrice, 150);
@@ -53,28 +74,61 @@ export default function ProductsClient({ products, editorials }: Props) {
           p.author.toLowerCase().includes(q)
       );
     }
-    if (selectedCategories.length > 0) {
-      list = list.filter((p) => selectedCategories.includes(p.category));
-    }
-    if (selectedEditorials.length > 0) {
-      list = list.filter((p) => selectedEditorials.includes(p.editorial));
-    }
-    if (selectedSections.length > 0) {
-      list = list.filter((p) => p.countryGroup !== undefined && selectedSections.includes(p.countryGroup));
-    }
+    if (selectedType) list = list.filter((p) => p.type === selectedType);
+    if (selectedCountryCode) list = list.filter((p) => p.countryCode === selectedCountryCode);
+    if (selectedEditorial) list = list.filter((p) => p.editorial === selectedEditorial);
+    if (selectedDemographic) list = list.filter((p) => p.demographic === selectedDemographic);
+    if (selectedSeries) list = list.filter((p) => p.series === selectedSeries);
     if (dAuthor) {
       const a = dAuthor.toLowerCase();
       list = list.filter((p) => p.author.toLowerCase().includes(a));
     }
     list = list.filter((p) => p.pricePEN >= dMin && p.pricePEN <= dMax);
     return list;
-  }, [products, dSearch, dAuthor, dMin, dMax, selectedCategories, selectedEditorials, selectedSections]);
+  }, [
+    products,
+    dSearch,
+    dAuthor,
+    dMin,
+    dMax,
+    selectedType,
+    selectedCountryCode,
+    selectedEditorial,
+    selectedDemographic,
+    selectedSeries,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const paginated = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
   const resetPage = () => setCurrentPage(1);
+
+  const handleTypeChange = (t: ProductType | null) => {
+    // Al cambiar a un tipo distinto de manga, descartar demografía (no aplica)
+    if (t !== null && t !== 'manga' && selectedDemographic !== null) {
+      syncUrl({ type: t, demographic: null });
+    } else {
+      syncUrl({ type: t });
+    }
+    resetPage();
+  };
+
+  const handleDemographicChange = (d: Demographic | null) => {
+    syncUrl({ demographic: d });
+    resetPage();
+  };
+
+  const handleCountryEditorialChange = ({
+    country,
+    editorial,
+  }: {
+    country: CountryCode | null;
+    editorial: string | null;
+  }) => {
+    syncUrl({ country, editorial });
+    resetPage();
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -95,12 +149,15 @@ export default function ProductsClient({ products, editorials }: Props) {
         <aside className="md:col-span-1">
           <Filters
             onSearch={(q) => { setSearchQuery(q); resetPage(); }}
-            onCategoryChange={(v) => { setSelectedCategories(v); resetPage(); }}
-            onEditorialChange={(v) => { setSelectedEditorials(v); resetPage(); }}
             onAuthorChange={(v) => { setAuthorQuery(v); resetPage(); }}
             onPriceChange={(mn, mx) => { setMinPrice(mn); setMaxPrice(mx); resetPage(); }}
-            onSectionChange={(v) => { setSectionOverride(v); resetPage(); }}
-            editorials={editorials}
+            onTypeChange={handleTypeChange}
+            onDemographicChange={handleDemographicChange}
+            onCountryEditorialChange={handleCountryEditorialChange}
+            selectedType={selectedType}
+            selectedDemographic={selectedDemographic}
+            selectedCountry={selectedCountryCode}
+            selectedEditorial={selectedEditorial}
           />
         </aside>
 
@@ -117,6 +174,18 @@ export default function ProductsClient({ products, editorials }: Props) {
               </span>{' '}
               de <span className="font-semibold">{filtered.length}</span> productos
             </p>
+            {selectedSeries && (
+              <button
+                type="button"
+                onClick={() => {
+                  syncUrl({ series: null });
+                  resetPage();
+                }}
+                className="text-xs font-semibold text-[#2b496d] dark:text-blue-400 hover:underline"
+              >
+                Quitar serie: {selectedSeries} ×
+              </button>
+            )}
           </div>
 
           {paginated.length > 0 ? (
