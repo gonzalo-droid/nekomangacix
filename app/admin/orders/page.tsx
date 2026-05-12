@@ -12,12 +12,17 @@ export const metadata: Metadata = {
 };
 
 const STATUS_LABELS: Record<OrderStatus, { label: string; color: string }> = {
-  pending:   { label: 'Pendiente',  color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  confirmed: { label: 'Confirmado', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-  paid:      { label: 'Pagado',     color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
-  shipped:   { label: 'Enviado',    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
-  delivered: { label: 'Entregado',  color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
-  cancelled: { label: 'Cancelado',  color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+  pending_deposit:  { label: 'Pago pendiente',   color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' },
+  confirmed:        { label: 'Confirmado',       color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+  in_transit_to_pe: { label: 'En camino a Perú', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
+  available:        { label: 'Disponible',       color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  pending_balance:  { label: 'Saldo pendiente',  color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
+  shipped:          { label: 'Enviado',          color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400' },
+  delivered:        { label: 'Entregado',        color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+  cancelled:        { label: 'Cancelado',        color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+  // Legacy compat (todavía pueden existir en la DB hasta migración 008)
+  pending:          { label: 'Pendiente',        color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  paid:             { label: 'Pagado',           color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
 };
 
 type OrderRow = {

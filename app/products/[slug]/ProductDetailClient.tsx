@@ -207,10 +207,10 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 <p className="text-orange-600 text-sm">Solo {product.stock} unidades disponibles</p>
               )}
 
-              {product.stockStatus === 'on_demand' && product.estimatedArrival && (
+              {product.stockStatus === 'preorder' && (product.etaText || product.estimatedArrival) && (
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <Clock size={18} />
-                  <span>Llegada estimada: <strong>{product.estimatedArrival}</strong></span>
+                  <span>Llegada estimada: <strong>{product.etaText ?? product.estimatedArrival}</strong></span>
                 </div>
               )}
 

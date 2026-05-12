@@ -60,7 +60,7 @@ export default function ProductsClient({ products, editorials }: Props) {
       list = list.filter((p) => selectedEditorials.includes(p.editorial));
     }
     if (selectedSections.length > 0) {
-      list = list.filter((p) => selectedSections.includes(p.countryGroup));
+      list = list.filter((p) => p.countryGroup !== undefined && selectedSections.includes(p.countryGroup));
     }
     if (dAuthor) {
       const a = dAuthor.toLowerCase();

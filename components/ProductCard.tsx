@@ -17,7 +17,7 @@ export interface ProductCardData {
   tags: string[];
   description: string;
   images?: string[];
-  stockStatus?: 'in_stock' | 'on_demand' | 'preorder' | 'out_of_stock';
+  stockStatus?: 'in_stock' | 'preorder' | 'out_of_stock';
   preorderDeposit?: number;
   seriesStatus?: 'single' | 'ongoing' | 'completed';
 }

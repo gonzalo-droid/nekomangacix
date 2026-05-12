@@ -1,6 +1,17 @@
 import * as XLSX from 'xlsx';
 import { Product, StockStatus, Category, SeriesStatus, generateSlug } from './products';
 import { getCloudinaryUrl } from './cloudinary';
+import type { CountryCode } from './constants/countries';
+import type { ProductType, Language } from './constants/productTypes';
+import type { Demographic } from './constants/demographics';
+
+const COUNTRY_GROUP_TO_CODE: Record<string, CountryCode> = {
+  Argentina: 'AR',
+  Mexico: 'MX',
+  'México': 'MX',
+  'España': 'ES',
+  'Japón': 'JP',
+};
 
 export interface ExcelRow {
   title?: string;
@@ -29,7 +40,7 @@ export interface ExcelRow {
   countryGroup?: string;
 }
 
-const validStockStatuses: StockStatus[] = ['in_stock', 'on_demand', 'preorder', 'out_of_stock'];
+const validStockStatuses: StockStatus[] = ['in_stock', 'preorder', 'out_of_stock'];
 const validSeriesStatuses: SeriesStatus[] = ['single', 'ongoing', 'completed'];
 const validCategories: Category[] = [
   'shonen', 'seinen', 'shojo', 'josei', 'kodomo', 'isekai', 'slice_of_life',
@@ -65,8 +76,9 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
         return;
       }*/
 
-      // Validate stockStatus
-      const stockStatus = (row.stockStatus || 'in_stock') as StockStatus;
+      // Validate stockStatus (legacy 'on_demand' is migrated to 'preorder')
+      const rawStatus = (row.stockStatus || 'in_stock');
+      const stockStatus = (rawStatus === 'on_demand' ? 'preorder' : rawStatus) as StockStatus;
       if (!validStockStatuses.includes(stockStatus)) {
         errors.push(`Fila ${rowNum}: stockStatus invalido '${row.stockStatus}'. Valores validos: ${validStockStatuses.join(', ')}`);
         return;
@@ -106,17 +118,34 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
 
       const slug = generateSlug(row.title);
 
+      const normalizedCountryGroup: Product['countryGroup'] = (countryGroup === 'Mexico' ? 'México' : countryGroup);
+      const countryCode: CountryCode = COUNTRY_GROUP_TO_CODE[countryGroup] ?? 'AR';
+      const rawType = (row as Record<string, unknown>).type as string | undefined;
+      const productType: ProductType = (rawType === 'figure' || rawType === 'special_edition' || rawType === 'merch') ? rawType : 'manga';
+      const rawLanguage = (row as Record<string, unknown>).languageCode as string | undefined;
+      const language: Language = rawLanguage === 'jp' ? 'jp' : 'es';
+      const rawDemographic = (row as Record<string, unknown>).demographic as string | undefined;
+      const demographic: Demographic | undefined =
+        rawDemographic && ['shonen', 'seinen', 'shojo', 'josei', 'kodomo'].includes(rawDemographic)
+          ? (rawDemographic as Demographic)
+          : undefined;
+      const volumeNumber = row.volume ? Number(row.volume) : undefined;
+
       const product: Product = {
         id: crypto.randomUUID(),
-        sku: '', // generado internamente al insertar en Supabase
+        sku: '',
         slug,
         title: row.title,
-        editorial: row.editorial || 'Ivrea Argentina',
+        type: productType,
+        editorial: row.editorial || 'Ivrea',
+        countryCode,
+        countryGroup: normalizedCountryGroup,
         author: row.author || 'Autor desconocido',
         pricePEN: row.pricePEN != null && !isNaN(Number(row.pricePEN)) ? Number(row.pricePEN) : 99.99,
         stock: Number(row.stock) || 0,
         stockStatus,
         estimatedArrival: row.estimatedArrival,
+        etaText: row.estimatedArrival,
         preorderDeposit: row.preorderDeposit ? Number(row.preorderDeposit) : undefined,
         tags,
         description: row.description || row.title,
@@ -130,12 +159,14 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
           dimensions: row.dimensions || '13.5 x 19 cm',
           weight: row.weight || '200g',
         },
-        volume: row.volume ? Number(row.volume) : undefined,
+        volume: volumeNumber,
+        volumeNumber,
         series: row.series?.trim() || undefined,
         seriesStatus,
+        demographic,
+        language,
         images,
         category,
-        countryGroup: (countryGroup === 'Mexico' ? 'México' : countryGroup) as Product['countryGroup'],
       };
 
       products.push(product);

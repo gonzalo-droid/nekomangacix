@@ -46,6 +46,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     phone: null,
     address: null,
     role: 'customer' as UserRole,
+    has_used_first_purchase_discount: false,
     created_at: new Date().toISOString(),
   };
 

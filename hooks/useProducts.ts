@@ -102,7 +102,7 @@ export function useProducts() {
     if (editorials && editorials.length > 0)
       filtered = filtered.filter((p) => editorials.includes(p.editorial));
     if (countryGroups && countryGroups.length > 0)
-      filtered = filtered.filter((p) => countryGroups.includes(p.countryGroup));
+      filtered = filtered.filter((p) => p.countryGroup !== undefined && countryGroups.includes(p.countryGroup));
     if (author) {
       const a = author.toLowerCase();
       filtered = filtered.filter((p) => p.author.toLowerCase().includes(a));
@@ -147,12 +147,12 @@ export function getCategoryLabel(category: Category): string {
   return labels[category] || category;
 }
 
-export function getStockStatusLabel(status: StockStatus): { label: string; color: string } {
-  const statusInfo: Record<StockStatus, { label: string; color: string }> = {
-    in_stock:    { label: 'En Stock',  color: 'text-green-600' },
-    on_demand:   { label: 'A Pedido',  color: 'text-orange-600' },
-    preorder:    { label: 'Preventa',  color: 'text-blue-600' },
-    out_of_stock: { label: 'Agotado', color: 'text-red-600' },
+export function getStockStatusLabel(status: StockStatus | string): { label: string; color: string } {
+  const statusInfo: Record<string, { label: string; color: string }> = {
+    in_stock:     { label: 'En Stock',  color: 'text-green-600' },
+    preorder:     { label: 'Preventa',  color: 'text-blue-600' },
+    out_of_stock: { label: 'Agotado',   color: 'text-red-600' },
+    on_demand:    { label: 'Preventa',  color: 'text-blue-600' },
   };
-  return statusInfo[status];
+  return statusInfo[status] ?? { label: status, color: 'text-foreground/60' };
 }

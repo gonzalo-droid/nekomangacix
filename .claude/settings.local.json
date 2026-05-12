@@ -15,7 +15,12 @@
       "mcp__plugin_supabase_supabase__list_projects",
       "mcp__plugin_supabase_supabase__list_tables",
       "mcp__plugin_supabase_supabase__execute_sql",
-      "mcp__plugin_supabase_supabase__list_migrations"
+      "mcp__plugin_supabase_supabase__list_migrations",
+      "Bash(find /Users/gonzalo/DocsNeko/webs/nekomangacix/.claude/worktrees/quirky-heyrovski-86311f -type f -name \"*.json\" -o -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.js\" -o -name \"*.jsx\" | head -100)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat\\(constants\\): add countries, editorials, demographics, product types and order states *)",
+      "Bash(git commit -m 'feat\\(db\\): add migrations 005-007 \\(product model, split-payment orders, payment-proofs bucket\\) *)",
+      "Bash(git commit -m 'feat\\(types\\): extend Product, mappers and database types for new business model *)"
     ]
   }
 }
