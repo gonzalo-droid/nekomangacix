@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, LogOut, ShoppingBag, ChevronDown, LogIn } from 'lucide-react';
+import { User, LogOut, ShoppingBag, LogIn } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function UserMenu() {
@@ -66,13 +66,6 @@ export default function UserMenu() {
         <div className="w-8 h-8 bg-[#2b496d] text-white rounded-full flex items-center justify-center text-xs font-bold group-hover:bg-[#1e3550] transition-colors">
           {initials}
         </div>
-        <span className="hidden lg:inline text-sm font-medium text-gray-700 dark:text-gray-200 max-w-[100px] truncate">
-          {displayName}
-        </span>
-        <ChevronDown
-          size={14}
-          className={`hidden lg:inline text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
-        />
       </button>
 
       {open && (
