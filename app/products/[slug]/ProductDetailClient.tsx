@@ -11,6 +11,7 @@ import { Product } from '@/lib/products';
 import MangaFormatGuide from '@/components/MangaFormatGuide';
 import TrustBadges from '@/components/TrustBadges';
 import ProductCard from '@/components/ProductCard';
+import ReserveButton from '@/components/product/ReserveButton';
 import {
   Heart,
   ShoppingCart,
@@ -76,6 +77,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
   };
 
   const canAddToCart = product.stockStatus !== 'out_of_stock';
+  const isOutOfStock = product.stockStatus === 'out_of_stock';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
@@ -220,12 +222,10 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                     <Clock size={18} />
                     <span>Fecha estimada: <strong>{product.estimatedArrival}</strong></span>
                   </div>
-                  {product.preorderDeposit && (
-                    <p className="text-blue-600 dark:text-blue-400 text-sm">
-                      Reserva con <strong>S/ {product.preorderDeposit.toFixed(2)}</strong> y paga el
-                      resto (S/ {(product.pricePEN - product.preorderDeposit).toFixed(2)}) cuando llegue.
-                    </p>
-                  )}
+                  <p className="text-blue-600 dark:text-blue-400 text-sm">
+                    Reserva con el <strong>50% (S/ {(product.pricePEN * 0.5).toFixed(2)})</strong> y paga el
+                    resto (S/ {(product.pricePEN * 0.5).toFixed(2)}) cuando llegue.
+                  </p>
                 </div>
               )}
             </div>
@@ -259,26 +259,38 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
             {/* Action Buttons */}
             <div className="space-y-3">
               <div className="flex gap-3">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!canAddToCart}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
-                    addedToCart
-                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                      : !canAddToCart
-                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30 active:scale-95'
-                  }`}
-                >
-                  <ShoppingCart size={20} />
-                  <span>
-                    {addedToCart
-                      ? '¡Agregado!'
-                      : product.stockStatus === 'preorder'
-                        ? `Reservar (S/ ${product.preorderDeposit?.toFixed(2) || product.pricePEN.toFixed(2)})`
-                        : 'Agregar al carrito'}
-                  </span>
-                </button>
+                {isOutOfStock ? (
+                  <div className="flex-1">
+                    <ReserveButton
+                      productId={product.id}
+                      title={product.title}
+                      price={product.pricePEN}
+                      editorial={product.editorial}
+                      slug={product.slug}
+                      preorderDeposit={product.preorderDeposit}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleAddToCart}
+                    className={`flex-1 py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
+                      addedToCart
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                        : product.stockStatus === 'preorder'
+                          ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white hover:shadow-lg hover:shadow-[#ec4899]/30 active:scale-95'
+                          : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30 active:scale-95'
+                    }`}
+                  >
+                    <ShoppingCart size={20} />
+                    <span>
+                      {addedToCart
+                        ? '¡Agregado!'
+                        : product.stockStatus === 'preorder'
+                          ? 'Reservar (50% adelanto)'
+                          : 'Agregar al carrito'}
+                    </span>
+                  </button>
+                )}
                 <button
                   onClick={() => toggleFavorite(product.id)}
                   className={`p-3 rounded-lg border-2 transition-all active:scale-95 ${
@@ -291,18 +303,20 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   <Heart size={24} fill={isProductFavorite ? 'currentColor' : 'none'} />
                 </button>
               </div>
-              <button
-                onClick={handleBuyNow}
-                disabled={!canAddToCart}
-                className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
-                  !canAddToCart
-                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                    : 'bg-[#2b496d] text-white hover:bg-[#1e3550] active:scale-95 shadow-md hover:shadow-lg'
-                }`}
-              >
-                <Zap size={18} />
-                <span>Comprar ahora</span>
-              </button>
+              {!isOutOfStock && (
+                <button
+                  onClick={handleBuyNow}
+                  disabled={!canAddToCart}
+                  className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
+                    !canAddToCart
+                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-[#2b496d] text-white hover:bg-[#1e3550] active:scale-95 shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  <Zap size={18} />
+                  <span>Comprar ahora</span>
+                </button>
+              )}
 
               {/* Guía de Formatos — botón destacado */}
               <MangaFormatGuide variant="ghost" className="w-full justify-center" />

@@ -91,6 +91,17 @@ export default function ProductCard({
     setTimeout(() => setAdded(false), 1800);
   };
 
+  const handleReserve = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(id, title, pricePEN, editorial, { stockStatus: 'preorder', preorderDeposit, slug });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  const reserveLabel = `Reservar S/ ${(pricePEN * 0.5).toFixed(2)}`;
+  const preorderLabel = `Reservar S/ ${(pricePEN * 0.5).toFixed(2)}`;
+
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -167,25 +178,22 @@ export default function ProductCard({
           {showQuickAdd && (
             <button
               type="button"
-              onClick={handleAdd}
-              disabled={isOutOfStock}
+              onClick={isOutOfStock ? handleReserve : handleAdd}
               className={`mt-2 w-full py-1.5 px-2 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all active:scale-95 ${
                 added
                   ? 'bg-emerald-500 text-white shadow'
-                  : isOutOfStock
-                    ? 'bg-gray-200 dark:bg-gray-800 text-gray-500 cursor-not-allowed'
-                    : isPreorder
-                      ? 'bg-gradient-to-r from-[#06b6d4] to-[#2b496d] text-white hover:shadow hover:shadow-[#06b6d4]/30'
-                      : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow hover:shadow-[#ec4899]/30'
+                  : isOutOfStock || isPreorder
+                    ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white hover:shadow hover:shadow-[#ec4899]/30'
+                    : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow hover:shadow-[#ec4899]/30'
               }`}
-              aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
+              aria-label={isOutOfStock || isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
             >
               <ShoppingCart size={12} />
               <span>
                 {added
                   ? '¡Agregado!'
-                  : isPreorder
-                    ? `Reservar S/ ${(preorderDeposit ?? 10).toFixed(2)}`
+                  : isOutOfStock || isPreorder
+                    ? reserveLabel
                     : 'Agregar al carrito'}
               </span>
             </button>
@@ -348,34 +356,31 @@ export default function ProductCard({
             ) : null}
           </div>
 
-          {/* Hint reserva preventa */}
-          {isPreorder && (
+          {/* Hint reserva preventa o agotado */}
+          {(isPreorder || isOutOfStock) && (
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-              Reserva S/ {(preorderDeposit ?? 10).toFixed(2)} y paga el resto al llegar.
+              Reserva con S/ {(pricePEN * 0.5).toFixed(2)} (50%) y paga el resto al llegar.
             </p>
           )}
 
           <button
             type="button"
-            onClick={handleAdd}
-            disabled={isOutOfStock}
+            onClick={isOutOfStock ? handleReserve : handleAdd}
             className={`w-full py-2.5 px-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
               added
                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                : isOutOfStock
-                  ? 'bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-600 cursor-not-allowed'
-                  : isPreorder
-                    ? 'bg-gradient-to-r from-[#06b6d4] to-[#2b496d] text-white hover:shadow-lg hover:shadow-[#06b6d4]/30'
-                    : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
+                : isOutOfStock || isPreorder
+                  ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
+                  : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
             }`}
-            aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
+            aria-label={isOutOfStock || isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
           >
             <ShoppingCart size={16} />
             <span>
               {added
                 ? '¡Agregado!'
-                : isPreorder
-                  ? `Reservar S/ ${(preorderDeposit ?? 10).toFixed(2)}`
+                : isOutOfStock || isPreorder
+                  ? preorderLabel
                   : 'Agregar al carrito'}
             </span>
           </button>
