@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import HierarchicalCountryFilter from './filters/HierarchicalCountryFilter';
+import type { CountryCode } from '@/lib/constants/countries';
+import { PRODUCT_TYPES, PRODUCT_TYPE_LABELS, type ProductType } from '@/lib/constants/productTypes';
+import { DEMOGRAPHICS, DEMOGRAPHIC_LABELS, type Demographic } from '@/lib/constants/demographics';
 
 interface SectionHeaderProps {
   id: string;
@@ -38,59 +42,42 @@ function SectionHeader({ id, title, badge, open, onToggle }: SectionHeaderProps)
 const PRICE_MIN = 0;
 const PRICE_MAX = 300;
 
-const DEMOGRAPHICS: { value: string; label: string }[] = [
-  { value: 'shonen', label: 'Shōnen' },
-  { value: 'seinen', label: 'Seinen' },
-  { value: 'shojo', label: 'Shōjo' },
-  { value: 'josei', label: 'Josei' },
-  { value: 'kodomo', label: 'Kodomo' },
-  { value: 'isekai', label: 'Isekai' },
-  { value: 'slice_of_life', label: 'Slice of Life' },
-  { value: 'romance', label: 'Romance' },
-  { value: 'action', label: 'Acción' },
-  { value: 'horror', label: 'Horror' },
-  { value: 'comedy', label: 'Comedia' },
-  { value: 'drama', label: 'Drama' },
-  { value: 'fantasy', label: 'Fantasía' },
-  { value: 'sci-fi', label: 'Ciencia Ficción' },
-  { value: 'sports', label: 'Deportes' },
-  { value: 'mystery', label: 'Misterio' },
-];
-
-const SECTIONS = [
-  { value: 'Argentina', label: 'Editorial Argentina' },
-  { value: 'México', label: 'Editorial México' },
-  { value: 'España', label: 'Editorial España' },
-  { value: 'Japón', label: 'Editorial Japón' },
-];
+const chipBase =
+  'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors whitespace-nowrap';
+const chipIdle =
+  'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
+const chipActive = 'border-[#2b496d] bg-[#2b496d] text-white';
 
 interface FiltersProps {
   onSearch: (query: string) => void;
-  onCategoryChange: (categories: string[]) => void;
-  onEditorialChange: (editorials: string[]) => void;
   onAuthorChange: (author: string) => void;
   onPriceChange: (min: number, max: number) => void;
-  onSectionChange: (sections: string[]) => void;
-  editorials: string[];
+  onTypeChange: (type: ProductType | null) => void;
+  onDemographicChange: (demographic: Demographic | null) => void;
+  onCountryEditorialChange: (next: { country: CountryCode | null; editorial: string | null }) => void;
+  selectedType: ProductType | null;
+  selectedDemographic: Demographic | null;
+  selectedCountry: CountryCode | null;
+  selectedEditorial: string | null;
 }
 
 export default function Filters({
   onSearch,
-  onCategoryChange,
-  onEditorialChange,
   onAuthorChange,
   onPriceChange,
-  onSectionChange,
-  editorials,
+  onTypeChange,
+  onDemographicChange,
+  onCountryEditorialChange,
+  selectedType,
+  selectedDemographic,
+  selectedCountry,
+  selectedEditorial,
 }: FiltersProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedEditorials, setSelectedEditorials] = useState<string[]>([]);
-  const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [authorQuery, setAuthorQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([PRICE_MIN, PRICE_MAX]);
   const [openSections, setOpenSections] = useState<Set<string>>(
-    () => new Set(['search', 'section', 'category', 'editorial', 'author', 'price'])
+    () => new Set(['search', 'type', 'country', 'demographic', 'author', 'price'])
   );
 
   const toggle = (section: string) =>
@@ -110,22 +97,6 @@ export default function Filters({
     const query = e.target.value;
     setSearchQuery(query);
     onSearch(query);
-  };
-
-  const handleCategoryToggle = (value: string) => {
-    const next = selectedCategories.includes(value)
-      ? selectedCategories.filter((c) => c !== value)
-      : [...selectedCategories, value];
-    setSelectedCategories(next);
-    onCategoryChange(next);
-  };
-
-  const handleEditorialToggle = (value: string) => {
-    const next = selectedEditorials.includes(value)
-      ? selectedEditorials.filter((e) => e !== value)
-      : [...selectedEditorials, value];
-    setSelectedEditorials(next);
-    onEditorialChange(next);
   };
 
   const handleAuthorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,36 +119,28 @@ export default function Filters({
     onPriceChange(next[0], next[1] >= PRICE_MAX ? Infinity : next[1]);
   };
 
-  const handleSectionToggle = (value: string) => {
-    const next = selectedSections.includes(value)
-      ? selectedSections.filter((s) => s !== value)
-      : [...selectedSections, value];
-    setSelectedSections(next);
-    onSectionChange(next);
-  };
+  const demographicVisible = selectedType === null || selectedType === 'manga';
 
   const hasActiveFilters =
     searchQuery ||
-    selectedCategories.length > 0 ||
-    selectedEditorials.length > 0 ||
-    selectedSections.length > 0 ||
+    selectedType !== null ||
+    selectedDemographic !== null ||
+    selectedCountry !== null ||
+    selectedEditorial !== null ||
     authorQuery ||
     priceRange[0] > PRICE_MIN ||
     priceRange[1] < PRICE_MAX;
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategories([]);
-    setSelectedEditorials([]);
-    setSelectedSections([]);
     setAuthorQuery('');
     setPriceRange([PRICE_MIN, PRICE_MAX]);
     onSearch('');
-    onCategoryChange([]);
-    onEditorialChange([]);
-    onSectionChange([]);
     onAuthorChange('');
     onPriceChange(PRICE_MIN, Infinity);
+    onTypeChange(null);
+    onDemographicChange(null);
+    onCountryEditorialChange({ country: null, editorial: null });
   };
 
   const minPct = ((priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
@@ -185,7 +148,6 @@ export default function Filters({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-1">
-      {/* Header */}
       <div className="flex justify-between items-center pb-4">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">Filtros</h2>
         {hasActiveFilters && (
@@ -198,7 +160,6 @@ export default function Filters({
         )}
       </div>
 
-      {/* ── Búsqueda ── */}
       <section>
         <SectionHeader id="search" title="Búsqueda" open={isOpen('search')} onToggle={toggle} />
         {isOpen('search') && (
@@ -214,80 +175,99 @@ export default function Filters({
         )}
       </section>
 
-      {/* ── Sección ── */}
       <section>
-        <SectionHeader id="section" title="Sección" badge={selectedSections.length} open={isOpen('section')} onToggle={toggle} />
-        {isOpen('section') && (
-          <div className="mt-3 space-y-1">
-            {SECTIONS.map(({ value, label }) => (
-              <label
-                key={value}
-                className="flex items-center gap-2.5 px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedSections.includes(value)}
-                  onChange={() => handleSectionToggle(value)}
-                  className="w-4 h-4 rounded border-gray-300 accent-[#2b496d] cursor-pointer"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── Demografía ── */}
-      <section>
-        <SectionHeader id="category" title="Demografía" badge={selectedCategories.length} open={isOpen('category')} onToggle={toggle} />
-        {isOpen('category') && (
-          <div className="mt-3 space-y-1 max-h-52 overflow-y-auto pr-1">
-            {DEMOGRAPHICS.map(({ value, label }) => (
-              <label
-                key={value}
-                className="flex items-center gap-2.5 px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(value)}
-                  onChange={() => handleCategoryToggle(value)}
-                  className="w-4 h-4 rounded border-gray-300 accent-[#2b496d] cursor-pointer"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── Editorial ── */}
-      <section>
-        <SectionHeader id="editorial" title="Editorial" badge={selectedEditorials.length} open={isOpen('editorial')} onToggle={toggle} />
-        {isOpen('editorial') && (
-          <div className="mt-3 space-y-1 max-h-52 overflow-y-auto pr-1">
-            {editorials.length === 0 ? (
-              <p className="text-sm text-gray-400 px-2">Sin editoriales disponibles</p>
-            ) : (
-              editorials.map((editorial) => (
-                <label
-                  key={editorial}
-                  className="flex items-center gap-2.5 px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+        <SectionHeader
+          id="type"
+          title="Tipo"
+          badge={selectedType ? 1 : 0}
+          open={isOpen('type')}
+          onToggle={toggle}
+        />
+        {isOpen('type') && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => onTypeChange(null)}
+              className={`${chipBase} ${selectedType === null ? chipActive : chipIdle}`}
+              aria-pressed={selectedType === null}
+            >
+              Todos
+            </button>
+            {PRODUCT_TYPES.map((t) => {
+              const active = selectedType === t;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => onTypeChange(active ? null : t)}
+                  className={`${chipBase} ${active ? chipActive : chipIdle}`}
+                  aria-pressed={active}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedEditorials.includes(editorial)}
-                    onChange={() => handleEditorialToggle(editorial)}
-                    className="w-4 h-4 rounded border-gray-300 accent-[#2b496d] cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{editorial}</span>
-                </label>
-              ))
-            )}
+                  {PRODUCT_TYPE_LABELS[t]}
+                </button>
+              );
+            })}
           </div>
         )}
       </section>
 
-      {/* ── Autor ── */}
+      <section>
+        <SectionHeader
+          id="country"
+          title="Origen y editorial"
+          badge={(selectedCountry ? 1 : 0) + (selectedEditorial ? 1 : 0)}
+          open={isOpen('country')}
+          onToggle={toggle}
+        />
+        {isOpen('country') && (
+          <div className="mt-3">
+            <HierarchicalCountryFilter
+              selectedCountry={selectedCountry}
+              selectedEditorial={selectedEditorial}
+              onChange={onCountryEditorialChange}
+            />
+          </div>
+        )}
+      </section>
+
+      {demographicVisible && (
+        <section>
+          <SectionHeader
+            id="demographic"
+            title="Demografía"
+            badge={selectedDemographic ? 1 : 0}
+            open={isOpen('demographic')}
+            onToggle={toggle}
+          />
+          {isOpen('demographic') && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => onDemographicChange(null)}
+                className={`${chipBase} ${selectedDemographic === null ? chipActive : chipIdle}`}
+                aria-pressed={selectedDemographic === null}
+              >
+                Todas
+              </button>
+              {DEMOGRAPHICS.map((d) => {
+                const active = selectedDemographic === d;
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => onDemographicChange(active ? null : d)}
+                    className={`${chipBase} ${active ? chipActive : chipIdle}`}
+                    aria-pressed={active}
+                  >
+                    {DEMOGRAPHIC_LABELS[d]}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
       <section>
         <SectionHeader id="author" title="Autor" open={isOpen('author')} onToggle={toggle} />
         {isOpen('author') && (
@@ -303,7 +283,6 @@ export default function Filters({
         )}
       </section>
 
-      {/* ── Precio ── */}
       <section>
         <SectionHeader id="price" title="Precio" open={isOpen('price')} onToggle={toggle} />
         {isOpen('price') && (

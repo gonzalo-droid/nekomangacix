@@ -1,8 +1,17 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useMemo, FormEvent } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import type { AdminProduct } from './useAdminProducts';
+import { COUNTRIES, COUNTRY_CODES, type CountryCode } from '@/lib/constants/countries';
+import { getEditorialsForCountry } from '@/lib/constants/editorials';
+import { DEMOGRAPHIC_LABELS, DEMOGRAPHICS } from '@/lib/constants/demographics';
+import {
+  PRODUCT_TYPES,
+  PRODUCT_TYPE_LABELS,
+  LANGUAGES,
+  LANGUAGE_LABELS,
+} from '@/lib/constants/productTypes';
 
 const CATEGORIES = [
   'shonen','seinen','shojo','josei','kodomo','isekai',
@@ -10,8 +19,14 @@ const CATEGORIES = [
   'drama','fantasy','sci-fi','sports','mystery',
 ];
 const STOCK_STATUSES = ['in_stock','on_demand','preorder','out_of_stock'];
-const COUNTRY_GROUPS = ['Argentina','México'];
 
+// Map countryCode → legacy countryGroup label kept until migration 008 drops it.
+const COUNTRY_GROUP_MAP: Record<CountryCode, string> = {
+  AR: 'Argentina',
+  MX: 'México',
+  ES: 'España',
+  JP: 'Japón',
+};
 
 interface Props {
   product?: AdminProduct | null;
@@ -23,6 +38,9 @@ const EMPTY: Partial<AdminProduct> = {
   title: '', sku: '', editorial: '', author: '', series: null,
   price_pen: 0, stock: 0, stock_status: 'in_stock',
   category: 'shonen', country_group: 'Argentina',
+  type: 'manga', country_code: 'AR', language: 'es',
+  volume_number: null, demographic: null,
+  eta_text: null, figure_scale: null, manufacturer: null,
   description: '', full_description: '',
   images: [], tags: [], is_active: true,
   estimated_arrival: '', preorder_deposit: undefined,
@@ -43,14 +61,68 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
     weight: String(product?.specifications?.weight ?? ''),
   });
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const currentCountry = (form.country_code as CountryCode) ?? 'AR';
+  const currentType = (form.type as string) ?? 'manga';
+  const editorialOptions = useMemo(
+    () => getEditorialsForCountry(currentCountry),
+    [currentCountry],
+  );
+
+  const showVolume = currentType === 'manga';
+  const showDemographic = currentType === 'manga';
+  const showLanguage = currentType === 'manga' || currentType === 'special_edition';
+  const showFigureFields = currentType === 'figure';
 
   // slug and sku are auto-generated server-side on create
 
   const set = (key: keyof AdminProduct, value: unknown) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  function handleCountryChange(code: CountryCode) {
+    setForm((prev) => ({
+      ...prev,
+      country_code: code,
+      country_group: COUNTRY_GROUP_MAP[code],
+      editorial: '',
+    }));
+  }
+
+  function handleTypeChange(type: string) {
+    setForm((prev) => {
+      const next: Partial<AdminProduct> = { ...prev, type };
+      if (type !== 'manga') {
+        next.volume_number = null;
+        next.demographic = null;
+      }
+      if (type !== 'figure') {
+        next.figure_scale = null;
+        next.manufacturer = null;
+      }
+      if (type !== 'manga' && type !== 'special_edition') {
+        // language is required only for manga/special_edition; keep value otherwise harmless
+      }
+      return next;
+    });
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    const newErrors: Record<string, string> = {};
+    if (!editorialOptions.includes(String(form.editorial ?? ''))) {
+      newErrors.editorial = 'La editorial no pertenece al país seleccionado';
+    }
+    if (form.demographic && currentType !== 'manga') {
+      newErrors.demographic = 'La demografía solo aplica a mangas';
+    }
+    if (showLanguage && !form.language) {
+      newErrors.language = 'Idioma requerido';
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     setSaving(true);
 
     const images = imagesInput.split(',').map((s) => s.trim()).filter(Boolean);
@@ -60,8 +132,11 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
       if (v.trim()) specifications[k] = isNaN(Number(v)) ? v : Number(v);
     });
 
+    const cc = (form.country_code as CountryCode) ?? 'AR';
     const payload: Partial<AdminProduct> = {
       ...form,
+      country_code: cc,
+      country_group: COUNTRY_GROUP_MAP[cc],
       images,
       tags,
       specifications: Object.keys(specifications).length ? specifications : null,
@@ -70,6 +145,12 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
       full_description: (form.full_description as string)?.trim() || null,
       estimated_arrival: (form.estimated_arrival as string)?.trim() || null,
       preorder_deposit: form.preorder_deposit || null,
+      series: (form.series as string)?.trim() || null,
+      eta_text: (form.eta_text as string)?.trim() || null,
+      volume_number: showVolume && form.volume_number ? Number(form.volume_number) : null,
+      demographic: showDemographic ? (form.demographic ?? null) : null,
+      figure_scale: showFigureFields ? ((form.figure_scale as string)?.trim() || null) : null,
+      manufacturer: showFigureFields ? ((form.manufacturer as string)?.trim() || null) : null,
     };
 
     const ok = await onSubmit(payload);
@@ -80,6 +161,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
   const inputClass =
     'w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]';
   const labelClass = 'block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1';
+  const errorClass = 'text-xs text-red-600 dark:text-red-400 mt-1';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -102,8 +184,8 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700">
               Información básica
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
                 <label className={labelClass}>Título *</label>
                 <input className={inputClass} required value={form.title ?? ''} onChange={(e) => set('title', e.target.value)} />
               </div>
@@ -119,30 +201,113 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                   </div>
                 </>
               )}
+
               <div>
-                <label className={labelClass}>Serie</label>
-                <input className={inputClass} placeholder="ej: Jujutsu Kaisen" value={form.series ?? ''} onChange={(e) => set('series', e.target.value || null)} />
+                <label className={labelClass}>Tipo de producto *</label>
+                <select className={inputClass} required value={currentType}
+                  onChange={(e) => handleTypeChange(e.target.value)}>
+                  {PRODUCT_TYPES.map((t) => (
+                    <option key={t} value={t}>{PRODUCT_TYPE_LABELS[t]}</option>
+                  ))}
+                </select>
               </div>
+
+              <div>
+                <label className={labelClass}>País de origen *</label>
+                <select className={inputClass} required value={currentCountry}
+                  onChange={(e) => handleCountryChange(e.target.value as CountryCode)}>
+                  {COUNTRY_CODES.map((c) => (
+                    <option key={c} value={c}>{COUNTRIES[c].flag} {COUNTRIES[c].name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className={labelClass}>Editorial *</label>
-                <input className={inputClass} required value={form.editorial ?? ''} onChange={(e) => set('editorial', e.target.value)} />
+                <select className={inputClass} required value={form.editorial ?? ''}
+                  onChange={(e) => set('editorial', e.target.value)}>
+                  <option value="">— Selecciona editorial —</option>
+                  {editorialOptions.map((ed) => (
+                    <option key={ed} value={ed}>{ed}</option>
+                  ))}
+                </select>
+                {errors.editorial && <p className={errorClass}>{errors.editorial}</p>}
               </div>
+
+              <div>
+                <label className={labelClass}>Serie</label>
+                <input className={inputClass} placeholder="One Piece, Chainsaw Man…"
+                  value={form.series ?? ''} onChange={(e) => set('series', e.target.value || null)} />
+              </div>
+
               <div>
                 <label className={labelClass}>Autor</label>
                 <input className={inputClass} value={form.author ?? ''} onChange={(e) => set('author', e.target.value)} />
               </div>
+
               <div>
                 <label className={labelClass}>Categoría *</label>
                 <select className={inputClass} value={form.category ?? 'shonen'} onChange={(e) => set('category', e.target.value)}>
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div>
-                <label className={labelClass}>Grupo país *</label>
-                <select className={inputClass} value={form.country_group ?? 'Argentina'} onChange={(e) => set('country_group', e.target.value)}>
-                  {COUNTRY_GROUPS.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+
+              {showVolume && (
+                <div>
+                  <label className={labelClass}>Tomo</label>
+                  <input type="number" min="1" className={inputClass}
+                    value={form.volume_number ?? ''}
+                    onChange={(e) => set('volume_number', e.target.value ? parseInt(e.target.value) : null)} />
+                </div>
+              )}
+
+              {showDemographic && (
+                <div>
+                  <label className={labelClass}>Demografía</label>
+                  <select className={inputClass} value={form.demographic ?? ''}
+                    onChange={(e) => set('demographic', e.target.value || null)}>
+                    <option value="">—</option>
+                    {DEMOGRAPHICS.map((d) => (
+                      <option key={d} value={d}>{DEMOGRAPHIC_LABELS[d]}</option>
+                    ))}
+                  </select>
+                  {errors.demographic && <p className={errorClass}>{errors.demographic}</p>}
+                </div>
+              )}
+
+              {showLanguage && (
+                <div>
+                  <label className={labelClass}>Idioma *</label>
+                  <select className={inputClass} required value={form.language ?? 'es'}
+                    onChange={(e) => set('language', e.target.value)}>
+                    {LANGUAGES.map((l) => (
+                      <option key={l} value={l}>{LANGUAGE_LABELS[l]}</option>
+                    ))}
+                  </select>
+                  {errors.language && <p className={errorClass}>{errors.language}</p>}
+                </div>
+              )}
+
+              <div className="sm:col-span-2">
+                <label className={labelClass}>ETA / Llegada estimada</label>
+                <input className={inputClass} placeholder="Fin de mayo 2026"
+                  value={form.eta_text ?? ''} onChange={(e) => set('eta_text', e.target.value || null)} />
               </div>
+
+              {showFigureFields && (
+                <>
+                  <div>
+                    <label className={labelClass}>Escala</label>
+                    <input className={inputClass} placeholder="1/7, 1/8…"
+                      value={form.figure_scale ?? ''} onChange={(e) => set('figure_scale', e.target.value || null)} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Fabricante</label>
+                    <input className={inputClass} placeholder="Good Smile, Banpresto…"
+                      value={form.manufacturer ?? ''} onChange={(e) => set('manufacturer', e.target.value || null)} />
+                  </div>
+                </>
+              )}
             </div>
           </section>
 
@@ -151,7 +316,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700">
               Precio y stock
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Precio PEN (S/) *</label>
                 <input type="number" min="0" step="0.01" className={inputClass} required
@@ -173,7 +338,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                 <input type="number" min="0" step="0.01" className={inputClass}
                   value={form.preorder_deposit ?? ''} onChange={(e) => set('preorder_deposit', e.target.value ? parseFloat(e.target.value) : undefined)} />
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className={labelClass}>Fecha estimada de llegada</label>
                 <input type="date" className={inputClass}
                   value={form.estimated_arrival ?? ''} onChange={(e) => set('estimated_arrival', e.target.value)} />
@@ -216,7 +381,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                 <input className={inputClass} value={imagesInput} onChange={(e) => setImagesInput(e.target.value)}
                   placeholder="jjk-vol1, jjk-vol1-back" />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {['pages','format','language','isbn','dimensions','weight'].map((k) => (
                   <div key={k}>
                     <label className={labelClass}>{k}</label>

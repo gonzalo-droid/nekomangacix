@@ -22,6 +22,14 @@ export interface AdminProduct {
   images: string[];
   category: string;
   country_group: string;
+  type: string;
+  country_code: string;
+  volume_number: number | null;
+  demographic: string | null;
+  language: string;
+  eta_text: string | null;
+  figure_scale: string | null;
+  manufacturer: string | null;
   tags: string[];
   is_active: boolean;
   created_at: string;

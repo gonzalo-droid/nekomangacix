@@ -162,14 +162,13 @@ export function useCart() {
 
 /**
  * Helpers para cálculos de pago "hoy" vs "al llegar".
- * Un item de preventa reserva con preorderDeposit (o DEFAULT_PREORDER_DEPOSIT);
- * el resto de estados pagan el precio completo.
+ * Un item de preventa reserva con el 50% del precio unitario (redondeado a 2 decimales);
+ * el resto de estados pagan el precio completo. El campo `preorderDeposit` del producto
+ * y `DEFAULT_PREORDER_DEPOSIT` quedan por compatibilidad pero ya no se usan en el split.
  */
 export function getItemPaymentSplit(item: CartItem) {
   const isPreorder = item.stockStatus === 'preorder';
-  const unitDeposit = isPreorder
-    ? item.preorderDeposit ?? DEFAULT_PREORDER_DEPOSIT
-    : 0;
+  const unitDeposit = isPreorder ? Math.round(item.price * 0.5 * 100) / 100 : 0;
   const unitNow = isPreorder ? unitDeposit : item.price;
   const unitLater = isPreorder ? Math.max(0, item.price - unitDeposit) : 0;
   return {

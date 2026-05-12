@@ -3,6 +3,32 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { generateSlug } from '@/lib/products';
+import { getEditorialsForCountry } from '@/lib/constants/editorials';
+import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
+
+const COUNTRY_GROUP_MAP: Record<CountryCode, string> = {
+  AR: 'Argentina',
+  MX: 'México',
+  ES: 'España',
+  JP: 'Japón',
+};
+
+// Keep legacy country_group in sync with country_code until migration 008 drops it.
+// Validates editorial belongs to the country's allowed list.
+function normalizeProductRow(input: Record<string, unknown>): { row: Record<string, unknown>; error?: string } {
+  const row = { ...input };
+  const cc = row.country_code;
+  if (typeof cc === 'string' && isCountryCode(cc)) {
+    row.country_group = COUNTRY_GROUP_MAP[cc];
+    if (typeof row.editorial === 'string' && row.editorial) {
+      const allowed = getEditorialsForCountry(cc);
+      if (!allowed.includes(row.editorial)) {
+        return { row, error: `Editorial "${row.editorial}" no pertenece a ${COUNTRY_GROUP_MAP[cc]}` };
+      }
+    }
+  }
+  return { row };
+}
 
 // Revalidar rutas estáticas que listan productos tras mutaciones
 function revalidateProductCaches() {
@@ -78,11 +104,16 @@ export async function POST(req: NextRequest) {
 
   // Bulk insert — generate sku/slug for each row
   if (body.bulk === true && Array.isArray(body.products)) {
-    const rows = body.products.map((p: Record<string, unknown>) => ({
-      ...p,
-      sku: generateSku(String(p.title ?? '')),
-      slug: generateSlug(String(p.title ?? '')),
-    }));
+    const rows: Record<string, unknown>[] = [];
+    for (const p of body.products as Record<string, unknown>[]) {
+      const { row, error } = normalizeProductRow(p);
+      if (error) return NextResponse.json({ error }, { status: 400 });
+      rows.push({
+        ...row,
+        sku: generateSku(String(row.title ?? '')),
+        slug: generateSlug(String(row.title ?? '')),
+      });
+    }
     const { data, error } = await db.insert(rows).select('id, sku');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     revalidateProductCaches();
@@ -91,10 +122,12 @@ export async function POST(req: NextRequest) {
 
   // Single create — generate sku/slug
   const { bulk: _bulk, products: _products, ...productData } = body;
+  const { row: normalized, error: normErr } = normalizeProductRow(productData);
+  if (normErr) return NextResponse.json({ error: normErr }, { status: 400 });
   const enriched = {
-    ...productData,
-    sku: generateSku(String(productData.title ?? '')),
-    slug: generateSlug(String(productData.title ?? '')),
+    ...normalized,
+    sku: generateSku(String(normalized.title ?? '')),
+    slug: generateSlug(String(normalized.title ?? '')),
   };
   const { data, error } = await db.insert(enriched).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

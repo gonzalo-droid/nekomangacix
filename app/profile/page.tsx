@@ -9,14 +9,30 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+import type { OrderItemType, PaymentType } from '@/types/database.types';
+
 type OrderRow = {
   id: string;
   status: string;
+  payment_type: PaymentType;
   total_pen: number;
+  subtotal_pen: number | null;
+  discount_pen: number;
+  deposit_pen: number;
+  balance_pen: number;
   shipping_cost: number;
-  payment_method: string | null;
+  estimated_arrival: string | null;
+  payment_proof_url: string | null;
+  payment_proof_confirmed_at: string | null;
   created_at: string;
-  order_items: { id: string; title: string; quantity: number; unit_price: number }[];
+  order_items: {
+    id: string;
+    title: string;
+    quantity: number;
+    unit_price: number;
+    item_type: OrderItemType;
+    estimated_arrival: string | null;
+  }[];
 };
 
 interface Props {
@@ -34,7 +50,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('orders')
-      .select('id, status, total_pen, shipping_cost, payment_method, created_at, order_items(id, quantity, unit_price, title)')
+      .select('id, status, payment_type, total_pen, subtotal_pen, discount_pen, deposit_pen, balance_pen, shipping_cost, estimated_arrival, payment_proof_url, payment_proof_confirmed_at, created_at, order_items(id, title, quantity, unit_price, item_type, estimated_arrival)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .returns<OrderRow[]>(),
@@ -46,6 +62,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     phone: null,
     address: null,
     role: 'customer' as UserRole,
+    has_used_first_purchase_discount: false,
     created_at: new Date().toISOString(),
   };
 

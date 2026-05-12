@@ -13,11 +13,10 @@ export const revalidate = 300;
 
 export default async function ProductsPage() {
   const products = await getAllActiveProducts();
-  const editorials = Array.from(new Set(products.map((p) => p.editorial))).sort();
 
   return (
     <Suspense fallback={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">Cargando...</div>}>
-      <ProductsClient products={products} editorials={editorials} />
+      <ProductsClient products={products} />
     </Suspense>
   );
 }
