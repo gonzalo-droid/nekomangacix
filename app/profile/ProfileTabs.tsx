@@ -7,27 +7,49 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import ProfileForm from './ProfileForm';
-import type { Profile, OrderStatus } from '@/types/database.types';
+import type { Profile, OrderItemType, PaymentType } from '@/types/database.types';
+import { isOrderState, type OrderState } from '@/lib/constants/orderStates';
+import OrderStatusBadge from '@/components/order/OrderStatusBadge';
+import OrderTimeline from '@/components/order/OrderTimeline';
+import PaymentProofUploader from '@/components/order/PaymentProofUploader';
 import {
   User,
   Heart,
   ShoppingBag,
   Package,
-  Clock,
-  CheckCircle,
-  Truck,
-  XCircle,
 } from 'lucide-react';
 
 type OrderRow = {
   id: string;
   status: string;
+  payment_type: PaymentType;
   total_pen: number;
+  subtotal_pen: number | null;
+  discount_pen: number;
+  deposit_pen: number;
+  balance_pen: number;
   shipping_cost: number;
-  payment_method: string | null;
+  estimated_arrival: string | null;
+  payment_proof_url: string | null;
+  payment_proof_confirmed_at: string | null;
   created_at: string;
-  order_items: { id: string; title: string; quantity: number; unit_price: number }[];
+  order_items: {
+    id: string;
+    title: string;
+    quantity: number;
+    unit_price: number;
+    item_type: OrderItemType;
+    estimated_arrival: string | null;
+  }[];
 };
+
+// Legacy statuses ('pending', 'paid') mapped to current flow equivalents
+function normalizeStatus(raw: string): OrderState {
+  if (raw === 'pending') return 'pending_deposit';
+  if (raw === 'paid') return 'confirmed';
+  if (isOrderState(raw)) return raw;
+  return 'pending_deposit';
+}
 
 type Tab = 'data' | 'favorites' | 'orders';
 
@@ -37,19 +59,6 @@ interface Props {
   orders: OrderRow[];
   initialTab: Tab;
 }
-
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: React.ReactNode }> = {
-  pending_deposit:  { label: 'Pago pendiente',   color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',       icon: <Clock size={14} /> },
-  confirmed:        { label: 'Confirmado',       color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',          icon: <CheckCircle size={14} /> },
-  in_transit_to_pe: { label: 'En camino a Perú', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',  icon: <Truck size={14} /> },
-  available:        { label: 'Disponible',       color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400', icon: <CheckCircle size={14} /> },
-  pending_balance:  { label: 'Saldo pendiente',  color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',  icon: <Clock size={14} /> },
-  shipped:          { label: 'Enviado',          color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',          icon: <Truck size={14} /> },
-  delivered:        { label: 'Entregado',        color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',      icon: <CheckCircle size={14} /> },
-  cancelled:        { label: 'Cancelado',        color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',              icon: <XCircle size={14} /> },
-  pending:          { label: 'Procesando',       color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',  icon: <Clock size={14} /> },
-  paid:             { label: 'Pagado',           color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',  icon: <CheckCircle size={14} /> },
-};
 
 export default function ProfileTabs({ user, profile, orders, initialTab }: Props) {
   const router = useRouter();
@@ -151,7 +160,7 @@ export default function ProfileTabs({ user, profile, orders, initialTab }: Props
         <div className="p-6">
           {tab === 'data' && <DataTab user={user} profile={profile} />}
           {tab === 'favorites' && <FavoritesTab />}
-          {tab === 'orders' && <OrdersTab orders={orders} />}
+          {tab === 'orders' && <OrdersTab orders={orders} userId={user.id} />}
         </div>
       </div>
     </div>
@@ -243,7 +252,8 @@ function FavoritesTab() {
   );
 }
 
-function OrdersTab({ orders }: { orders: OrderRow[] }) {
+function OrdersTab({ orders, userId }: { orders: OrderRow[]; userId: string }) {
+  const router = useRouter();
   if (orders.length === 0) {
     return (
       <div className="text-center py-12">
@@ -265,14 +275,18 @@ function OrdersTab({ orders }: { orders: OrderRow[] }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {orders.map((order) => {
-        const status = STATUS_CONFIG[order.status as OrderStatus] ?? STATUS_CONFIG.pending;
+        const state = normalizeStatus(order.status);
         const itemCount = order.order_items?.reduce((s, i) => s + i.quantity, 0) ?? 0;
+        const subtotal = order.subtotal_pen ?? order.total_pen - order.shipping_cost + order.discount_pen;
 
         return (
-          <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-[#2b496d] dark:hover:border-[#5a7a9e] transition-colors">
-            <div className="flex flex-wrap gap-3 items-start justify-between mb-3">
+          <div
+            key={order.id}
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-[#2b496d] dark:hover:border-[#5a7a9e] transition-colors"
+          >
+            <div className="flex flex-wrap gap-3 items-start justify-between mb-4">
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                   Pedido #{order.id.slice(0, 8).toUpperCase()}
@@ -283,31 +297,81 @@ function OrdersTab({ orders }: { orders: OrderRow[] }) {
                   })}
                 </p>
               </div>
-              <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}>
-                {status.icon}
-                {status.label}
-              </span>
+              <OrderStatusBadge state={state} />
+            </div>
+
+            <div className="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+              <OrderTimeline current={state} />
             </div>
 
             {order.order_items && order.order_items.length > 0 && (
-              <ul className="space-y-1 mb-3 pl-1">
+              <ul className="space-y-1.5 mb-4 pl-1">
                 {order.order_items.map((item) => (
-                  <li key={item.id} className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-                    <span className="truncate pr-3">{item.title} × {item.quantity}</span>
-                    <span className="font-medium flex-shrink-0">S/ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                  <li
+                    key={item.id}
+                    className="flex justify-between gap-3 text-sm text-gray-700 dark:text-gray-300"
+                  >
+                    <span className="truncate flex-1">
+                      {item.title} × {item.quantity}
+                      {item.item_type === 'preorder' && (
+                        <span className="ml-2 inline-block text-[10px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-1.5 py-0.5 rounded">
+                          Preventa
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-medium flex-shrink-0">
+                      S/ {(item.unit_price * item.quantity).toFixed(2)}
+                    </span>
                   </li>
                 ))}
               </ul>
             )}
 
-            <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="pt-3 border-t border-gray-100 dark:border-gray-700 space-y-1 text-sm">
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Subtotal</span>
+                <span>S/ {subtotal.toFixed(2)}</span>
+              </div>
+              {order.discount_pen > 0 && (
+                <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                  <span>Descuento</span>
+                  <span>− S/ {order.discount_pen.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Envío</span>
+                <span>S/ {order.shipping_cost.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-[#2b496d] dark:text-[#5a7a9e] pt-1">
+                <span>Total</span>
+                <span>S/ {order.total_pen.toFixed(2)}</span>
+              </div>
+              {order.balance_pen > 0 && (
+                <div className="flex justify-between text-orange-700 dark:text-orange-400 pt-1 border-t border-gray-100 dark:border-gray-800 mt-1">
+                  <span>Saldo al llegar</span>
+                  <span className="font-semibold">S/ {order.balance_pen.toFixed(2)}</span>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400 pt-1">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
-                {order.payment_method && ` · ${order.payment_method}`}
-              </span>
-              <span className="font-bold text-[#2b496d] dark:text-[#5a7a9e]">
-                S/ {order.total_pen.toFixed(2)}
-              </span>
+              </p>
+            </div>
+
+            {state === 'pending_deposit' && (
+              <div className="mt-4">
+                <PaymentProofUploader
+                  userId={userId}
+                  orderId={order.id}
+                  currentUrl={order.payment_proof_url}
+                  onUploaded={() => router.refresh()}
+                />
+              </div>
+            )}
+
+            <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
+              <p className="text-xs text-amber-900 dark:text-amber-300">
+                ⚠️ Política: no se aceptan devoluciones una vez confirmado el pedido.
+              </p>
             </div>
           </div>
         );
