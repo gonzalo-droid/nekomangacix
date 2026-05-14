@@ -372,7 +372,7 @@ export default function ProductCard({
           <button
             type="button"
             onClick={isOutOfStock ? handleReserve : handleAdd}
-            className={`w-full py-2.5 px-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
+            className={`w-full py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
               added
                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                 : isOutOfStock || isPreorder
