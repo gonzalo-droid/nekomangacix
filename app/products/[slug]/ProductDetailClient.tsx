@@ -24,6 +24,8 @@ import {
   Clock,
   Package,
   Star,
+  Share2,
+  Check,
 } from 'lucide-react';
 
 interface Props {
@@ -41,6 +43,19 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [shared, setShared] = useState(false);
+
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const shareData = { title: product.title, text: product.description, url };
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
+  };
 
   const handleBuyNow = () => {
     for (let i = 0; i < quantity; i++) {
@@ -286,7 +301,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                       {addedToCart
                         ? '¡Agregado!'
                         : product.stockStatus === 'preorder'
-                          ? 'Reservar (50% adelanto)'
+                          ? 'Reservar'
                           : 'Agregar al carrito'}
                     </span>
                   </button>
@@ -301,6 +316,17 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   aria-label={isProductFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                 >
                   <Heart size={24} fill={isProductFavorite ? 'currentColor' : 'none'} />
+                </button>
+                <button
+                  onClick={handleShare}
+                  className={`p-3 rounded-lg border-2 transition-all active:scale-95 ${
+                    shared
+                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-[#06b6d4] hover:text-[#06b6d4]'
+                  }`}
+                  aria-label="Compartir producto"
+                >
+                  {shared ? <Check size={24} /> : <Share2 size={24} />}
                 </button>
               </div>
               {!isOutOfStock && (
@@ -318,8 +344,10 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 </button>
               )}
 
-              {/* Guía de Formatos — botón destacado */}
-              <MangaFormatGuide variant="ghost" className="w-full justify-center" />
+              {/* Guía de Formatos — solo para manga */}
+              {product.type === 'manga' && (
+                <MangaFormatGuide variant="ghost" className="w-full justify-center" />
+              )}
             </div>
 
             {/* Trust Badges (compact) */}
