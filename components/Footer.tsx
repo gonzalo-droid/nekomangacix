@@ -23,7 +23,7 @@ function TikTokIcon({ size = 18 }: { size?: number }) {
 const SOCIALS = [
   {
     name: 'Facebook',
-    href: 'https://www.facebook.com/neko.manga.cix',
+    href: 'https://www.facebook.com/people/Neko-Manga-CIX/61562296206939/',
     icon: Facebook,
     hover: 'hover:bg-[#1877f2] hover:text-white hover:border-[#1877f2]',
     ariaLabel: 'Síguenos en Facebook',
