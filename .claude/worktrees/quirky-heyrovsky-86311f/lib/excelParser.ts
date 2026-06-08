@@ -1,0 +1,272 @@
+import * as XLSX from 'xlsx';
+import { Product, StockStatus, Category, SeriesStatus, generateSlug } from './products';
+import { getCloudinaryUrl } from './cloudinary';
+import type { CountryCode } from './constants/countries';
+import type { ProductType, Language } from './constants/productTypes';
+import type { Demographic } from './constants/demographics';
+
+const COUNTRY_GROUP_TO_CODE: Record<string, CountryCode> = {
+  Argentina: 'AR',
+  Mexico: 'MX',
+  'México': 'MX',
+  'España': 'ES',
+  'Japón': 'JP',
+};
+
+export interface ExcelRow {
+  title?: string;
+  editorial?: string;
+  author?: string;
+  pricePEN?: number;
+  stock?: number;
+  stockStatus?: string;
+  estimatedArrival?: string;
+  preorderDeposit?: number;
+  tags?: string;
+  description?: string;
+  fullDescription?: string;
+  pages?: number;
+  format?: string;
+  language?: string;
+  isbn?: string;
+  releaseDate?: string;
+  dimensions?: string;
+  weight?: string;
+  volume?: number;
+  series?: string;
+  seriesStatus?: string;
+  images?: string;
+  category?: string;
+  countryGroup?: string;
+}
+
+const validStockStatuses: StockStatus[] = ['in_stock', 'preorder', 'out_of_stock'];
+const validSeriesStatuses: SeriesStatus[] = ['single', 'ongoing', 'completed'];
+const validCategories: Category[] = [
+  'shonen', 'seinen', 'shojo', 'josei', 'kodomo', 'isekai', 'slice_of_life',
+  'horror', 'romance', 'action', 'comedy', 'drama', 'fantasy', 'sci-fi', 'sports', 'mystery'
+];
+const validCountryGroups = ['Argentina', 'Mexico', 'España', 'Japón'] as const;
+
+export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors: string[] } {
+  const errors: string[] = [];
+  const products: Product[] = [];
+
+  try {
+    const workbook = XLSX.read(file, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData: ExcelRow[] = XLSX.utils.sheet_to_json(worksheet);
+
+    jsonData.forEach((row, index) => {
+      const rowNum = index + 2; // +2 because Excel is 1-indexed and has header row
+
+      // Validate required fields
+      if (!row.title) {
+        errors.push(`Fila ${rowNum}: Falta el campo 'title'`);
+        return;
+      }
+      /*
+      if (!row.editorial) {
+        errors.push(`Fila ${rowNum}: Falta el campo 'editorial'`);
+        return;
+      }
+      if (row.pricePEN === undefined || row.pricePEN === null) {
+        errors.push(`Fila ${rowNum}: Falta el campo 'pricePEN'`);
+        return;
+      }*/
+
+      // Validate stockStatus (legacy 'on_demand' is migrated to 'preorder')
+      const rawStatus = (row.stockStatus || 'in_stock');
+      const stockStatus = (rawStatus === 'on_demand' ? 'preorder' : rawStatus) as StockStatus;
+      if (!validStockStatuses.includes(stockStatus)) {
+        errors.push(`Fila ${rowNum}: stockStatus invalido '${row.stockStatus}'. Valores validos: ${validStockStatuses.join(', ')}`);
+        return;
+      }
+
+      // Validate category
+      const category = (row.category || 'shonen') as Category;
+      if (!validCategories.includes(category)) {
+        errors.push(`Fila ${rowNum}: category invalido '${row.category}'. Valores validos: ${validCategories.join(', ')}`);
+        return;
+      }
+
+      // Validate seriesStatus (optional)
+      const seriesStatus = row.seriesStatus
+        ? (row.seriesStatus.trim() as SeriesStatus)
+        : undefined;
+      if (seriesStatus && !validSeriesStatuses.includes(seriesStatus)) {
+        errors.push(`Fila ${rowNum}: seriesStatus invalido '${row.seriesStatus}'. Valores validos: ${validSeriesStatuses.join(', ')}`);
+        return;
+      }
+
+      // Validate countryGroup
+      const countryGroup = (row.countryGroup || 'Argentina') as typeof validCountryGroups[number];
+      if (!validCountryGroups.includes(countryGroup)) {
+        errors.push(`Fila ${rowNum}: countryGroup invalido '${row.countryGroup}'. Valores validos: ${validCountryGroups.join(', ')}`);
+        return;
+      }
+
+      // Parse tags (comma-separated)
+      const tags = row.tags ? row.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+
+      // Parse images (comma-separated) and resolve to Cloudinary URLs
+      const rawImages = row.images ? row.images.split(',').map(i => i.trim()).filter(i => i) : [];
+      const images = rawImages.length > 0
+        ? rawImages.map(img => getCloudinaryUrl(img))
+        : [];
+
+      const slug = generateSlug(row.title);
+
+      const normalizedCountryGroup: Product['countryGroup'] = (countryGroup === 'Mexico' ? 'México' : countryGroup);
+      const countryCode: CountryCode = COUNTRY_GROUP_TO_CODE[countryGroup] ?? 'AR';
+      const rawType = (row as Record<string, unknown>).type as string | undefined;
+      const productType: ProductType = (rawType === 'figure' || rawType === 'special_edition' || rawType === 'merch') ? rawType : 'manga';
+      const rawLanguage = (row as Record<string, unknown>).languageCode as string | undefined;
+      const language: Language = rawLanguage === 'jp' ? 'jp' : 'es';
+      const rawDemographic = (row as Record<string, unknown>).demographic as string | undefined;
+      const demographic: Demographic | undefined =
+        rawDemographic && ['shonen', 'seinen', 'shojo', 'josei', 'kodomo'].includes(rawDemographic)
+          ? (rawDemographic as Demographic)
+          : undefined;
+      const volumeNumber = row.volume ? Number(row.volume) : undefined;
+
+      const product: Product = {
+        id: crypto.randomUUID(),
+        sku: '',
+        slug,
+        title: row.title,
+        type: productType,
+        editorial: row.editorial || 'Ivrea',
+        countryCode,
+        countryGroup: normalizedCountryGroup,
+        author: row.author || 'Autor desconocido',
+        pricePEN: row.pricePEN != null && !isNaN(Number(row.pricePEN)) ? Number(row.pricePEN) : 99.99,
+        stock: Number(row.stock) || 0,
+        stockStatus,
+        estimatedArrival: row.estimatedArrival,
+        etaText: row.estimatedArrival,
+        preorderDeposit: row.preorderDeposit ? Number(row.preorderDeposit) : undefined,
+        tags,
+        description: row.description || row.title,
+        fullDescription: row.fullDescription || row.description || row.title,
+        specifications: {
+          pages: row.pages ? Number(row.pages) : undefined,
+          format: row.format,
+          language: row.language || 'Espanol',
+          isbn: row.isbn,
+          releaseDate: row.releaseDate,
+          dimensions: row.dimensions || '13.5 x 19 cm',
+          weight: row.weight || '200g',
+        },
+        volume: volumeNumber,
+        volumeNumber,
+        series: row.series?.trim() || undefined,
+        seriesStatus,
+        demographic,
+        language,
+        images,
+        category,
+      };
+
+      products.push(product);
+    });
+  } catch (error) {
+    errors.push(`Error al procesar el archivo: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+  }
+
+  return { products, errors };
+}
+
+export function generateExcelTemplate(): ArrayBuffer {
+  const templateData = [
+    {
+      title: 'Jujutsu Kaisen Vol. 1',
+      editorial: 'Ivrea Argentina',
+      author: 'Gege Akutami',
+      pricePEN: 45.00,
+      stock: 12,
+      stockStatus: 'in_stock',
+      estimatedArrival: '',
+      preorderDeposit: '',
+      tags: 'nuevo,bestseller',
+      description: 'Descripcion corta del manga',
+      fullDescription: 'Descripcion completa y detallada del manga...',
+      pages: 192,
+      format: 'Tomo (13.5 x 19 cm)',
+      language: 'Espanol',
+      isbn: '978-4-08-882027-1',
+      releaseDate: '2023-05-15',
+      dimensions: '13.5 x 19 cm',
+      weight: '180g',
+      volume: 1,
+      series: 'Jujutsu Kaisen',
+      seriesStatus: 'ongoing',
+      images: 'jjk-vol1,jjk-vol1-back',
+      category: 'shonen',
+      countryGroup: 'Argentina',
+    },
+    {
+      title: 'Sword Art Online Vol. 12',
+      editorial: 'Viz Media Mexico',
+      author: 'Reki Kawahara',
+      pricePEN: 46.50,
+      stock: 0,
+      stockStatus: 'preorder',
+      estimatedArrival: '15 de Marzo 2024',
+      preorderDeposit: 10,
+      tags: 'preventa',
+      description: 'Realidad virtual y aventuras epicas',
+      fullDescription: 'Descripcion completa del volumen...',
+      pages: 200,
+      format: 'Tomo (13.5 x 19 cm)',
+      language: 'Espanol',
+      isbn: '978-4-04-865758-2',
+      releaseDate: '2024-03-15',
+      dimensions: '13.5 x 19 cm',
+      weight: '185g',
+      volume: 12,
+      series: 'Sword Art Online',
+      seriesStatus: 'ongoing',
+      images: 'sao-vol12',
+      category: 'isekai',
+      countryGroup: 'Mexico',
+    },
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet(templateData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
+
+  worksheet['!cols'] = [
+    { wch: 30 },  // title
+    { wch: 20 },  // editorial
+    { wch: 20 },  // author
+    { wch: 10 },  // pricePEN
+    { wch: 8 },   // stock
+    { wch: 12 },  // stockStatus
+    { wch: 20 },  // estimatedArrival
+    { wch: 15 },  // preorderDeposit
+    { wch: 20 },  // tags
+    { wch: 40 },  // description
+    { wch: 50 },  // fullDescription
+    { wch: 8 },   // pages
+    { wch: 20 },  // format
+    { wch: 10 },  // language
+    { wch: 20 },  // isbn
+    { wch: 12 },  // releaseDate
+    { wch: 15 },  // dimensions
+    { wch: 10 },  // weight
+    { wch: 8 },   // volume
+    { wch: 40 },  // images
+    { wch: 12 },  // category
+    { wch: 12 },  // countryGroup
+    { wch: 12 },  // seriesStatus
+  ];
+
+  return XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+}
+
+export function productsToJson(products: Product[]): string {
+  return JSON.stringify(products, null, 2);
+}

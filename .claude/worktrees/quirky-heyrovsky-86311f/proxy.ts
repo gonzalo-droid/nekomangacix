@@ -2,18 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const ADMIN_COOKIE = 'neko-admin-session';
 
-const MAINTENANCE_BYPASS = ['/coming-soon', '/admin', '/api', '/_next', '/favicon.ico'];
-
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Modo mantenimiento: redirigir todo excepto rutas de bypass
-  if (process.env.MAINTENANCE_MODE === 'true') {
-    const isBypassed = MAINTENANCE_BYPASS.some((p) => pathname.startsWith(p));
-    if (!isBypassed) {
-      return NextResponse.redirect(new URL('/coming-soon', request.url));
-    }
-  }
 
   // Dejar pasar la página de login del admin
   if (pathname === '/admin/login') {
@@ -44,5 +34,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/admin/:path*'],
 };
