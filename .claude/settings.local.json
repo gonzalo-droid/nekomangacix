@@ -35,7 +35,18 @@
       "mcp__plugin_supabase_supabase__get_project",
       "mcp__plugin_supabase_supabase__apply_migration",
       "mcp__plugin_supabase_supabase__get_advisors",
-      "Bash(find ~/.claude/projects/-Users-gonzalo-DocsNeko-webs-nekomangacix -name \"*.md\" 2>/dev/null | sort)"
+      "Bash(find ~/.claude/projects/-Users-gonzalo-DocsNeko-webs-nekomangacix -name \"*.md\" 2>/dev/null | sort)",
+      "Bash(git push *)",
+      "Bash(npx supabase *)",
+      "Bash(git commit *)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(cat /Users/gonzalo/.npm/_logs/2026-06-14T06_40_58_061Z-debug.log | grep \"error\" | grep -v \"^verbose\" | head -20)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -v \"^\\\\s*$\")",
+      "Bash(npm run *)",
+      "Bash(echo \"Exit: $?\")",
+      "Read(//tmp/**)",
+      "Bash(mkdir -p /Volumes/Neko/webs/nekomangacix/app/api/admin/promotions/\\\\[id\\\\] && mkdir -p /Volumes/Neko/webs/nekomangacix/app/api/promotions)"
     ]
   }
 }
