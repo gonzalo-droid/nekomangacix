@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CartProvider } from "@/context/CartContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { PromotionsProvider } from "@/context/PromotionsContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ChromeLayout from "@/components/ChromeLayout";
 import "./globals.css";
@@ -56,11 +57,13 @@ export default function RootLayout({
       <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased">
         <ThemeProvider>
           <AuthProvider>
+            <PromotionsProvider>
             <FavoritesProvider>
               <CartProvider>
                 <ChromeLayout>{children}</ChromeLayout>
               </CartProvider>
             </FavoritesProvider>
+            </PromotionsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
+import { usePromotions } from '@/context/PromotionsContext';
+import type { ProductType } from '@/lib/constants/productTypes';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import ProductImage from './ProductImage';
 
@@ -14,6 +16,7 @@ export interface ProductCardData {
   editorial: string;
   pricePEN: number;
   stock: number;
+  type?: ProductType;
   tags?: string[];
   description?: string;
   images?: string[];
@@ -61,6 +64,7 @@ export default function ProductCard({
   editorial,
   pricePEN,
   stock,
+  type = 'manga',
   tags = [],
   description,
   images,
@@ -76,7 +80,11 @@ export default function ProductCard({
 }: Props) {
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite, isHydrated: favHydrated } = useFavorites();
+  const { getDiscountedPrice } = usePromotions();
   const [added, setAdded] = useState(false);
+
+  const { finalPrice, discount, promotionName } = getDiscountedPrice(pricePEN, id, type);
+  const hasDiscount = discount > 0;
 
   const isOutOfStock = stockStatus ? stockStatus === 'out_of_stock' : stock === 0;
   const isPreorder = stockStatus === 'preorder';
@@ -98,8 +106,6 @@ export default function ProductCard({
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
-
-  const depositAmount = (pricePEN * 0.5).toFixed(2);
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -165,18 +171,28 @@ export default function ProductCard({
           <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-1 line-clamp-1">{editorial}</p>
           <div className="mt-auto">
             <div className="flex items-baseline justify-between gap-1">
-              <p className="text-sm sm:text-base font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
-                S/ {pricePEN.toFixed(2)}
-              </p>
+              <div>
+                <p className="text-sm sm:text-base font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+                  S/ {finalPrice.toFixed(2)}
+                </p>
+                {hasDiscount && (
+                  <p className="text-[10px] line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>
+                )}
+              </div>
               {isPreorder && (
                 <span className="text-[9px] font-bold uppercase tracking-wider text-[#06b6d4]">
                   Preventa
                 </span>
               )}
+              {hasDiscount && promotionName && (
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#ec4899]">
+                  {promotionName}
+                </span>
+              )}
             </div>
             {(isPreorder || isOutOfStock) && (
               <p className="text-[10px] font-bold text-[#ec4899] mt-0.5">
-                Reserva S/ {depositAmount}
+                Reserva S/ {(finalPrice * 0.5).toFixed(2)}
               </p>
             )}
           </div>
@@ -236,9 +252,14 @@ export default function ProductCard({
               {title}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">{editorial}</p>
-            <p className="text-base font-bold text-[#2b496d] dark:text-[#5a7a9e] mt-1.5">
-              S/ {pricePEN.toFixed(2)}
-            </p>
+            <div className="mt-1.5">
+              <p className="text-base font-bold text-[#2b496d] dark:text-[#5a7a9e]">
+                S/ {finalPrice.toFixed(2)}
+              </p>
+              {hasDiscount && (
+                <p className="text-xs line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>
+              )}
+            </div>
           </div>
         </Link>
         <div className="px-3 pb-3">
@@ -342,9 +363,14 @@ export default function ProductCard({
             </span>
           )}
           <div className="flex items-baseline justify-between gap-2">
-            <p className="text-2xl font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
-              S/ {pricePEN.toFixed(2)}
-            </p>
+            <div>
+              <p className="text-2xl font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+                S/ {finalPrice.toFixed(2)}
+              </p>
+              {hasDiscount && (
+                <p className="text-sm line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>
+              )}
+            </div>
 
             {/* Stock inline */}
             {isPreorder ? (
@@ -365,7 +391,7 @@ export default function ProductCard({
           {/* Hint reserva preventa o agotado */}
           {(isPreorder || isOutOfStock) && (
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-              Reserva con S/ {(pricePEN * 0.5).toFixed(2)} (50%) y paga el resto al llegar.
+              Reserva con S/ {(finalPrice * 0.5).toFixed(2)} (50%) y paga el resto al llegar.
             </p>
           )}
 

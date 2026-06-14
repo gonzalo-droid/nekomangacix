@@ -4,26 +4,17 @@ import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { generateSlug } from '@/lib/products';
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
-import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
+import { isCountryCode } from '@/lib/constants/countries';
 
-const COUNTRY_GROUP_MAP: Record<CountryCode, string> = {
-  AR: 'Argentina',
-  MX: 'México',
-  ES: 'España',
-  JP: 'Japón',
-};
-
-// Keep legacy country_group in sync with country_code until migration 008 drops it.
 // Validates editorial belongs to the country's allowed list.
 function normalizeProductRow(input: Record<string, unknown>): { row: Record<string, unknown>; error?: string } {
   const row = { ...input };
   const cc = row.country_code;
   if (typeof cc === 'string' && isCountryCode(cc)) {
-    row.country_group = COUNTRY_GROUP_MAP[cc];
     if (typeof row.editorial === 'string' && row.editorial) {
       const allowed = getEditorialsForCountry(cc);
       if (!allowed.includes(row.editorial)) {
-        return { row, error: `Editorial "${row.editorial}" no pertenece a ${COUNTRY_GROUP_MAP[cc]}` };
+        return { row, error: `Editorial "${row.editorial}" no pertenece al país seleccionado` };
       }
     }
   }
@@ -65,7 +56,6 @@ export async function GET(req: NextRequest) {
   const page     = Math.max(1, parseInt(searchParams.get('page') ?? '1'));
   const pageSize = parseInt(searchParams.get('pageSize') ?? '20');
   const search   = searchParams.get('search') ?? '';
-  const category = searchParams.get('category') ?? '';
   const status   = searchParams.get('status') ?? '';
   const editorial = searchParams.get('editorial') ?? '';
   const active   = searchParams.get('active'); // 'true' | 'false' | ''
@@ -77,7 +67,6 @@ export async function GET(req: NextRequest) {
   let query = (supabase as any).from('products').select('*', { count: 'exact' });
 
   if (search)    query = query.or(`title.ilike.%${search}%,sku.ilike.%${search}%,editorial.ilike.%${search}%`);
-  if (category)  query = query.eq('category', category);
   if (status)    query = query.eq('stock_status', status);
   if (editorial) query = query.eq('editorial', editorial);
   if (active === 'true')  query = query.eq('is_active', true);

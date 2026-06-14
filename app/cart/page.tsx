@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useCart, getItemPaymentSplit } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { usePromotions } from '@/context/PromotionsContext';
 import { createSupabaseClient } from '@/core/supabase/client';
 import { calculateCartTotals } from '@/lib/domain/cart/calculate';
 import Link from 'next/link';
@@ -56,6 +57,8 @@ const PAYMENT_INFO = {
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
+  const { coupon, couponCode, couponError, isValidatingCoupon, applyCoupon, removeCoupon, getCouponDiscount } = usePromotions();
+  const [couponInput, setCouponInput] = useState('');
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -103,6 +106,11 @@ export default function CartPage() {
   const totals = useMemo(
     () => calculateCartTotals({ items, isFirstPurchase }),
     [items, isFirstPurchase]
+  );
+
+  const couponDiscount = useMemo(
+    () => getCouponDiscount(totals.subtotal),
+    [getCouponDiscount, totals.subtotal]
   );
 
   const hasPreorder = lines.some((l) => l.split.isPreorder);
@@ -159,9 +167,10 @@ export default function CartPage() {
       ``,
       `Subtotal: S/ ${totals.subtotal.toFixed(2)}`,
       totals.discount > 0 && `Descuento bienvenida (10%): -S/ ${totals.discount.toFixed(2)}`,
+      couponDiscount > 0 && `Cupón ${couponCode}: -S/ ${couponDiscount.toFixed(2)}`,
       totals.shipping === 0 ? `Envío: GRATIS 🎁` : `Envío: S/ ${totals.shipping.toFixed(2)}`,
       ``,
-      `💰 Total a pagar ahora: S/ ${totals.totalToPayNow.toFixed(2)}`,
+      `💰 Total a pagar ahora: S/ ${Math.max(0, totals.totalToPayNow - couponDiscount).toFixed(2)}`,
       hasPreorder && `💳 Saldo al llegar: S/ ${totals.balanceDue.toFixed(2)}`,
       ``,
       `Método de pago: ${paymentLabel}`,
@@ -400,6 +409,34 @@ export default function CartPage() {
               </span>
             </h2>
 
+            {/* Cupón de descuento */}
+            {!coupon && (
+              <div className="mb-3">
+                <form
+                  onSubmit={(e) => { e.preventDefault(); applyCoupon(couponInput); }}
+                  className="flex gap-2"
+                >
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="Código de cupón"
+                    className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isValidatingCoupon || !couponInput.trim()}
+                    className="px-4 py-2 text-sm font-semibold bg-[#2b496d] text-white rounded-lg hover:bg-[#1e3550] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isValidatingCoupon ? '...' : 'Aplicar'}
+                  </button>
+                </form>
+                {couponError && (
+                  <p className="text-xs text-red-500 mt-1">{couponError}</p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2 text-sm mb-3">
               {hasInStock && (
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
@@ -426,6 +463,16 @@ export default function CartPage() {
                 </div>
               )}
 
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="flex items-center gap-1">
+                    <Tag size={11} /> Cupón {couponCode}
+                    <button type="button" onClick={removeCoupon} className="text-gray-400 hover:text-red-500 ml-1 text-xs">×</button>
+                  </span>
+                  <span>-S/ {couponDiscount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
                 <span>Envío</span>
                 <span className={totals.shipping === 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
@@ -446,7 +493,7 @@ export default function CartPage() {
               <div className="flex justify-between items-baseline">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">Total a pagar hoy</span>
                 <span className="text-2xl font-extrabold text-neko-gradient">
-                  S/ {totals.totalToPayNow.toFixed(2)}
+                  S/ {Math.max(0, totals.totalToPayNow - couponDiscount).toFixed(2)}
                 </span>
               </div>
 
