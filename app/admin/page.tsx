@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag, Layers } from 'lucide-react';
+import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag, Layers, BookMarked } from 'lucide-react';
 import CloudinaryUploader from '@/components/CloudinaryUploader';
 import ProductsManager from './products/ProductsManager';
 import PromotionsManager from './promotions/PromotionsManager';
 import SeriesManager from './series/SeriesManager';
+import LegendView from './legend/LegendView';
 
-type AdminTab = 'products' | 'series' | 'promotions' | 'images';
+type AdminTab = 'products' | 'series' | 'promotions' | 'images' | 'legend';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
@@ -57,6 +58,9 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('images')} className={tabClass('images')}>
               <ImageIcon size={18} /> Imágenes (Cloudinary)
             </button>
+            <button onClick={() => setActiveTab('legend')} className={tabClass('legend')}>
+              <BookMarked size={18} /> Leyenda
+            </button>
           </nav>
         </div>
 
@@ -68,6 +72,9 @@ export default function AdminPage() {
 
         {/* Promotions Tab */}
         {activeTab === 'promotions' && <PromotionsManager />}
+
+        {/* Legend Tab */}
+        {activeTab === 'legend' && <LegendView />}
 
         {/* Images Tab */}
         {activeTab === 'images' && (
