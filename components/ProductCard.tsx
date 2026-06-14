@@ -158,7 +158,7 @@ export default function ProductCard({
           {/* Badge de tag principal */}
           {tags[0] && !isOutOfStock && (
             <span
-              className={`absolute top-1.5 right-1.5 ${getTagAccent(tags[0], 0)} text-white text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded backdrop-blur-sm shadow`}
+              className={`absolute top-1.5 right-1.5 ${getTagAccent(tags[0], 0)} text-white text-[9px] uppercase tracking-wider font-bold px-2 py-1 rounded-full backdrop-blur-sm shadow`}
             >
               {tags[0]}
             </span>
@@ -310,11 +310,11 @@ export default function ProductCard({
 
         {/* Tags con color por tipo */}
         {tags.length > 0 && !isOutOfStock && (
-          <div className="absolute top-2 right-2 space-y-1 z-10 pointer-events-none">
+          <div className="absolute top-2 right-2 flex flex-col items-end gap-1.5 z-10 pointer-events-none">
             {tags.slice(0, 2).map((tag, idx) => (
               <span
                 key={idx}
-                className={`inline-block ${getTagAccent(tag, idx)} text-white text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded backdrop-blur-sm shadow-lg`}
+                className={`inline-block ${getTagAccent(tag, idx)} text-white text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full backdrop-blur-sm shadow-lg`}
               >
                 {tag}
               </span>
