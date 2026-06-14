@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag } from 'lucide-react';
+import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag, Layers } from 'lucide-react';
 import CloudinaryUploader from '@/components/CloudinaryUploader';
 import ProductsManager from './products/ProductsManager';
 import PromotionsManager from './promotions/PromotionsManager';
+import SeriesManager from './series/SeriesManager';
 
-type AdminTab = 'products' | 'promotions' | 'images';
+type AdminTab = 'products' | 'series' | 'promotions' | 'images';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
@@ -47,6 +48,9 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('products')} className={tabClass('products')}>
               <Package size={18} /> Productos
             </button>
+            <button onClick={() => setActiveTab('series')} className={tabClass('series')}>
+              <Layers size={18} /> Series
+            </button>
             <button onClick={() => setActiveTab('promotions')} className={tabClass('promotions')}>
               <Tag size={18} /> Promociones
             </button>
@@ -58,6 +62,9 @@ export default function AdminPage() {
 
         {/* Products Tab */}
         {activeTab === 'products' && <ProductsManager />}
+
+        {/* Series Tab */}
+        {activeTab === 'series' && <SeriesManager />}
 
         {/* Promotions Tab */}
         {activeTab === 'promotions' && <PromotionsManager />}
