@@ -77,7 +77,7 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
       }*/
 
       // Validate stockStatus (legacy 'on_demand' is migrated to 'preorder')
-      const rawStatus = (row.stockStatus || 'in_stock');
+      const rawStatus = (row.stockStatus || 'preorder');
       const stockStatus = (rawStatus === 'on_demand' ? 'preorder' : rawStatus) as StockStatus;
       if (!validStockStatuses.includes(stockStatus)) {
         errors.push(`Fila ${rowNum}: stockStatus invalido '${row.stockStatus}'. Valores validos: ${validStockStatuses.join(', ')}`);
@@ -180,11 +180,11 @@ export function generateExcelTemplate(): ArrayBuffer {
   const templateData = [
     {
       title: 'Jujutsu Kaisen Vol. 1',
-      editorial: 'Ivrea Argentina',
+      editorial: 'Ivrea',
       author: 'Gege Akutami',
       pricePEN: 45.00,
-      stock: 12,
-      stockStatus: 'in_stock',
+      stock: 0,
+      stockStatus: 'preorder',
       estimatedArrival: '',
       preorderDeposit: '',
       tags: 'nuevo,bestseller',

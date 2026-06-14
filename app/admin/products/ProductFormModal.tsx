@@ -17,8 +17,8 @@ interface Props {
 }
 
 const EMPTY: Partial<AdminProduct> = {
-  title: '', sku: '', editorial: '', author: null, series: null,
-  price_pen: 0, stock: 0, stock_status: 'in_stock',
+  title: '', sku: '', editorial: 'Ivrea', author: null, series: null,
+  price_pen: 0, stock: 0, stock_status: 'preorder',
   type: 'manga', country_code: 'AR', demographic: null,
   eta_text: null, description: null, full_description: null,
   images: [], tags: [], attributes: {}, is_active: true,
