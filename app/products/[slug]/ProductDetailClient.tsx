@@ -69,7 +69,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
   };
 
   const stockInfo = getStockStatusLabel(product.stockStatus);
-  const categoryLabel = getCategoryLabel(product.category);
+  const categoryLabel = getCategoryLabel(String(product.attributes?.category ?? ''));
   const isProductFavorite = favHydrated && isFavorite(product.id);
 
   const handleQuantityChange = (delta: number) => {
@@ -161,9 +161,9 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
           {/* Product Info */}
           <div className="space-y-6">
             {/* Tags */}
-            {product.tags.length > 0 && (
+            {(product.tags?.length ?? 0) > 0 && (
               <div className="flex gap-2 flex-wrap">
-                {product.tags.map((tag, idx) => (
+                {(product.tags ?? []).map((tag, idx) => (
                   <span
                     key={idx}
                     className="bg-[#2b496d] text-white text-xs px-3 py-1 rounded-full"
@@ -180,7 +180,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 {product.title}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                Por <span className="font-medium">{product.author}</span>
+                {product.author && <>Por <span className="font-medium">{product.author}</span></>}
               </p>
               <p className="text-gray-500 dark:text-gray-400">{product.editorial}</p>
             </div>
@@ -412,20 +412,13 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
 
             {activeTab === 'info' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { label: 'Paginas', value: product.specifications.pages },
-                  { label: 'Formato', value: product.specifications.format },
-                  { label: 'Idioma', value: product.specifications.language },
-                  { label: 'ISBN', value: product.specifications.isbn },
-                  { label: 'Dimensiones', value: product.specifications.dimensions },
-                  { label: 'Peso', value: product.specifications.weight },
-                  {
-                    label: 'Fecha de lanzamiento',
-                    value: product.specifications.releaseDate
-                      ? new Date(product.specifications.releaseDate).toLocaleDateString('es-PE')
-                      : undefined,
-                  },
-                ]
+                {Object.entries(product.attributes ?? {})
+                  .map(([key, value]) => ({
+                    label: key.charAt(0).toUpperCase() + key.slice(1),
+                    value: key === 'releaseDate' && typeof value === 'string'
+                      ? new Date(value).toLocaleDateString('es-PE')
+                      : String(value),
+                  }))
                   .filter((row) => row.value !== undefined)
                   .map((row) => (
                     <div
@@ -469,7 +462,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {product.series
-                  ? `Y otros de ${getCategoryLabel(product.category)}`
+                  ? `Y otros de ${getCategoryLabel(String(product.attributes?.category ?? ''))}`
                   : `Géneros y editoriales similares`}
               </p>
               <span

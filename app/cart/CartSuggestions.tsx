@@ -29,7 +29,7 @@ export default function CartSuggestions({ items }: Props) {
     const seriesSet = new Set(
       cartProducts.map((p) => p.series).filter((s): s is string => Boolean(s))
     );
-    const categorySet = new Set(cartProducts.map((p) => p.category));
+    const categorySet = new Set(cartProducts.map((p) => String(p.attributes?.category ?? '')));
     const editorialSet = new Set(cartProducts.map((p) => p.editorial));
 
     const candidates = products.filter(
@@ -38,7 +38,7 @@ export default function CartSuggestions({ items }: Props) {
 
     const sameSeries = candidates.filter((p) => p.series && seriesSet.has(p.series));
     const sameCategory = candidates.filter(
-      (p) => categorySet.has(p.category) && !sameSeries.some((s) => s.id === p.id)
+      (p) => categorySet.has(String(p.attributes?.category ?? '')) && !sameSeries.some((s) => s.id === p.id)
     );
     const sameEditorial = candidates.filter(
       (p) =>

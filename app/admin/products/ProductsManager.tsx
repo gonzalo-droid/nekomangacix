@@ -210,7 +210,7 @@ export default function ProductsManager() {
                   {/* Title + category */}
                   <td className={`${tdClass} max-w-[200px]`}>
                     <div className="font-medium text-gray-900 dark:text-white truncate">{p.title}</div>
-                    <span className="text-xs text-gray-400">{p.category}</span>
+                    <span className="text-xs text-gray-400">{String(p.attributes?.category ?? '')}</span>
                   </td>
 
                   {/* Editorial */}

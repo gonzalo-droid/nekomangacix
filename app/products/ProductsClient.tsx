@@ -71,7 +71,7 @@ export default function ProductsClient({ products }: Props) {
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.editorial.toLowerCase().includes(q) ||
-          p.author.toLowerCase().includes(q)
+          (p.author ?? '').toLowerCase().includes(q)
       );
     }
     if (selectedType) list = list.filter((p) => p.type === selectedType);
@@ -81,7 +81,7 @@ export default function ProductsClient({ products }: Props) {
     if (selectedSeries) list = list.filter((p) => p.series === selectedSeries);
     if (dAuthor) {
       const a = dAuthor.toLowerCase();
-      list = list.filter((p) => p.author.toLowerCase().includes(a));
+      list = list.filter((p) => (p.author ?? '').toLowerCase().includes(a));
     }
     list = list.filter((p) => p.pricePEN >= dMin && p.pricePEN <= dMax);
     return list;

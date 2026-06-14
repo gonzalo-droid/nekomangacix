@@ -8,24 +8,19 @@ import type { AdminProduct } from './useAdminProducts';
 
 function productToDbRow(p: Product): Partial<AdminProduct> {
   return {
-    // sku y slug se generan automáticamente en la API
     title: p.title,
     editorial: p.editorial,
-    author: p.author || null,
+    author: p.author ?? null,
     price_pen: p.pricePEN,
     stock: p.stock,
     stock_status: p.stockStatus,
     estimated_arrival: p.estimatedArrival ?? null,
     preorder_deposit: p.preorderDeposit ?? null,
-    description: p.description || null,
-    full_description: p.fullDescription || null,
-    specifications: (p.specifications && Object.keys(p.specifications).length)
-      ? p.specifications as Record<string, string | number>
-      : null,
+    description: p.description ?? null,
+    full_description: p.fullDescription ?? null,
+    attributes: p.attributes ?? {},
     images: p.images,
-    category: p.category,
-    country_group: p.countryGroup,
-    tags: p.tags,
+    tags: p.tags ?? [],
     is_active: true,
   };
 }
@@ -195,7 +190,7 @@ export default function ExcelImportPanel({ onImport, onClose }: Props) {
                             {p.stockStatus}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{p.category}</td>
+                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{String(p.attributes?.category ?? '')}</td>
                       </tr>
                     ))}
                   </tbody>

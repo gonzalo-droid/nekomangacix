@@ -1,10 +1,11 @@
 import type { CountryCode } from './constants/countries';
 import type { Demographic } from './constants/demographics';
-import type { ProductType, Language } from './constants/productTypes';
+import type { ProductType } from './constants/productTypes';
 
 export type StockStatus = 'in_stock' | 'preorder' | 'out_of_stock';
-export type Category = 'shonen' | 'seinen' | 'shojo' | 'josei' | 'kodomo' | 'isekai' | 'slice_of_life' | 'horror' | 'romance' | 'action' | 'comedy' | 'drama' | 'fantasy' | 'sci-fi' | 'sports' | 'mystery';
 export type SeriesStatus = 'single' | 'ongoing' | 'completed';
+// kept for mappers that still reference legacy data
+export type Category = string;
 export type CountryGroupLegacy = 'Argentina' | 'México' | 'España' | 'Japón';
 
 export function generateSlug(title: string): string {
@@ -26,51 +27,24 @@ export interface Product {
   type: ProductType;
   editorial: string;
   countryCode: CountryCode;
-  /** @deprecated use countryCode */
-  countryGroup?: CountryGroupLegacy;
-  author: string;
+  author?: string;
   pricePEN: number;
   stock: number;
   stockStatus: StockStatus;
   estimatedArrival?: string;
   etaText?: string;
   preorderDeposit?: number;
-  tags: string[];
-  description: string;
-  fullDescription: string;
-  specifications: {
-    pages?: number;
-    format?: string;
-    language?: string;
-    isbn?: string;
-    releaseDate?: string;
-    dimensions?: string;
-    weight?: string;
-  };
-  volume?: number;
-  volumeNumber?: number;
+  tags?: string[];
+  description?: string;
+  fullDescription?: string;
   series?: string;
   seriesStatus?: SeriesStatus;
   demographic?: Demographic;
-  language: Language;
-  figureScale?: string;
-  manufacturer?: string;
   images: string[];
-  category: Category;
+  attributes?: Record<string, string | number | boolean>;
 }
 
 export const products: Product[] = [];
-
-export function getCategoryLabel(category: Category): string {
-  const labels: Record<Category, string> = {
-    shonen: 'Shonen', seinen: 'Seinen', shojo: 'Shojo', josei: 'Josei',
-    kodomo: 'Kodomo', isekai: 'Isekai', slice_of_life: 'Slice of Life',
-    horror: 'Horror', romance: 'Romance', action: 'Acción', comedy: 'Comedia',
-    drama: 'Drama', fantasy: 'Fantasía', 'sci-fi': 'Ciencia Ficción',
-    sports: 'Deportes', mystery: 'Misterio',
-  };
-  return labels[category] || category;
-}
 
 export function getStockStatusLabel(status: StockStatus | string): { label: string; color: string } {
   const statusInfo: Record<string, { label: string; color: string }> = {
@@ -90,6 +64,6 @@ export function getRelatedProducts(slug: string, limit = 4): Product[] {
   const product = getProductBySlug(slug);
   if (!product) return [];
   return products
-    .filter((p) => p.slug !== slug && (p.category === product.category || p.editorial === product.editorial))
+    .filter((p) => p.slug !== slug && p.editorial === product.editorial)
     .slice(0, limit);
 }

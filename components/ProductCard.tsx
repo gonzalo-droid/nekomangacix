@@ -14,8 +14,8 @@ export interface ProductCardData {
   editorial: string;
   pricePEN: number;
   stock: number;
-  tags: string[];
-  description: string;
+  tags?: string[];
+  description?: string;
   images?: string[];
   stockStatus?: 'in_stock' | 'preorder' | 'out_of_stock';
   preorderDeposit?: number;
@@ -61,7 +61,7 @@ export default function ProductCard({
   editorial,
   pricePEN,
   stock,
-  tags,
+  tags = [],
   description,
   images,
   stockStatus,

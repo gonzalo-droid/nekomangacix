@@ -98,10 +98,10 @@ export default async function HomeProductSections() {
   const products = await getAllActiveProducts();
 
   const MAX_ITEM = 5;
-  const argentina = products.filter((p) => p.countryGroup === 'Argentina').slice(0, MAX_ITEM);
-  const mexico = products.filter((p) => p.countryGroup === 'México').slice(0, MAX_ITEM);
-  const espana = products.filter((p) => p.countryGroup === 'España').slice(0, MAX_ITEM);
-  const japon = products.filter((p) => p.countryGroup === 'Japón').slice(0, MAX_ITEM);
+  const argentina = products.filter((p) => p.countryCode === 'AR').slice(0, MAX_ITEM);
+  const mexico = products.filter((p) => p.countryCode === 'MX').slice(0, MAX_ITEM);
+  const espana = products.filter((p) => p.countryCode === 'ES').slice(0, MAX_ITEM);
+  const japon = products.filter((p) => p.countryCode === 'JP').slice(0, MAX_ITEM);
 
   return (
     <>

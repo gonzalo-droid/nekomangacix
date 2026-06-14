@@ -6,27 +6,9 @@ import type { AdminProduct } from './useAdminProducts';
 import { COUNTRIES, COUNTRY_CODES, type CountryCode } from '@/lib/constants/countries';
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
 import { DEMOGRAPHIC_LABELS, DEMOGRAPHICS } from '@/lib/constants/demographics';
-import {
-  PRODUCT_TYPES,
-  PRODUCT_TYPE_LABELS,
-  LANGUAGES,
-  LANGUAGE_LABELS,
-} from '@/lib/constants/productTypes';
+import { PRODUCT_TYPES, PRODUCT_TYPE_LABELS } from '@/lib/constants/productTypes';
 
-const CATEGORIES = [
-  'shonen','seinen','shojo','josei','kodomo','isekai',
-  'slice_of_life','horror','romance','action','comedy',
-  'drama','fantasy','sci-fi','sports','mystery',
-];
-const STOCK_STATUSES = ['in_stock','on_demand','preorder','out_of_stock'];
-
-// Map countryCode → legacy countryGroup label kept until migration 008 drops it.
-const COUNTRY_GROUP_MAP: Record<CountryCode, string> = {
-  AR: 'Argentina',
-  MX: 'México',
-  ES: 'España',
-  JP: 'Japón',
-};
+const STOCK_STATUSES = ['in_stock', 'preorder', 'out_of_stock'];
 
 interface Props {
   product?: AdminProduct | null;
@@ -35,16 +17,13 @@ interface Props {
 }
 
 const EMPTY: Partial<AdminProduct> = {
-  title: '', sku: '', editorial: '', author: '', series: null,
+  title: '', sku: '', editorial: '', author: null, series: null,
   price_pen: 0, stock: 0, stock_status: 'in_stock',
-  category: 'shonen', country_group: 'Argentina',
-  type: 'manga', country_code: 'AR', language: 'es',
-  volume_number: null, demographic: null,
-  eta_text: null, figure_scale: null, manufacturer: null,
-  description: '', full_description: '',
-  images: [], tags: [], is_active: true,
-  estimated_arrival: '', preorder_deposit: undefined,
-  specifications: { pages: '', format: '', language: 'Español', isbn: '', dimensions: '', weight: '' },
+  type: 'manga', country_code: 'AR', demographic: null,
+  eta_text: null, description: null, full_description: null,
+  images: [], tags: [], attributes: {}, is_active: true,
+  estimated_arrival: null, preorder_deposit: undefined,
+  series_status: null,
 };
 
 export default function ProductFormModal({ product, onClose, onSubmit }: Props) {
@@ -52,14 +31,11 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
   const [form, setForm] = useState<Partial<AdminProduct>>(product ?? EMPTY);
   const [imagesInput, setImagesInput] = useState((product?.images ?? []).join(', '));
   const [tagsInput, setTagsInput] = useState((product?.tags ?? []).join(', '));
-  const [specs, setSpecs] = useState<Record<string, string>>({
-    pages: String(product?.specifications?.pages ?? ''),
-    format: String(product?.specifications?.format ?? ''),
-    language: String(product?.specifications?.language ?? 'Español'),
-    isbn: String(product?.specifications?.isbn ?? ''),
-    dimensions: String(product?.specifications?.dimensions ?? ''),
-    weight: String(product?.specifications?.weight ?? ''),
-  });
+  const [attributes, setAttributes] = useState<Record<string, string>>(
+    Object.fromEntries(
+      Object.entries(product?.attributes ?? {}).map(([k, v]) => [k, String(v)])
+    )
+  );
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -69,39 +45,36 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
     () => getEditorialsForCountry(currentCountry),
     [currentCountry],
   );
-
-  const showVolume = currentType === 'manga';
   const showDemographic = currentType === 'manga';
-  const showLanguage = currentType === 'manga' || currentType === 'special_edition';
-  const showFigureFields = currentType === 'figure';
-
-  // slug and sku are auto-generated server-side on create
 
   const set = (key: keyof AdminProduct, value: unknown) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   function handleCountryChange(code: CountryCode) {
-    setForm((prev) => ({
-      ...prev,
-      country_code: code,
-      country_group: COUNTRY_GROUP_MAP[code],
-      editorial: '',
-    }));
+    setForm((prev) => ({ ...prev, country_code: code, editorial: '' }));
   }
 
-  function handleTypeChange(type: string) {
-    setForm((prev) => {
-      const next: Partial<AdminProduct> = { ...prev, type };
-      if (type !== 'manga') {
-        next.volume_number = null;
-        next.demographic = null;
-      }
-      if (type !== 'figure') {
-        next.figure_scale = null;
-        next.manufacturer = null;
-      }
-      if (type !== 'manga' && type !== 'special_edition') {
-        // language is required only for manga/special_edition; keep value otherwise harmless
+  function setAttr(key: string, value: string) {
+    setAttributes((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function addAttrRow() {
+    setAttributes((prev) => ({ ...prev, '': '' }));
+  }
+
+  function removeAttrRow(key: string) {
+    setAttributes((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
+  function renameAttrKey(oldKey: string, newKey: string) {
+    setAttributes((prev) => {
+      const next: Record<string, string> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        next[k === oldKey ? newKey : k] = v;
       }
       return next;
     });
@@ -117,29 +90,34 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
     if (form.demographic && currentType !== 'manga') {
       newErrors.demographic = 'La demografía solo aplica a mangas';
     }
-    if (showLanguage && !form.language) {
-      newErrors.language = 'Idioma requerido';
-    }
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     setSaving(true);
 
     const images = imagesInput.split(',').map((s) => s.trim()).filter(Boolean);
-    const tags   = tagsInput.split(',').map((s) => s.trim()).filter(Boolean);
-    const specifications: Record<string, string | number> = {};
-    Object.entries(specs).forEach(([k, v]) => {
-      if (v.trim()) specifications[k] = isNaN(Number(v)) ? v : Number(v);
-    });
+    const tags = tagsInput.split(',').map((s) => s.trim()).filter(Boolean);
 
-    const cc = (form.country_code as CountryCode) ?? 'AR';
+    const parsedAttributes: Record<string, string | number | boolean> = {};
+    for (const [k, v] of Object.entries(attributes)) {
+      if (!k.trim()) continue;
+      const num = Number(v);
+      if (!isNaN(num) && v.trim() !== '') {
+        parsedAttributes[k.trim()] = num;
+      } else if (v === 'true') {
+        parsedAttributes[k.trim()] = true;
+      } else if (v === 'false') {
+        parsedAttributes[k.trim()] = false;
+      } else {
+        parsedAttributes[k.trim()] = v;
+      }
+    }
+
     const payload: Partial<AdminProduct> = {
       ...form,
-      country_code: cc,
-      country_group: COUNTRY_GROUP_MAP[cc],
       images,
       tags,
-      specifications: Object.keys(specifications).length ? specifications : null,
+      attributes: parsedAttributes,
       author: (form.author as string)?.trim() || null,
       description: (form.description as string)?.trim() || null,
       full_description: (form.full_description as string)?.trim() || null,
@@ -147,10 +125,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
       preorder_deposit: form.preorder_deposit || null,
       series: (form.series as string)?.trim() || null,
       eta_text: (form.eta_text as string)?.trim() || null,
-      volume_number: showVolume && form.volume_number ? Number(form.volume_number) : null,
       demographic: showDemographic ? (form.demographic ?? null) : null,
-      figure_scale: showFigureFields ? ((form.figure_scale as string)?.trim() || null) : null,
-      manufacturer: showFigureFields ? ((form.manufacturer as string)?.trim() || null) : null,
     };
 
     const ok = await onSubmit(payload);
@@ -205,7 +180,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               <div>
                 <label className={labelClass}>Tipo de producto *</label>
                 <select className={inputClass} required value={currentType}
-                  onChange={(e) => handleTypeChange(e.target.value)}>
+                  onChange={(e) => set('type', e.target.value)}>
                   {PRODUCT_TYPES.map((t) => (
                     <option key={t} value={t}>{PRODUCT_TYPE_LABELS[t]}</option>
                   ))}
@@ -242,24 +217,9 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
 
               <div>
                 <label className={labelClass}>Autor</label>
-                <input className={inputClass} value={form.author ?? ''} onChange={(e) => set('author', e.target.value)} />
+                <input className={inputClass} value={form.author ?? ''}
+                  onChange={(e) => set('author', e.target.value || null)} />
               </div>
-
-              <div>
-                <label className={labelClass}>Categoría *</label>
-                <select className={inputClass} value={form.category ?? 'shonen'} onChange={(e) => set('category', e.target.value)}>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              {showVolume && (
-                <div>
-                  <label className={labelClass}>Tomo</label>
-                  <input type="number" min="1" className={inputClass}
-                    value={form.volume_number ?? ''}
-                    onChange={(e) => set('volume_number', e.target.value ? parseInt(e.target.value) : null)} />
-                </div>
-              )}
 
               {showDemographic && (
                 <div>
@@ -275,39 +235,11 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                 </div>
               )}
 
-              {showLanguage && (
-                <div>
-                  <label className={labelClass}>Idioma *</label>
-                  <select className={inputClass} required value={form.language ?? 'es'}
-                    onChange={(e) => set('language', e.target.value)}>
-                    {LANGUAGES.map((l) => (
-                      <option key={l} value={l}>{LANGUAGE_LABELS[l]}</option>
-                    ))}
-                  </select>
-                  {errors.language && <p className={errorClass}>{errors.language}</p>}
-                </div>
-              )}
-
               <div className="sm:col-span-2">
                 <label className={labelClass}>ETA / Llegada estimada</label>
                 <input className={inputClass} placeholder="Fin de mayo 2026"
                   value={form.eta_text ?? ''} onChange={(e) => set('eta_text', e.target.value || null)} />
               </div>
-
-              {showFigureFields && (
-                <>
-                  <div>
-                    <label className={labelClass}>Escala</label>
-                    <input className={inputClass} placeholder="1/7, 1/8…"
-                      value={form.figure_scale ?? ''} onChange={(e) => set('figure_scale', e.target.value || null)} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Fabricante</label>
-                    <input className={inputClass} placeholder="Good Smile, Banpresto…"
-                      value={form.manufacturer ?? ''} onChange={(e) => set('manufacturer', e.target.value || null)} />
-                  </div>
-                </>
-              )}
             </div>
           </section>
 
@@ -329,19 +261,22 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               </div>
               <div>
                 <label className={labelClass}>Estado de stock *</label>
-                <select className={inputClass} value={form.stock_status ?? 'in_stock'} onChange={(e) => set('stock_status', e.target.value)}>
+                <select className={inputClass} value={form.stock_status ?? 'in_stock'}
+                  onChange={(e) => set('stock_status', e.target.value)}>
                   {STOCK_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Depósito preventa (S/)</label>
                 <input type="number" min="0" step="0.01" className={inputClass}
-                  value={form.preorder_deposit ?? ''} onChange={(e) => set('preorder_deposit', e.target.value ? parseFloat(e.target.value) : undefined)} />
+                  value={form.preorder_deposit ?? ''}
+                  onChange={(e) => set('preorder_deposit', e.target.value ? parseFloat(e.target.value) : undefined)} />
               </div>
               <div className="sm:col-span-2">
                 <label className={labelClass}>Fecha estimada de llegada</label>
                 <input type="date" className={inputClass}
-                  value={form.estimated_arrival ?? ''} onChange={(e) => set('estimated_arrival', e.target.value)} />
+                  value={form.estimated_arrival ?? ''}
+                  onChange={(e) => set('estimated_arrival', e.target.value)} />
               </div>
             </div>
           </section>
@@ -373,23 +308,51 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
           {/* Imágenes */}
           <section>
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700">
-              Imágenes y especificaciones
+              Imágenes
             </h3>
-            <div className="space-y-3">
-              <div>
-                <label className={labelClass}>Imágenes (IDs de Cloudinary, separados por coma)</label>
-                <input className={inputClass} value={imagesInput} onChange={(e) => setImagesInput(e.target.value)}
-                  placeholder="jjk-vol1, jjk-vol1-back" />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {['pages','format','language','isbn','dimensions','weight'].map((k) => (
-                  <div key={k}>
-                    <label className={labelClass}>{k}</label>
-                    <input className={inputClass} value={specs[k] ?? ''}
-                      onChange={(e) => setSpecs((prev) => ({ ...prev, [k]: e.target.value }))} />
-                  </div>
-                ))}
-              </div>
+            <div>
+              <label className={labelClass}>IDs de Cloudinary (separados por coma)</label>
+              <input className={inputClass} value={imagesInput} onChange={(e) => setImagesInput(e.target.value)}
+                placeholder="jjk-vol1, jjk-vol1-back" />
+            </div>
+          </section>
+
+          {/* Atributos dinámicos */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700">
+              Atributos
+            </h3>
+            <div className="space-y-2">
+              {Object.entries(attributes).map(([key, value], i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    className={inputClass + ' flex-1'}
+                    placeholder="clave (ej: volume, brand, scale)"
+                    value={key}
+                    onChange={(e) => renameAttrKey(key, e.target.value)}
+                  />
+                  <input
+                    className={inputClass + ' flex-1'}
+                    placeholder="valor"
+                    value={value}
+                    onChange={(e) => setAttr(key, e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeAttrRow(key)}
+                    className="text-red-400 hover:text-red-600 text-xl leading-none px-1 shrink-0"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addAttrRow}
+                className="text-sm text-[#2b496d] dark:text-blue-400 hover:underline"
+              >
+                + Agregar atributo
+              </button>
             </div>
           </section>
 

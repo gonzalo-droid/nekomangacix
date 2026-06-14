@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product, products as defaultProducts, StockStatus, Category } from '@/lib/products';
+import { Product, products as defaultProducts, StockStatus } from '@/lib/products';
 import { createSupabaseClient } from '@/core/supabase/client';
 import { dbRowToProduct } from '@/lib/productMappers';
 
@@ -74,7 +74,7 @@ export function useProducts() {
       (p) =>
         p.title.toLowerCase().includes(q) ||
         p.editorial.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+        (p.description ?? '').toLowerCase().includes(q)
     );
   };
 
@@ -94,18 +94,18 @@ export function useProducts() {
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.editorial.toLowerCase().includes(q) ||
-          p.author.toLowerCase().includes(q)
+          (p.author ?? '').toLowerCase().includes(q)
       );
     }
     if (categories && categories.length > 0)
-      filtered = filtered.filter((p) => categories.includes(p.category));
+      filtered = filtered.filter((p) => categories.includes(String(p.attributes?.category ?? '')));
     if (editorials && editorials.length > 0)
       filtered = filtered.filter((p) => editorials.includes(p.editorial));
     if (countryGroups && countryGroups.length > 0)
-      filtered = filtered.filter((p) => p.countryGroup !== undefined && countryGroups.includes(p.countryGroup));
+      filtered = filtered.filter((p) => countryGroups.includes(p.countryCode));
     if (author) {
       const a = author.toLowerCase();
-      filtered = filtered.filter((p) => p.author.toLowerCase().includes(a));
+      filtered = filtered.filter((p) => (p.author ?? '').toLowerCase().includes(a));
     }
     if (minPrice !== undefined) filtered = filtered.filter((p) => p.pricePEN >= minPrice);
     if (maxPrice !== undefined) filtered = filtered.filter((p) => p.pricePEN <= maxPrice);
@@ -119,7 +119,7 @@ export function useProducts() {
     const product = getProductBySlug(slug);
     if (!product) return [];
     return products
-      .filter((p) => p.slug !== slug && (p.category === product.category || p.editorial === product.editorial))
+      .filter((p) => p.slug !== slug && p.editorial === product.editorial)
       .slice(0, limit);
   };
 
@@ -136,8 +136,9 @@ export function useProducts() {
   };
 }
 
-export function getCategoryLabel(category: Category): string {
-  const labels: Record<Category, string> = {
+
+export function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
     shonen: 'Shonen', seinen: 'Seinen', shojo: 'Shojo', josei: 'Josei',
     kodomo: 'Kodomo', isekai: 'Isekai', slice_of_life: 'Slice of Life',
     horror: 'Horror', romance: 'Romance', action: 'Acción', comedy: 'Comedia',
