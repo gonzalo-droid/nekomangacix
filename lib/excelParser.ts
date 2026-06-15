@@ -136,7 +136,7 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
         slug,
         title: row.title,
         type: productType,
-        editorial: row.editorial || 'Ivrea',
+        editorial: row.editorial?.trim() || 'Ivrea',
         countryCode,
         author: row.author || 'Autor desconocido',
         pricePEN: row.pricePEN != null && !isNaN(Number(row.pricePEN)) ? Number(row.pricePEN) : 99.99,

@@ -9,6 +9,10 @@ import { isCountryCode } from '@/lib/constants/countries';
 // Validates editorial belongs to the country's allowed list.
 function normalizeProductRow(input: Record<string, unknown>): { row: Record<string, unknown>; error?: string } {
   const row = { ...input };
+  if (typeof row.editorial === 'string') row.editorial = row.editorial.trim();
+  if (typeof row.country_code === 'string') row.country_code = row.country_code.trim();
+  if (typeof row.title === 'string') row.title = row.title.trim();
+  if (typeof row.series === 'string') row.series = row.series.trim();
   const cc = row.country_code;
   if (typeof cc === 'string' && isCountryCode(cc)) {
     if (typeof row.editorial === 'string' && row.editorial) {
