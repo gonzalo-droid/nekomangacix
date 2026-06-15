@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Pencil, Trash2, Copy, Check, ChevronDown, RefreshCw } from 'lucide-react';
+import { Search, Pencil, Trash2, Copy, Check, ChevronDown, RefreshCw, Folder, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
 interface CloudinaryResource {
@@ -21,6 +21,9 @@ function formatBytes(bytes: number) {
 
 export default function CloudinaryManager() {
   const [resources, setResources] = useState<CloudinaryResource[]>([]);
+  const [subfolders, setSubfolders] = useState<string[]>([]);
+  const [folder, setFolder] = useState('neko-manga');
+  const [folderHistory, setFolderHistory] = useState<string[]>(['neko-manga']);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -33,18 +36,29 @@ export default function CloudinaryManager() {
   const [copied, setCopied] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const load = useCallback(async (cursor?: string) => {
+  const load = useCallback(async (targetFolder: string, cursor?: string) => {
     setLoading(true);
-    const params = new URLSearchParams({ folder: 'neko-manga' });
+    const params = new URLSearchParams({ folder: targetFolder });
     if (cursor) params.set('next_cursor', cursor);
     const res = await fetch(`/api/cloudinary/images?${params}`);
     const json = await res.json();
     setResources((prev) => cursor ? [...prev, ...json.resources] : json.resources);
+    setSubfolders(json.subfolders ?? []);
     setNextCursor(json.next_cursor ?? null);
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(folder); }, [load, folder]);
+
+  function navigateTo(path: string) {
+    setFolder(path);
+    setFolderHistory((prev) => {
+      const idx = prev.indexOf(path);
+      return idx >= 0 ? prev.slice(0, idx + 1) : [...prev, path];
+    });
+    setResources([]);
+    setSearch('');
+  }
 
   const filtered = resources.filter((r) =>
     r.public_id.toLowerCase().includes(search.toLowerCase())
@@ -79,7 +93,7 @@ export default function CloudinaryManager() {
         : 'Imagen renombrada'
     );
     setSelected(null);
-    load();
+    load(folder);
   }
 
   async function doDelete(r: CloudinaryResource) {
@@ -117,13 +131,48 @@ export default function CloudinaryManager() {
         </div>
         <button
           type="button"
-          onClick={() => load()}
+          onClick={() => load(folder)}
           className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-[#2b496d] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           title="Recargar"
         >
           <RefreshCw size={16} />
         </button>
       </div>
+
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1 text-sm flex-wrap">
+        {folderHistory.map((f, i) => (
+          <span key={f} className="flex items-center gap-1">
+            {i > 0 && <ChevronRight size={13} className="text-gray-400" />}
+            <button
+              type="button"
+              onClick={() => navigateTo(f)}
+              className={`hover:text-[#2b496d] dark:hover:text-[#5a7a9e] transition-colors ${
+                f === folder ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              {f.split('/').pop()}
+            </button>
+          </span>
+        ))}
+      </div>
+
+      {/* Subfolders */}
+      {subfolders.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {subfolders.map((sf) => (
+            <button
+              key={sf}
+              type="button"
+              onClick={() => navigateTo(sf)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+            >
+              <Folder size={14} className="text-[#2b496d] dark:text-[#5a7a9e]" />
+              {sf.split('/').pop()}
+            </button>
+          ))}
+        </div>
+      )}
 
       {successMsg && (
         <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-3 py-2">
@@ -201,7 +250,7 @@ export default function CloudinaryManager() {
         <div className="flex justify-center">
           <button
             type="button"
-            onClick={() => load(nextCursor)}
+            onClick={() => load(folder, nextCursor)}
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
           >
