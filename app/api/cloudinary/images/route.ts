@@ -17,20 +17,21 @@ export async function GET(req: NextRequest) {
   const nextCursor = searchParams.get('next_cursor') ?? undefined;
 
   try {
-    const params: Record<string, unknown> = {
-      type: 'upload',
-      max_results: 50,
-      next_cursor: nextCursor,
-      resource_type: 'image',
-    };
+    // Use Search API — works with Dynamic Folders (asset_folder metadata)
+    const expression = folder
+      ? `asset_folder:"${folder}"`
+      : 'resource_type:image';
 
-    if (folder) {
-      params.prefix = folder + '/';
-    }
+    let query = cloudinary.search
+      .expression(expression)
+      .sort_by('display_name', 'asc')
+      .max_results(50);
 
-    const result = await cloudinary.api.resources(params);
+    if (nextCursor) query = query.next_cursor(nextCursor);
 
-    // Fetch subfolders for navigation
+    const result = await query.execute();
+
+    // Fetch subfolders
     let subfolders: string[] = [];
     if (folder) {
       const foldersResult = await cloudinary.api.sub_folders(folder).catch(() => ({ folders: [] }));
@@ -43,14 +44,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       resources: result.resources.map((r: Record<string, unknown>) => ({
         public_id: r.public_id,
+        display_name: r.display_name ?? r.public_id,
         secure_url: r.secure_url,
         width: r.width,
         height: r.height,
         bytes: r.bytes,
         created_at: r.created_at,
-        folder: r.folder,
+        asset_folder: r.asset_folder,
       })),
       subfolders,
+      total: result.total_count ?? 0,
       next_cursor: result.next_cursor ?? null,
     });
   } catch (error) {

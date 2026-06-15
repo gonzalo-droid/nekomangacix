@@ -50,7 +50,8 @@
       "Bash(curl -s \"http://localhost:3000/api/cloudinary/images?folder=neko-manga/ivrea-arg\" -H \"Cookie: neko-admin-session=1234\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('resources:', len\\(d['resources']\\), '| first:', d['resources'][0]['public_id'] if d['resources'] else 'none', '| subfolders:', d['subfolders']\\)\")",
       "Bash(curl -s \"http://localhost:3000/api/cloudinary/images\" -H \"Cookie: neko-admin-session=1234\")",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('resources:', len\\(d['resources']\\), '| subfolders:', d['subfolders'], '| first:', d['resources'][0]['public_id'] if d['resources'] else 'none'\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('resources:', len\\(d['resources']\\), '| subfolders:', d['subfolders'], '| first:', d['resources'][0]['public_id'] if d['resources'] else 'none'\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('resources:', len\\(d['resources']\\), '| total:', d['total'], '| first:', d['resources'][0]['display_name'] if d['resources'] else 'none'\\)\")"
     ]
   }
 }

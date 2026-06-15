@@ -6,11 +6,13 @@ import Image from 'next/image';
 
 interface CloudinaryResource {
   public_id: string;
+  display_name: string;
   secure_url: string;
   width: number;
   height: number;
   bytes: number;
   created_at: string;
+  asset_folder?: string;
 }
 
 function formatBytes(bytes: number) {
@@ -25,6 +27,7 @@ export default function CloudinaryManager() {
   const [folder, setFolder] = useState('');
   const [folderHistory, setFolderHistory] = useState<string[]>(['']);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<CloudinaryResource | null>(null);
@@ -45,6 +48,7 @@ export default function CloudinaryManager() {
     setResources((prev) => cursor ? [...prev, ...json.resources] : json.resources);
     setSubfolders(json.subfolders ?? []);
     setNextCursor(json.next_cursor ?? null);
+    setTotal(json.total ?? 0);
     setLoading(false);
   }, []);
 
@@ -183,7 +187,7 @@ export default function CloudinaryManager() {
 
       {/* Stats */}
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        {filtered.length} imagen{filtered.length !== 1 ? 'es' : ''}{search ? ' encontradas' : ' en total'}
+        {search ? `${filtered.length} encontradas` : `${resources.length}${total > resources.length ? ` de ${total}` : ''} imágenes`}
       </p>
 
       {/* Grid */}
@@ -194,13 +198,12 @@ export default function CloudinaryManager() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((r) => {
-            const shortId = r.public_id.split('/').pop() ?? r.public_id;
             return (
               <div key={r.public_id} className="group relative border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
                 <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
                   <Image
                     src={r.secure_url}
-                    alt={shortId}
+                    alt={r.display_name}
                     fill
                     className="object-cover"
                     sizes="200px"
@@ -236,7 +239,7 @@ export default function CloudinaryManager() {
                 </div>
                 <div className="px-2 py-1.5">
                   <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200 truncate" title={r.public_id}>
-                    {shortId}
+                    {r.display_name}
                   </p>
                   <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatBytes(r.bytes)}</p>
                 </div>
