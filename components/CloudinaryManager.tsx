@@ -22,8 +22,8 @@ function formatBytes(bytes: number) {
 export default function CloudinaryManager() {
   const [resources, setResources] = useState<CloudinaryResource[]>([]);
   const [subfolders, setSubfolders] = useState<string[]>([]);
-  const [folder, setFolder] = useState('neko-manga');
-  const [folderHistory, setFolderHistory] = useState<string[]>(['neko-manga']);
+  const [folder, setFolder] = useState('');
+  const [folderHistory, setFolderHistory] = useState<string[]>(['']);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -53,6 +53,7 @@ export default function CloudinaryManager() {
   function navigateTo(path: string) {
     setFolder(path);
     setFolderHistory((prev) => {
+      if (path === '') return [''];
       const idx = prev.indexOf(path);
       return idx >= 0 ? prev.slice(0, idx + 1) : [...prev, path];
     });
@@ -142,7 +143,7 @@ export default function CloudinaryManager() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 text-sm flex-wrap">
         {folderHistory.map((f, i) => (
-          <span key={f} className="flex items-center gap-1">
+          <span key={f || '__root__'} className="flex items-center gap-1">
             {i > 0 && <ChevronRight size={13} className="text-gray-400" />}
             <button
               type="button"
@@ -151,7 +152,7 @@ export default function CloudinaryManager() {
                 f === folder ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
-              {f.split('/').pop()}
+              {f === '' ? 'Raíz' : f.split('/').pop()}
             </button>
           </span>
         ))}

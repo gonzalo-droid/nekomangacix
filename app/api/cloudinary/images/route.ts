@@ -13,17 +13,32 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return auth.response;
 
   const { searchParams } = new URL(req.url);
-  const folder = searchParams.get('folder') ?? 'neko-manga';
+  const folder = searchParams.get('folder') ?? '';
   const nextCursor = searchParams.get('next_cursor') ?? undefined;
 
   try {
-    const result = await cloudinary.api.resources({
+    const params: Record<string, unknown> = {
       type: 'upload',
-      prefix: folder,
       max_results: 50,
       next_cursor: nextCursor,
       resource_type: 'image',
-    });
+    };
+
+    if (folder) {
+      params.prefix = folder + '/';
+    }
+
+    const result = await cloudinary.api.resources(params);
+
+    // Fetch subfolders for navigation
+    let subfolders: string[] = [];
+    if (folder) {
+      const foldersResult = await cloudinary.api.sub_folders(folder).catch(() => ({ folders: [] }));
+      subfolders = (foldersResult.folders as { name: string; path: string }[]).map((f) => f.path);
+    } else {
+      const foldersResult = await cloudinary.api.root_folders().catch(() => ({ folders: [] }));
+      subfolders = (foldersResult.folders as { name: string; path: string }[]).map((f) => f.path);
+    }
 
     return NextResponse.json({
       resources: result.resources.map((r: Record<string, unknown>) => ({
@@ -35,6 +50,7 @@ export async function GET(req: NextRequest) {
         created_at: r.created_at,
         folder: r.folder,
       })),
+      subfolders,
       next_cursor: result.next_cursor ?? null,
     });
   } catch (error) {
