@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag, Layers, BookMarked } from 'lucide-react';
 import CloudinaryUploader from '@/components/CloudinaryUploader';
+import CloudinaryManager from '@/components/CloudinaryManager';
 import ProductsManager from './products/ProductsManager';
 import PromotionsManager from './promotions/PromotionsManager';
 import SeriesManager from './series/SeriesManager';
@@ -78,17 +79,23 @@ export default function AdminPage() {
 
         {/* Images Tab */}
         {activeTab === 'images' && (
-          <div>
-            <div className="mb-5 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-400 mb-2">Cómo subir imágenes</h3>
-              <ol className="list-decimal list-inside space-y-1 text-blue-800 dark:text-blue-300">
-                <li>Sube la imagen y dale un nombre descriptivo (ej: <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">jjk-vol1</code>).</li>
-                <li>Copia el nombre de la imagen subida.</li>
-                <li>Úsalo en el campo <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">images</code> al crear o editar un producto.</li>
-                <li>Varias imágenes: sepáralas con coma en el Excel o en el formulario.</li>
-              </ol>
+          <div className="space-y-6">
+            {/* Subir nueva imagen */}
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Subir imagen</h3>
+              <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm">
+                <p className="text-blue-800 dark:text-blue-300">
+                  Usa el formato <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">neko-manga/products/ivrea-mashle-16</code> como nombre. Varias imágenes por producto: sepáralas con coma en el Excel.
+                </p>
+              </div>
+              <CloudinaryUploader />
             </div>
-            <CloudinaryUploader />
+
+            {/* Gestionar imágenes existentes */}
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Gestionar imágenes</h3>
+              <CloudinaryManager />
+            </div>
           </div>
         )}
       </div>
