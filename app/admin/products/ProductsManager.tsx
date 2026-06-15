@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import {
   Plus, Search, RefreshCw, FileSpreadsheet, ChevronUp, ChevronDown,
-  Pencil, Trash2, Eye, EyeOff, ChevronLeft, ChevronRight, Loader2,
+  Pencil, Trash2, Eye, EyeOff, ChevronLeft, ChevronRight, Loader2, GitMerge,
 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import Toaster from '@/components/ui/Toaster';
 import { useAdminProducts, type AdminProduct } from './useAdminProducts';
 import ProductFormModal from './ProductFormModal';
 import ExcelImportPanel from './ExcelImportPanel';
+import SeriesPropagateModal from './SeriesPropagateModal';
 
 const CATEGORIES = ['shonen','seinen','shojo','josei','kodomo','isekai','slice_of_life','horror','romance','action','comedy','drama','fantasy','sci-fi','sports','mystery'];
 const STOCK_STATUSES = ['in_stock','on_demand','preorder','out_of_stock'];
@@ -51,8 +52,12 @@ export default function ProductsManager() {
 
   const [editProduct, setEditProduct] = useState<AdminProduct | null | undefined>(undefined); // undefined = closed, null = new
   const [showImport, setShowImport] = useState(false);
+  const [showPropagate, setShowPropagate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<AdminProduct | null>(null);
+
+  // Distinct series from current page for the propagate modal
+  const seriesList = Array.from(new Set(products.map((p) => p.series).filter(Boolean) as string[])).sort();
 
   const thClass = 'px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide';
   const tdClass = 'px-3 py-3 text-sm text-gray-700 dark:text-gray-300';
@@ -123,6 +128,10 @@ export default function ProductsManager() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowPropagate(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
+            <GitMerge size={15} /> Propagar serie
+          </button>
           <button onClick={() => setShowImport(true)}
             className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-[#2b496d] dark:border-[#5a7a9e] text-[#2b496d] dark:text-[#5a7a9e] hover:bg-[#2b496d]/10 transition-colors font-medium">
             <FileSpreadsheet size={15} /> Importar Excel
@@ -337,6 +346,14 @@ export default function ProductsManager() {
         <ExcelImportPanel
           onImport={bulkInsert}
           onClose={() => setShowImport(false)}
+        />
+      )}
+
+      {/* Serie propagation */}
+      {showPropagate && (
+        <SeriesPropagateModal
+          series={seriesList}
+          onClose={() => setShowPropagate(false)}
         />
       )}
     </div>
