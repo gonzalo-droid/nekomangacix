@@ -41,7 +41,7 @@ function SortIcon({
     : <ChevronDown size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />;
 }
 
-const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? '';
+const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'nekomangacix';
 
 function AdminProductThumb({ publicId, title }: { publicId?: string; title: string }) {
   const [error, setError] = useState(false);
@@ -52,16 +52,16 @@ function AdminProductThumb({ publicId, title }: { publicId?: string; title: stri
       </div>
     );
   }
-  const id = publicId.startsWith('http') ? publicId : publicId.replace(/\.(png|jpg|jpeg|webp)$/i, '');
   const src = publicId.startsWith('http')
     ? publicId
-    : `https://res.cloudinary.com/${CLOUD}/image/upload/w_40,h_56,c_fill/${id}.png`;
+    : `https://res.cloudinary.com/${CLOUD}/image/upload/${publicId.replace(/\.(png|jpg|jpeg|webp)$/i, '')}.png`;
+  console.log('[thumb]', title, '->', src);
   return (
     <img
       src={src}
       alt={title}
       className="w-8 h-11 object-cover rounded"
-      onError={() => setError(true)}
+      onError={() => { console.error('[thumb error]', src); setError(true); }}
     />
   );
 }
