@@ -13,7 +13,8 @@ export function getCloudinaryUrl(imageRef: string): string {
   if (imageRef.startsWith('/')) {
     return imageRef;
   }
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${imageRef}`;
+  const withExt = /\.(png|jpg|jpeg|webp|gif|avif)$/i.test(imageRef) ? imageRef : `${imageRef}.png`;
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${withExt}`;
 }
 
 /**

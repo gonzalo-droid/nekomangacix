@@ -110,10 +110,10 @@ export function parseExcelFile(file: ArrayBuffer): { products: Product[]; errors
       // Parse tags (comma-separated)
       const tags = row.tags ? row.tags.split(',').map(t => t.trim()).filter(t => t) : [];
 
-      // Parse images (comma-separated) and resolve to Cloudinary URLs
+      // Parse images (comma-separated) — store as public_ids, resolved to URLs at display time
       const rawImages = row.images ? row.images.split(',').map(i => i.trim()).filter(i => i) : [];
       const images = rawImages.length > 0
-        ? rawImages.map(img => getCloudinaryUrl(img))
+        ? rawImages
         : [];
 
       const slug = generateSlug(row.title);
