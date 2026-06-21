@@ -13,19 +13,30 @@ function getClient() {
 
 export async function getAllActiveProducts(): Promise<Product[]> {
   const supabase = getClient();
-  if (supabase) {
-    try {
+  if (!supabase) return staticProducts;
+
+  try {
+    const PAGE = 1000;
+    const all: Record<string, unknown>[] = [];
+    let from = 0;
+
+    while (true) {
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .range(0, 9999);
-      if (!error && data !== null) {
-        return (data as Record<string, unknown>[]).map(dbRowToProduct);
-      }
-    } catch { /* fall through to static */ }
-  }
+        .range(from, from + PAGE - 1);
+
+      if (error || !data) break;
+      all.push(...(data as Record<string, unknown>[]));
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+
+    if (all.length > 0) return all.map(dbRowToProduct);
+  } catch { /* fall through */ }
+
   return staticProducts;
 }
 
