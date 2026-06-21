@@ -77,14 +77,38 @@ export async function getRelatedProductsServer(slug: string, limit = 6): Promise
   const supabase = getClient();
   if (supabase) {
     try {
-      const { data } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .neq('slug', slug)
-        .limit(limit * 6);
-      if (data && data.length > 0) {
-        const all = (data as Record<string, unknown>[]).map(dbRowToProduct);
+      const candidates: Record<string, unknown>[] = [];
+
+      // 1. Same series first (all volumes)
+      if (product.series) {
+        const { data: seriesData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .eq('series', product.series)
+          .neq('slug', slug);
+        if (seriesData) candidates.push(...(seriesData as Record<string, unknown>[]));
+      }
+
+      // 2. Fill remaining slots with same editorial/type
+      if (candidates.length < limit * 3) {
+        const { data: fillData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .neq('slug', slug)
+          .eq('editorial', product.editorial)
+          .limit(limit * 4);
+        if (fillData) {
+          const existing = new Set(candidates.map((c) => c.slug as string));
+          for (const p of fillData as Record<string, unknown>[]) {
+            if (!existing.has(p.slug as string)) candidates.push(p);
+          }
+        }
+      }
+
+      if (candidates.length > 0) {
+        const all = candidates.map(dbRowToProduct);
         return pickRelated(all, product, limit);
       }
     } catch { /* fall through */ }
