@@ -3,14 +3,8 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
-import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
+import { isCountryCode } from '@/lib/constants/countries';
 
-const COUNTRY_GROUP_MAP: Record<CountryCode, string> = {
-  AR: 'Argentina',
-  MX: 'México',
-  ES: 'España',
-  JP: 'Japón',
-};
 
 function getClient() {
   return createClient(
@@ -37,16 +31,13 @@ export async function PUT(
   const body = await req.json();
   const supabase = getClient();
 
-  // Sync legacy country_group with country_code (kept until migration 008).
-  // Validate editorial only when both country_code and editorial are sent together.
   const update: Record<string, unknown> = { ...body };
   if (typeof update.country_code === 'string' && isCountryCode(update.country_code)) {
-    update.country_group = COUNTRY_GROUP_MAP[update.country_code];
     if (typeof update.editorial === 'string' && update.editorial) {
       const allowed = getEditorialsForCountry(update.country_code);
       if (!allowed.includes(update.editorial)) {
         return NextResponse.json(
-          { error: `Editorial "${update.editorial}" no pertenece a ${COUNTRY_GROUP_MAP[update.country_code]}` },
+          { error: `Editorial "${update.editorial}" no pertenece al país seleccionado` },
           { status: 400 },
         );
       }
