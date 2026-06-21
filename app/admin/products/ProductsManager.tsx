@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import {
   Plus, Search, RefreshCw, FileSpreadsheet, ChevronUp, ChevronDown,
   Pencil, Trash2, Eye, EyeOff, ChevronLeft, ChevronRight, Loader2, GitMerge,
@@ -55,13 +56,12 @@ function AdminProductThumb({ publicId, title }: { publicId?: string; title: stri
   const src = publicId.startsWith('http')
     ? publicId
     : `https://res.cloudinary.com/${CLOUD}/image/upload/${publicId.replace(/\.(png|jpg|jpeg|webp)$/i, '')}.png`;
-  console.log('[thumb]', title, '->', src);
   return (
     <img
       src={src}
       alt={title}
       className="w-8 h-11 object-cover rounded"
-      onError={() => { console.error('[thumb error]', src); setError(true); }}
+      onError={() => setError(true)}
     />
   );
 }
