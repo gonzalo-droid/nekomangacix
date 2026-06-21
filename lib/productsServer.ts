@@ -19,7 +19,8 @@ export async function getAllActiveProducts(): Promise<Product[]> {
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(0, 9999);
       if (!error && data !== null) {
         return (data as Record<string, unknown>[]).map(dbRowToProduct);
       }
