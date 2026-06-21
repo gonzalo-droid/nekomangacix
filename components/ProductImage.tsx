@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { getCloudinaryUrl } from '@/lib/cloudinary';
 
 interface Props {
   src?: string;
@@ -25,7 +26,8 @@ export default function ProductImage({
   hoverScale = true,
 }: Props) {
   const [error, setError] = useState(false);
-  const hasImage = Boolean(src) && !error;
+  const resolvedSrc = src ? getCloudinaryUrl(src) : '';
+  const hasImage = Boolean(resolvedSrc) && !error;
 
   const aspectClass = aspect === '2/3' ? 'aspect-[2/3]' : 'aspect-square';
   const fitClass = fit === 'cover' ? 'object-cover' : 'object-contain p-3';
@@ -36,7 +38,7 @@ export default function ProductImage({
     >
       {hasImage ? (
         <Image
-          src={src!}
+          src={resolvedSrc}
           alt={alt}
           fill
           sizes={sizes}

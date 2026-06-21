@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { getCategoryLabel, getStockStatusLabel } from '@/hooks/useProducts';
 import { Product } from '@/lib/products';
+import { getCloudinaryUrl } from '@/lib/cloudinary';
 import MangaFormatGuide from '@/components/MangaFormatGuide';
 import TrustBadges from '@/components/TrustBadges';
 import ProductCard from '@/components/ProductCard';
@@ -114,7 +115,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
             <div className="relative bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 rounded-lg aspect-square flex items-center justify-center overflow-hidden">
               {product.images[selectedImage] && !imgError ? (
                 <Image
-                  src={product.images[selectedImage]}
+                  src={getCloudinaryUrl(product.images[selectedImage])}
                   alt={product.title}
                   fill
                   className="object-contain p-4"
@@ -143,7 +144,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   >
                     {img ? (
                       <Image
-                        src={img}
+                        src={getCloudinaryUrl(img)}
                         alt={`${product.title} - ${idx + 1}`}
                         fill
                         className="object-contain p-1"
