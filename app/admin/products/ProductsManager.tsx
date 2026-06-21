@@ -41,6 +41,31 @@ function SortIcon({
     : <ChevronDown size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />;
 }
 
+const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? '';
+
+function AdminProductThumb({ publicId, title }: { publicId?: string; title: string }) {
+  const [error, setError] = useState(false);
+  if (!publicId || error) {
+    return (
+      <div className="w-8 h-11 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-400 text-base">
+        📚
+      </div>
+    );
+  }
+  const id = publicId.startsWith('http') ? publicId : publicId.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+  const src = publicId.startsWith('http')
+    ? publicId
+    : `https://res.cloudinary.com/${CLOUD}/image/upload/w_40,h_56,c_fill/${id}.png`;
+  return (
+    <img
+      src={src}
+      alt={title}
+      className="w-8 h-11 object-cover rounded"
+      onError={() => setError(true)}
+    />
+  );
+}
+
 export default function ProductsManager() {
   const { toasts, toast, dismiss } = useToast();
   const {
@@ -199,16 +224,7 @@ export default function ProductsManager() {
                 <tr key={p.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors ${!p.is_active ? 'opacity-50' : ''}`}>
                   {/* Image */}
                   <td className="px-3 py-2">
-                    {p.images?.[0] ? (
-                      <img
-                        src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/w_40,h_56,c_fill/neko-manga/products/${p.images[0]}`}
-                        alt={p.title}
-                        className="w-8 h-11 object-cover rounded"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    ) : (
-                      <div className="w-8 h-11 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-300 text-xs">?</div>
-                    )}
+                    <AdminProductThumb publicId={p.images?.[0]} title={p.title} />
                   </td>
 
                   {/* SKU */}
