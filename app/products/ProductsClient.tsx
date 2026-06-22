@@ -34,6 +34,7 @@ export default function ProductsClient({ products }: Props) {
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(Infinity);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<'relevance' | 'price_asc' | 'price_desc' | 'name_asc'>('relevance');
 
   // La URL es la fuente de verdad de los filtros estructurales (compartibles)
   const selectedType: ProductType | null = urlType && isProductType(urlType) ? urlType : null;
@@ -87,6 +88,11 @@ export default function ProductsClient({ products }: Props) {
       list = list.filter((p) => (p.author ?? '').toLowerCase().includes(a));
     }
     list = list.filter((p) => p.pricePEN >= dMin && p.pricePEN <= dMax);
+
+    if (sortBy === 'price_asc') list = [...list].sort((a, b) => a.pricePEN - b.pricePEN);
+    else if (sortBy === 'price_desc') list = [...list].sort((a, b) => b.pricePEN - a.pricePEN);
+    else if (sortBy === 'name_asc') list = [...list].sort((a, b) => a.title.localeCompare(b.title, 'es'));
+
     return list;
   }, [
     products,
@@ -100,6 +106,7 @@ export default function ProductsClient({ products }: Props) {
     selectedDemographic,
     selectedSeries,
     selectedStock,
+    sortBy,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
@@ -168,7 +175,7 @@ export default function ProductsClient({ products }: Props) {
         </aside>
 
         <main className="md:col-span-3">
-          <div className="mb-6 flex justify-between items-center">
+          <div className="mb-6 flex flex-wrap justify-between items-center gap-3">
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Mostrando{' '}
               <span className="font-semibold">
@@ -180,18 +187,27 @@ export default function ProductsClient({ products }: Props) {
               </span>{' '}
               de <span className="font-semibold">{filtered.length}</span> productos
             </p>
-            {selectedSeries && (
-              <button
-                type="button"
-                onClick={() => {
-                  syncUrl({ series: null });
-                  resetPage();
-                }}
-                className="text-xs font-semibold text-[#2b496d] dark:text-blue-400 hover:underline"
+            <div className="flex items-center gap-2">
+              {selectedSeries && (
+                <button
+                  type="button"
+                  onClick={() => { syncUrl({ series: null }); resetPage(); }}
+                  className="text-xs font-semibold text-[#2b496d] dark:text-blue-400 hover:underline"
+                >
+                  Quitar serie: {selectedSeries} ×
+                </button>
+              )}
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value as typeof sortBy); resetPage(); }}
+                className="text-xs rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/30 cursor-pointer"
               >
-                Quitar serie: {selectedSeries} ×
-              </button>
-            )}
+                <option value="relevance">Relevancia</option>
+                <option value="price_asc">Precio: menor a mayor</option>
+                <option value="price_desc">Precio: mayor a menor</option>
+                <option value="name_asc">Nombre A–Z</option>
+              </select>
+            </div>
           </div>
 
           {paginated.length > 0 ? (

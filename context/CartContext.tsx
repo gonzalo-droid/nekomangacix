@@ -12,17 +12,17 @@ export interface CartItem {
   price: number;
   quantity: number;
   editorial: string;
-  /** Se añaden para diferenciar pago completo vs reserva. Opcionales para compatibilidad con items viejos en localStorage. */
   stockStatus?: StockStatus;
   preorderDeposit?: number;
-  /** Slug para enlazar al detalle sin lookup extra */
   slug?: string;
+  imageUrl?: string;
 }
 
 interface AddToCartOptions {
   stockStatus?: StockStatus;
   preorderDeposit?: number;
   slug?: string;
+  imageUrl?: string;
 }
 
 interface CartContextType {
@@ -89,6 +89,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 stockStatus: item.stockStatus ?? options?.stockStatus,
                 preorderDeposit: item.preorderDeposit ?? options?.preorderDeposit,
                 slug: item.slug ?? options?.slug,
+                imageUrl: item.imageUrl ?? options?.imageUrl,
               }
             : item
         );
@@ -104,6 +105,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           stockStatus: options?.stockStatus,
           preorderDeposit: options?.preorderDeposit,
           slug: options?.slug,
+          imageUrl: options?.imageUrl,
         },
       ];
     });

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { Menu, X, Search, ShoppingCart } from 'lucide-react';
+import { Menu, X, Search, ShoppingCart, User } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
 import Wordmark from './Wordmark';
@@ -18,6 +19,7 @@ const NAV = [
 
 export default function Header() {
   const { getTotalItems, isHydrated } = useCart();
+  const { user } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -198,6 +200,29 @@ export default function Header() {
                 </Link>
               );
             })}
+
+            {/* Separador + acceso a perfil/login en mobile */}
+            <div className="border-t border-gray-100 dark:border-white/5 pt-2 mt-1">
+              {user ? (
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User size={16} className="text-[#06b6d4]" />
+                  Mi perfil
+                </Link>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User size={16} className="text-gray-400" />
+                  Iniciar sesión
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </nav>

@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePromotions } from '@/context/PromotionsContext';
 import { createSupabaseClient } from '@/core/supabase/client';
 import { calculateCartTotals } from '@/lib/domain/cart/calculate';
+import Image from 'next/image';
 import Link from 'next/link';
 import Wordmark from '@/components/Wordmark';
 import CartSuggestions from './CartSuggestions';
@@ -62,6 +63,7 @@ export default function CartPage() {
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
   const [orderSent, setOrderSent] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [hasUsedFirstPurchase, setHasUsedFirstPurchase] = useState<boolean | null>(null);
@@ -176,6 +178,7 @@ export default function CartPage() {
       `Método de pago: ${paymentLabel}`,
       customerName && `Nombre: ${customerName}`,
       customerPhone && `Teléfono: ${customerPhone}`,
+      customerAddress && `Dirección: ${customerAddress}`,
     ];
 
     const finalMessage = msgParts.filter((l): l is string => l !== false).join('\n');
@@ -300,8 +303,18 @@ export default function CartPage() {
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm divide-y divide-gray-100 dark:divide-white/5 overflow-hidden">
             {lines.map(({ item, split }) => (
               <div key={item.productId} className="p-5 flex gap-4 items-start group">
-                <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gradient-to-br from-[#ec4899]/10 via-[#06b6d4]/5 to-[#eab308]/10 rounded-lg flex items-center justify-center flex-shrink-0 text-2xl border border-gray-100 dark:border-white/5">
-                  📚
+                <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-lg flex-shrink-0 overflow-hidden border border-gray-100 dark:border-white/5 bg-gray-100 dark:bg-gray-800 relative">
+                  {item.imageUrl ? (
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      fill
+                      className="object-contain p-1"
+                      sizes="80px"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#ec4899]/10 via-[#06b6d4]/5 to-[#eab308]/10 flex items-center justify-center text-2xl">📚</div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-2 flex-wrap">
@@ -531,6 +544,13 @@ export default function CartPage() {
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="Teléfono (opcional)"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+            />
+            <input
+              type="text"
+              value={customerAddress}
+              onChange={(e) => setCustomerAddress(e.target.value)}
+              placeholder="Dirección de envío (opcional)"
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
             />
           </div>

@@ -3,10 +3,6 @@ interface Props {
   as?: 'div' | 'span';
 }
 
-/**
- * Placeholder con efecto shimmer. Usa la animación `shimmer` definida en globals.css.
- * Si la animación no existe, cae a un fondo estático.
- */
 export default function Skeleton({ className = '', as: Tag = 'div' }: Props) {
   return (
     <Tag
@@ -20,15 +16,18 @@ export default function Skeleton({ className = '', as: Tag = 'div' }: Props) {
 
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-col">
+    <div className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden flex flex-col">
+      {/* Imagen proporción 2/3 */}
       <Skeleton className="w-full aspect-[2/3] rounded-none" />
-      <div className="p-4 flex flex-col gap-2.5 flex-grow">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-1/2" />
-        <Skeleton className="h-3 w-full" />
-        <div className="mt-auto pt-2 space-y-2">
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-9 w-full rounded-lg" />
+      <div className="p-3.5 flex flex-col gap-2 flex-grow">
+        {/* Título — 2 líneas */}
+        <Skeleton className="h-3.5 w-full" />
+        <Skeleton className="h-3.5 w-2/3" />
+        {/* Editorial con país — 1 línea más corta */}
+        <Skeleton className="h-3 w-1/2 mt-0.5" />
+        {/* Precio */}
+        <div className="mt-auto pt-2">
+          <Skeleton className="h-5 w-1/3" />
         </div>
       </div>
     </div>
