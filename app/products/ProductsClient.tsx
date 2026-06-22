@@ -27,6 +27,7 @@ export default function ProductsClient({ products }: Props) {
   const urlEditorial = searchParams.get('editorial');
   const urlDemographic = searchParams.get('demographic');
   const urlSeries = searchParams.get('series');
+  const urlStock = searchParams.get('stock') ?? '';
 
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [authorQuery, setAuthorQuery] = useState('');
@@ -42,6 +43,7 @@ export default function ProductsClient({ products }: Props) {
   const selectedDemographic: Demographic | null =
     urlDemographic && isDemographic(urlDemographic) ? urlDemographic : null;
   const selectedSeries: string | null = urlSeries;
+  const selectedStock: string = urlStock;
 
   // Sincroniza filtros activos a la URL para que sean compartibles/bookmarkeables
   const syncUrl = useCallback(
@@ -79,6 +81,7 @@ export default function ProductsClient({ products }: Props) {
     if (selectedEditorial) list = list.filter((p) => p.editorial === selectedEditorial);
     if (selectedDemographic) list = list.filter((p) => p.demographic === selectedDemographic);
     if (selectedSeries) list = list.filter((p) => p.series === selectedSeries);
+    if (selectedStock) list = list.filter((p) => p.stockStatus === selectedStock);
     if (dAuthor) {
       const a = dAuthor.toLowerCase();
       list = list.filter((p) => (p.author ?? '').toLowerCase().includes(a));
@@ -96,6 +99,7 @@ export default function ProductsClient({ products }: Props) {
     selectedEditorial,
     selectedDemographic,
     selectedSeries,
+    selectedStock,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
@@ -154,10 +158,12 @@ export default function ProductsClient({ products }: Props) {
             onTypeChange={handleTypeChange}
             onDemographicChange={handleDemographicChange}
             onCountryEditorialChange={handleCountryEditorialChange}
+            onStockChange={(s) => { syncUrl({ stock: s }); resetPage(); }}
             selectedType={selectedType}
             selectedDemographic={selectedDemographic}
             selectedCountry={selectedCountryCode}
             selectedEditorial={selectedEditorial}
+            selectedStock={selectedStock}
           />
         </aside>
 

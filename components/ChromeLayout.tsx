@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
-import WhatsAppFloatingButton from './WhatsAppFloatingButton';
+
 
 /**
  * Rutas donde se oculta el chrome global (header + footer + botón flotante).
@@ -36,7 +36,6 @@ export default function ChromeLayout({ children }: Props) {
       <Header />
       <main className="min-h-screen">{children}</main>
       <Footer />
-      <WhatsAppFloatingButton />
     </>
   );
 }

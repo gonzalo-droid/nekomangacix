@@ -67,43 +67,6 @@ export default function Home() {
         <HomeProductSections />
       </Suspense>
 
-      {/* CTA WhatsApp — estilo oscuro con halftone */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0a0f] via-[#1e3550] to-[#0a0a0f] text-white">
-          {/* Decor */}
-          <div className="absolute inset-0 bg-halftone opacity-50 pointer-events-none" aria-hidden="true" />
-          <div
-            className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-[#ec4899] opacity-25 blur-3xl pointer-events-none"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-[#06b6d4] opacity-20 blur-3xl pointer-events-none"
-            aria-hidden="true"
-          />
-
-          <div className="relative px-6 sm:px-10 py-12 sm:py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="max-w-xl">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight mb-3">
-                ¿Dudas sobre tu pedido?
-              </h2>
-              <p className="text-white/75 text-base sm:text-lg">
-                Escríbenos por WhatsApp y te respondemos en minutos. Productos, envíos,
-                preventas — lo que necesites.
-              </p>
-            </div>
-            <a
-              href="https://wa.me/51924262747?text=Hola%20Neko%20Manga%20Cix%2C%20quiero%20consultar%20sobre%20un%20producto"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-base shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:scale-[1.03] active:scale-[0.98] transition-all whitespace-nowrap"
-            >
-              <MessageCircle size={20} className="transition-transform group-hover:rotate-12" />
-              Escribir por WhatsApp
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
