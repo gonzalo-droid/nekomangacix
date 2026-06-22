@@ -151,12 +151,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-
-      {/* Gradiente de transición hacia la siguiente sección */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-[#0a0a0f] to-transparent pointer-events-none"
-        aria-hidden="true"
-      />
     </section>
   );
 }

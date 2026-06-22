@@ -9,6 +9,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
 import { isProductType, type ProductType } from '@/lib/constants/productTypes';
 import { isDemographic, type Demographic } from '@/lib/constants/demographics';
+import { SlidersHorizontal, X } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 18;
 
@@ -35,6 +36,7 @@ export default function ProductsClient({ products }: Props) {
   const [maxPrice, setMaxPrice] = useState(Infinity);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'relevance' | 'price_asc' | 'price_desc' | 'name_asc'>('relevance');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // La URL es la fuente de verdad de los filtros estructurales (compartibles)
   const selectedType: ProductType | null = urlType && isProductType(urlType) ? urlType : null;
@@ -156,8 +158,72 @@ export default function ProductsClient({ products }: Props) {
         <span className="absolute -bottom-3 left-0 w-20 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" aria-hidden="true" />
       </div>
 
+      {/* Mobile: botón flotante de filtros */}
+      <div className="md:hidden fixed bottom-6 left-4 z-40">
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#2b496d] text-white font-semibold text-sm shadow-xl shadow-[#2b496d]/30 hover:bg-[#1e3550] transition-all active:scale-95"
+        >
+          <SlidersHorizontal size={16} />
+          Filtros
+          {(selectedType || selectedStock || selectedCountryCode || selectedEditorial || selectedDemographic) && (
+            <span className="w-2 h-2 rounded-full bg-[#ec4899] ml-0.5" />
+          )}
+        </button>
+      </div>
+
+      {/* Mobile drawer */}
+      {filtersOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setFiltersOpen(false)}
+            aria-hidden="true"
+          />
+          {/* Sheet */}
+          <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up">
+            <div className="sticky top-0 bg-white dark:bg-gray-900 flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/5 z-10">
+              <h2 className="font-bold text-gray-900 dark:text-white">Filtros</h2>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 transition-colors"
+                aria-label="Cerrar filtros"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <Filters
+              onSearch={(q) => { setSearchQuery(q); resetPage(); }}
+              onAuthorChange={(v) => { setAuthorQuery(v); resetPage(); }}
+              onPriceChange={(mn, mx) => { setMinPrice(mn); setMaxPrice(mx); resetPage(); }}
+              onTypeChange={(t) => { handleTypeChange(t); }}
+              onDemographicChange={(d) => { handleDemographicChange(d); }}
+              onCountryEditorialChange={(v) => { handleCountryEditorialChange(v); }}
+              onStockChange={(s) => { syncUrl({ stock: s }); resetPage(); }}
+              selectedType={selectedType}
+              selectedDemographic={selectedDemographic}
+              selectedCountry={selectedCountryCode}
+              selectedEditorial={selectedEditorial}
+              selectedStock={selectedStock}
+            />
+            <div className="p-4 border-t border-gray-100 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(false)}
+                className="w-full py-3 rounded-xl bg-[#2b496d] text-white font-bold text-sm hover:bg-[#1e3550] transition-colors"
+              >
+                Ver {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
-        <aside className="md:col-span-1">
+        <aside className="hidden md:block md:col-span-1">
           <Filters
             onSearch={(q) => { setSearchQuery(q); resetPage(); }}
             onAuthorChange={(v) => { setAuthorQuery(v); resetPage(); }}

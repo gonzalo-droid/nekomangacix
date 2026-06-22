@@ -5,11 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { Menu, X, Search, ShoppingCart, User } from 'lucide-react';
+import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
 import Wordmark from './Wordmark';
+import SearchDropdown from './SearchDropdown';
 
 const NAV = [
   { href: '/', label: 'Inicio', exact: true },
@@ -22,7 +23,6 @@ export default function Header() {
   const { user } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const cartCount = isHydrated ? getTotalItems() : 0;
 
@@ -30,15 +30,6 @@ export default function Header() {
     const base = href.split('?')[0];
     if (exact) return pathname === base;
     return pathname === base || pathname.startsWith(`${base}/`);
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-      setSearchQuery('');
-      setMobileMenuOpen(false);
-    }
   };
 
   return (
@@ -100,17 +91,7 @@ export default function Header() {
 
           {/* Desktop search — centrado */}
           <div className="hidden md:block flex-1 max-w-lg mx-auto">
-            <form onSubmit={handleSearchSubmit} className="relative group">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#06b6d4] transition-colors" />
-              <input
-                type="text"
-                placeholder="Buscar manga, autor..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 bg-gray-100/80 dark:bg-white/5 border border-transparent rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-white/10 focus:border-[#06b6d4] focus:ring-2 focus:ring-[#06b6d4]/20 transition-all"
-                aria-label="Buscar manga"
-              />
-            </form>
+            <SearchDropdown />
           </div>
 
           {/* Iconos derecha */}
@@ -165,17 +146,9 @@ export default function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-3 pb-3 border-t border-gray-100 dark:border-white/5 pt-3 space-y-1">
             {/* Búsqueda dentro del menú */}
-            <form onSubmit={handleSearchSubmit} className="relative mb-3">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar manga, autor..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-4 py-2.5 bg-gray-100 dark:bg-white/5 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 transition-all"
-                autoFocus
-              />
-            </form>
+            <div className="mb-3">
+              <SearchDropdown autoFocus onClose={() => setMobileMenuOpen(false)} />
+            </div>
 
             {NAV.map((item) => {
               const active = isActive(item.href, item.exact);

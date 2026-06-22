@@ -3,6 +3,7 @@ import { CartProvider } from "@/context/CartContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { PromotionsProvider } from "@/context/PromotionsContext";
+import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ChromeLayout from "@/components/ChromeLayout";
 import "./globals.css";
@@ -60,7 +61,9 @@ export default function RootLayout({
             <PromotionsProvider>
             <FavoritesProvider>
               <CartProvider>
-                <ChromeLayout>{children}</ChromeLayout>
+                <ToastProvider>
+                  <ChromeLayout>{children}</ChromeLayout>
+                </ToastProvider>
               </CartProvider>
             </FavoritesProvider>
             </PromotionsProvider>

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { usePromotions } from '@/context/PromotionsContext';
+import { useToast } from '@/context/ToastContext';
 import type { ProductType } from '@/lib/constants/productTypes';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
 import { getCloudinaryUrl } from '@/lib/cloudinary';
@@ -77,6 +78,7 @@ export default function ProductCard({
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite, isHydrated: favHydrated } = useFavorites();
   const { getDiscountedPrice } = usePromotions();
+  const { showCartToast } = useToast();
   const [added, setAdded] = useState(false);
 
   const { finalPrice, discount, promotionName } = getDiscountedPrice(pricePEN, id, type);
@@ -84,15 +86,18 @@ export default function ProductCard({
   const isOutOfStock = stockStatus ? stockStatus === 'out_of_stock' : stock === 0;
   const isPreorder = stockStatus === 'preorder';
   const fav = favHydrated && isFavorite(id);
+  const resolvedImage = images?.[0] ? getCloudinaryUrl(images[0]) : undefined;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
-    addToCart(id, title, pricePEN, editorial, { stockStatus, preorderDeposit, slug, imageUrl: images?.[0] ? getCloudinaryUrl(images[0]) : undefined });
+    addToCart(id, title, pricePEN, editorial, { stockStatus, preorderDeposit, slug, imageUrl: resolvedImage });
+    showCartToast({ title, editorial, imageUrl: resolvedImage, isPreorder: false });
     setAdded(true); setTimeout(() => setAdded(false), 1800);
   };
   const handleReserve = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
-    addToCart(id, title, pricePEN, editorial, { stockStatus: 'preorder', preorderDeposit, slug, imageUrl: images?.[0] });
+    addToCart(id, title, pricePEN, editorial, { stockStatus: 'preorder', preorderDeposit, slug, imageUrl: resolvedImage });
+    showCartToast({ title, editorial, imageUrl: resolvedImage, isPreorder: true });
     setAdded(true); setTimeout(() => setAdded(false), 1800);
   };
   const handleFavorite = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(id); };
