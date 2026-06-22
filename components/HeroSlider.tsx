@@ -37,10 +37,6 @@ const COVERS = [
 function StaticHero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0f] via-[#141424] to-[#0a0a0f] text-white isolate">
-      <div className="absolute inset-0 bg-halftone opacity-60 pointer-events-none" aria-hidden="true" />
-      <div className="absolute top-[-8rem] left-[-6rem] w-[28rem] h-[28rem] rounded-full bg-[#ec4899] opacity-25 blur-[80px] animate-blob pointer-events-none" aria-hidden="true" />
-      <div className="absolute bottom-[-10rem] right-[-8rem] w-[32rem] h-[32rem] rounded-full bg-[#06b6d4] opacity-20 blur-[90px] animate-blob pointer-events-none" style={{ animationDelay: '3s' }} aria-hidden="true" />
-      <div className="absolute top-1/3 right-1/3 w-[18rem] h-[18rem] rounded-full bg-[#eab308] opacity-10 blur-[70px] animate-pulse-glow pointer-events-none" aria-hidden="true" />
 
       <div className="hidden md:block absolute inset-0 pointer-events-none" aria-hidden="true">
         {COVERS.map((c) => (
@@ -112,7 +108,7 @@ function BannerHero({ banners }: { banners: Banner[] }) {
   const imgSrc = resolveImg(b.image_url);
 
   return (
-    <section className="relative overflow-hidden text-white isolate" style={{ minHeight: '520px' }}>
+    <section className="relative overflow-hidden text-white isolate w-full" style={{ aspectRatio: '16/5', minHeight: '300px' }}>
       {/* Imagen de fondo con transición */}
       {imgSrc && (
         <div className="absolute inset-0">
@@ -166,13 +162,13 @@ function BannerHero({ banners }: { banners: Banner[] }) {
 
 export default function HeroSlider() {
   const [banners, setBanners] = useState<Banner[] | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   useEffect(() => {
@@ -182,7 +178,10 @@ export default function HeroSlider() {
       .catch(() => setBanners([]));
   }, []);
 
-  if (isMobile || banners === null || banners.length === 0) return <StaticHero />;
+  // Espera a conocer el tamaño de pantalla y los banners antes de renderizar
+  if (isMobile === null || banners === null) return null;
+
+  if (isMobile || banners.length === 0) return <StaticHero />;
 
   return <BannerHero banners={banners} />;
 }
