@@ -11,13 +11,6 @@ import Wordmark from './Wordmark';
 
 const COVERS = [
   {
-    src: '/images/manga/naruto_02.png',
-    alt: 'Portada Naruto',
-    className:
-      'absolute left-[6%] top-[12%] w-[140px] lg:w-[180px] -rotate-[10deg] animate-float-slow',
-    style: { '--r': '-10deg', animationDelay: '0s' } as React.CSSProperties,
-  },
-  {
     src: '/images/manga/one_piece_02.png',
     alt: 'Portada One Piece',
     className:
@@ -89,7 +82,7 @@ export default function Hero() {
           >
             <Sparkles size={14} className="text-[#eab308]" />
             <span className="text-xs font-semibold tracking-wider uppercase text-white/80">
-              Envíos a todo el Perú
+              Envíos a todo el Perú 
             </span>
           </div>
 
@@ -98,7 +91,7 @@ export default function Hero() {
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-5 animate-tilt-in"
             style={{ animationDelay: '0.1s' }}
           >
-            Tu próxima{' '}
+            Inicia tu colección{' '}
             <span className="text-neko-gradient">aventura manga</span>
             <br />
             empieza aquí.
@@ -111,7 +104,7 @@ export default function Hero() {
             Catálogo de editoriales <strong className="text-white">Argentina</strong>,{' '}
             <strong className="text-white">México</strong>,{' '}
             <strong className="text-white">España</strong> y 
-            <strong className="text-white">figuras coleccionables</strong>.
+            <strong className="text-white">Japón</strong>.
             Sumérgete en miles de historias.
           </p>
 

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import Hero from '@/components/Hero';
+import BannerSlider from '@/components/BannerSlider';
 import HomeProductSections from '@/components/HomeProductSections';
 import { ProductCardSkeleton } from '@/components/Skeleton';
 import { MessageCircle, Sparkles, BookOpenText, Truck } from 'lucide-react';
@@ -62,6 +63,8 @@ export default function Home() {
   return (
     <div className="w-full">
       <Hero />
+
+      <BannerSlider />
 
       <Suspense fallback={<HomeSectionsFallback />}>
         <HomeProductSections />

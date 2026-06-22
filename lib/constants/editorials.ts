@@ -1,7 +1,7 @@
 import type { CountryCode } from './countries';
 
 export const EDITORIALS_BY_COUNTRY: Record<CountryCode, readonly string[]> = {
-  AR: ['Ivrea', 'Ovnipress', 'Panini Argentina', 'Utopía Editorial'],
+  AR: ['Ivrea', 'Ovnipress', 'Panini Argentina', 'Utopía Editorial', 'Penguin'],
   MX: ['Panini México', 'Kamite', 'Distrito Manga'],
   ES: ['Ivrea España', 'Planeta Cómic', 'Norma Editorial', 'Milky Way', 'ECC Ediciones'],
   JP: ['Shueisha', 'Kodansha', 'Shogakukan', 'Kadokawa', 'Square Enix'],

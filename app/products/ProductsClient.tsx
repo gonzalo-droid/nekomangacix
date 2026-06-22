@@ -190,7 +190,7 @@ export default function ProductsClient({ products }: Props) {
 
           {paginated.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-5 mb-8">
                 {paginated.map((product, idx) => (
                   <ProductCard
                     key={product.id}
