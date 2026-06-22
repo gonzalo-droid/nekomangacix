@@ -1,21 +1,25 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import fs from 'fs';
+import path from 'path';
 
 export async function GET() {
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('banners')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true });
+  try {
+    const dir = path.join(process.cwd(), 'public', 'images', 'banners');
+    const files = fs.readdirSync(dir).filter((f) =>
+      /\.(png|jpg|jpeg|webp|avif)$/i.test(f)
+    );
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data });
+    const data = files.map((f, i) => ({
+      id: f,
+      title: f.replace(/\.(png|jpg|jpeg|webp|avif)$/i, '').replace(/-/g, ' '),
+      image_url: `/images/banners/${f}`,
+      type: 'general',
+      is_active: true,
+      sort_order: i,
+    }));
+
+    return NextResponse.json({ data });
+  } catch {
+    return NextResponse.json({ data: [] });
+  }
 }

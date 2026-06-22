@@ -36,6 +36,7 @@ export interface Filters {
   category: string;
   status: string;
   editorial: string;
+  country_code: string;
   active: '' | 'true' | 'false';
 }
 
@@ -51,7 +52,7 @@ interface FetchState {
   error: string | null;
 }
 
-const DEFAULT_FILTERS: Filters = { search: '', category: '', status: '', editorial: '', active: '' };
+const DEFAULT_FILTERS: Filters = { search: '', category: '', status: '', editorial: '', country_code: '', active: '' };
 const DEFAULT_SORT: SortState = { field: 'created_at', order: 'desc' };
 const PAGE_SIZE = 20;
 
@@ -79,6 +80,7 @@ export function useAdminProducts(toast: ToastFn) {
       category: f.category,
       status: f.status,
       editorial: f.editorial,
+      country_code: f.country_code,
       active: f.active,
       sortField: s.field,
       sortOrder: s.order,

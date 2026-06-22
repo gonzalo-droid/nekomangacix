@@ -61,8 +61,9 @@ export async function GET(req: NextRequest) {
   const pageSize = parseInt(searchParams.get('pageSize') ?? '20');
   const search   = searchParams.get('search') ?? '';
   const status   = searchParams.get('status') ?? '';
-  const editorial = searchParams.get('editorial') ?? '';
-  const active   = searchParams.get('active'); // 'true' | 'false' | ''
+  const editorial    = searchParams.get('editorial') ?? '';
+  const country_code = searchParams.get('country_code') ?? '';
+  const active       = searchParams.get('active'); // 'true' | 'false' | ''
   const sortField = searchParams.get('sortField') ?? 'created_at';
   const sortOrder = searchParams.get('sortOrder') ?? 'desc';
 
@@ -72,7 +73,8 @@ export async function GET(req: NextRequest) {
 
   if (search)    query = query.or(`title.ilike.%${search}%,sku.ilike.%${search}%,editorial.ilike.%${search}%`);
   if (status)    query = query.eq('stock_status', status);
-  if (editorial) query = query.eq('editorial', editorial);
+  if (editorial)    query = query.eq('editorial', editorial);
+  if (country_code) query = query.eq('country_code', country_code);
   if (active === 'true')  query = query.eq('is_active', true);
   if (active === 'false') query = query.eq('is_active', false);
 

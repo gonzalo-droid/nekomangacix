@@ -10,7 +10,7 @@ import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
 import { isProductType, type ProductType } from '@/lib/constants/productTypes';
 import { isDemographic, type Demographic } from '@/lib/constants/demographics';
 
-const ITEMS_PER_PAGE = 16;
+const ITEMS_PER_PAGE = 18;
 
 interface Props {
   products: Product[];
