@@ -135,34 +135,35 @@ export default function ProductCard({
             </span>
           )}
 
-          {/* Botón carrito flotante en hover */}
-          {!isOutOfStock && (
-            <button
-              type="button"
-              onClick={isPreorder ? handleReserve : handleAdd}
-              className={`absolute bottom-2 right-2 z-10 p-2 rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
-                added ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-gray-800 text-[#ec4899] hover:bg-[#ec4899] hover:text-white'
-              }`}
-              aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
-            >
-              <ShoppingCart size={14} />
-            </button>
-          )}
         </div>
         <div className="p-2.5 flex flex-col flex-grow">
           <h3 className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white mb-0.5 line-clamp-2 group-hover:text-[#ec4899] transition-colors min-h-[2.25rem]">
             {title}
           </h3>
           <EditorialLine countryCode={countryCode} editorial={editorial} />
-          <div className="mt-auto flex items-baseline justify-between gap-1">
-            <div>
+          <div className="mt-auto pt-2 flex items-center justify-between gap-2">
+            <div className="min-w-0">
               <p className="text-sm font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
                 S/ {finalPrice.toFixed(2)}
               </p>
               {hasDiscount && <p className="text-[10px] line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
             </div>
-            {hasDiscount && promotionName && (
-              <span className="text-[9px] font-bold uppercase tracking-wider text-[#ec4899]">{promotionName}</span>
+            {!isOutOfStock && (
+              <button
+                type="button"
+                onClick={isPreorder ? handleReserve : handleAdd}
+                className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
+                  added
+                    ? 'bg-emerald-500 text-white'
+                    : isPreorder
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white'
+                    : 'bg-[#ec4899]/10 text-[#ec4899] hover:bg-[#ec4899] hover:text-white'
+                }`}
+                aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
+              >
+                <ShoppingCart size={12} />
+                {added ? '✓' : isPreorder ? 'Reservar' : 'Agregar'}
+              </button>
             )}
           </div>
         </div>
