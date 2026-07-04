@@ -26,6 +26,7 @@ export async function getAllActiveProducts(): Promise<Product[]> {
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
         .range(from, from + PAGE - 1);
 
       if (error || !data) break;
@@ -34,7 +35,16 @@ export async function getAllActiveProducts(): Promise<Product[]> {
       from += PAGE;
     }
 
-    if (all.length > 0) return all.map(dbRowToProduct);
+    if (all.length > 0) {
+      const seen = new Set<string>();
+      const unique = all.filter((r) => {
+        const id = r.id as string;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+      return unique.map(dbRowToProduct);
+    }
   } catch { /* fall through */ }
 
   return staticProducts;

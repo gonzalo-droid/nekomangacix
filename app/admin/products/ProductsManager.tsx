@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import {
   Plus, Search, RefreshCw, FileSpreadsheet, ChevronUp, ChevronDown,
@@ -12,6 +12,8 @@ import { useAdminProducts, type AdminProduct } from './useAdminProducts';
 import ProductFormModal from './ProductFormModal';
 import ExcelImportPanel from './ExcelImportPanel';
 import SeriesPropagateModal from './SeriesPropagateModal';
+import { getEditorialsForCountry } from '@/lib/constants/editorials';
+import { isCountryCode } from '@/lib/constants/countries';
 
 const CATEGORIES = ['shonen','seinen','shojo','josei','kodomo','isekai','slice_of_life','horror','romance','action','comedy','drama','fantasy','sci-fi','sports','mystery'];
 const STOCK_STATUSES = ['in_stock','on_demand','preorder','out_of_stock'];
@@ -84,6 +86,12 @@ export default function ProductsManager() {
   // Distinct series from current page for the propagate modal
   const seriesList = Array.from(new Set(products.map((p) => p.series).filter(Boolean) as string[])).sort();
 
+  // Editoriales disponibles según país seleccionado
+  const editorialOptions = useMemo(() => {
+    const cc = filters.country_code;
+    return getEditorialsForCountry(isCountryCode(cc) ? cc : null) as string[];
+  }, [filters.country_code]);
+
   const thClass = 'px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide';
   const tdClass = 'px-3 py-3 text-sm text-gray-700 dark:text-gray-300';
 
@@ -114,32 +122,61 @@ export default function ProductsManager() {
       <Toaster toasts={toasts} dismiss={dismiss} />
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="relative">
+      <div className="flex flex-col gap-3">
+        {/* Fila 1: búsqueda + acciones */}
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+          <div className="relative flex-1 max-w-sm">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="search"
               placeholder="Buscar título, SKU, editorial..."
               value={filters.search}
               onChange={(e) => applyFilters({ search: e.target.value })}
-              className="pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d] w-64"
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]"
             />
           </div>
+
+          <div className="flex items-center gap-2 ml-auto">
+            <button onClick={refresh} title="Refrescar"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <RefreshCw size={15} />
+            </button>
+            <button onClick={() => setShowPropagate(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
+              <GitMerge size={15} /> Propagar serie
+            </button>
+            <button onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-[#2b496d] dark:border-[#5a7a9e] text-[#2b496d] dark:text-[#5a7a9e] hover:bg-[#2b496d]/10 transition-colors font-medium">
+              <FileSpreadsheet size={15} /> Importar Excel
+            </button>
+            <button onClick={() => setEditProduct(null)}
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-[#2b496d] hover:bg-[#1e3550] text-white font-semibold transition-colors">
+              <Plus size={15} /> Nuevo producto
+            </button>
+          </div>
+        </div>
+
+        {/* Fila 2: filtros */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <select value={filters.country_code} onChange={(e) => applyFilters({ country_code: e.target.value, editorial: '' })}
+            className="py-2 px-3 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]">
+            <option value="">🌎 País</option>
+            <option value="AR">🇦🇷 Argentina</option>
+            <option value="MX">🇲🇽 México</option>
+            <option value="ES">🇪🇸 España</option>
+            <option value="JP">🇯🇵 Japón</option>
+          </select>
+
+          <select value={filters.editorial} onChange={(e) => applyFilters({ editorial: e.target.value })}
+            className="py-2 px-3 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]">
+            <option value="">Editorial</option>
+            {editorialOptions.map((e) => <option key={e} value={e}>{e}</option>)}
+          </select>
 
           <select value={filters.category} onChange={(e) => applyFilters({ category: e.target.value })}
             className="py-2 px-3 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]">
             <option value="">Categoría</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-
-          <select value={filters.country_code} onChange={(e) => applyFilters({ country_code: e.target.value })}
-            className="py-2 px-3 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]">
-            <option value="">País</option>
-            <option value="AR">🇦🇷 Argentina</option>
-            <option value="MX">🇲🇽 México</option>
-            <option value="ES">🇪🇸 España</option>
-            <option value="JP">🇯🇵 Japón</option>
           </select>
 
           <select value={filters.status} onChange={(e) => applyFilters({ status: e.target.value })}
@@ -150,30 +187,20 @@ export default function ProductsManager() {
 
           <select value={filters.active} onChange={(e) => applyFilters({ active: e.target.value as '' | 'true' | 'false' })}
             className="py-2 px-3 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]">
-            <option value="">Todos</option>
+            <option value="">Visibilidad</option>
             <option value="true">Visibles</option>
             <option value="false">Ocultos</option>
           </select>
 
-          <button onClick={refresh} title="Refrescar"
-            className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <RefreshCw size={15} />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowPropagate(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
-            <GitMerge size={15} /> Propagar serie
-          </button>
-          <button onClick={() => setShowImport(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-[#2b496d] dark:border-[#5a7a9e] text-[#2b496d] dark:text-[#5a7a9e] hover:bg-[#2b496d]/10 transition-colors font-medium">
-            <FileSpreadsheet size={15} /> Importar Excel
-          </button>
-          <button onClick={() => setEditProduct(null)}
-            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-[#2b496d] hover:bg-[#1e3550] text-white font-semibold transition-colors">
-            <Plus size={15} /> Nuevo producto
-          </button>
+          {/* Limpiar filtros */}
+          {(filters.country_code || filters.editorial || filters.category || filters.status || filters.active) && (
+            <button
+              onClick={() => applyFilters({ country_code: '', editorial: '', category: '', status: '', active: '' })}
+              className="flex items-center gap-1 px-3 py-2 text-xs font-semibold text-[#ec4899] hover:bg-[#ec4899]/10 rounded-lg transition-colors"
+            >
+              ✕ Limpiar filtros
+            </button>
+          )}
         </div>
       </div>
 
