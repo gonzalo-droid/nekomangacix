@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            folder: PRODUCTS_FOLDER,
+            ...(publicId ? {} : { folder: PRODUCTS_FOLDER }),
             public_id: publicId || undefined,
             overwrite: true,
             resource_type: 'image',

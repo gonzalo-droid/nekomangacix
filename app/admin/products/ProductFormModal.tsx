@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useMemo, FormEvent } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { useState, useMemo, useRef, FormEvent } from 'react';
+import Image from 'next/image';
+import { X, Loader2, Upload, ImagePlus, Trash2 } from 'lucide-react';
+import { getCloudinaryUrl } from '@/lib/cloudinary';
 import type { AdminProduct } from './useAdminProducts';
 import { COUNTRIES, COUNTRY_CODES, type CountryCode } from '@/lib/constants/countries';
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
@@ -30,6 +32,9 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
   const isEdit = !!product;
   const [form, setForm] = useState<Partial<AdminProduct>>(product ?? EMPTY);
   const [imagesInput, setImagesInput] = useState((product?.images ?? []).join(', '));
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>(product?.images ?? []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [tagsInput, setTagsInput] = useState((product?.tags ?? []).join(', '));
   const [attributes, setAttributes] = useState<Record<string, string>>(
     Object.fromEntries(
@@ -80,11 +85,58 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
     });
   }
 
+  function buildPublicId(filename: string, idx: number): string {
+    const isJP = form.country_code === 'JP';
+    const folder = isJP ? 'neko-manga/japan' : 'neko-manga/products';
+    const title = (form.title ?? 'producto')
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 60);
+    const suffix = idx === 0 ? '' : `-${idx + 1}`;
+    return `${folder}/${title}${suffix}`;
+  }
+
+  async function handleImageUpload(files: FileList) {
+    setUploadingImages(true);
+    const newIds: string[] = [];
+    const startIdx = uploadedImages.length;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const publicId = buildPublicId(file.name, startIdx + i);
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('public_id', publicId);
+
+      try {
+        const res = await fetch('/api/cloudinary/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.public_id) newIds.push(data.public_id);
+      } catch {
+        // continúa con las demás
+      }
+    }
+
+    const merged = [...uploadedImages, ...newIds];
+    setUploadedImages(merged);
+    setImagesInput(merged.join(', '));
+    setUploadingImages(false);
+  }
+
+  function removeUploadedImage(idx: number) {
+    const next = uploadedImages.filter((_, i) => i !== idx);
+    setUploadedImages(next);
+    setImagesInput(next.join(', '));
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
     const newErrors: Record<string, string> = {};
-    if (!editorialOptions.includes(String(form.editorial ?? ''))) {
+    const editorialRequired = form.country_code !== 'JP';
+    if (editorialRequired && !editorialOptions.includes(String(form.editorial ?? ''))) {
       newErrors.editorial = 'La editorial no pertenece al país seleccionado';
     }
     if (form.demographic && currentType !== 'manga') {
@@ -95,7 +147,9 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
 
     setSaving(true);
 
-    const images = imagesInput.split(',').map((s) => s.trim()).filter(Boolean);
+    const images = uploadedImages.length > 0
+      ? uploadedImages
+      : imagesInput.split(',').map((s) => s.trim()).filter(Boolean);
     const tags = tagsInput.split(',').map((s) => s.trim()).filter(Boolean);
 
     const parsedAttributes: Record<string, string | number | boolean> = {};
@@ -198,10 +252,12 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               </div>
 
               <div>
-                <label className={labelClass}>Editorial *</label>
-                <select className={inputClass} required value={form.editorial ?? ''}
+                <label className={labelClass}>
+                  Editorial {form.country_code !== 'JP' ? '*' : <span className="text-gray-400 font-normal">(opcional)</span>}
+                </label>
+                <select className={inputClass} required={form.country_code !== 'JP'} value={form.editorial ?? ''}
                   onChange={(e) => set('editorial', e.target.value)}>
-                  <option value="">— Selecciona editorial —</option>
+                  <option value="">— {form.country_code === 'JP' ? 'Sin editorial' : 'Selecciona editorial'} —</option>
                   {editorialOptions.map((ed) => (
                     <option key={ed} value={ed}>{ed}</option>
                   ))}
@@ -310,11 +366,71 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700">
               Imágenes
             </h3>
-            <div>
-              <label className={labelClass}>IDs de Cloudinary (separados por coma)</label>
-              <input className={inputClass} value={imagesInput} onChange={(e) => setImagesInput(e.target.value)}
-                placeholder="jjk-vol1, jjk-vol1-back" />
-            </div>
+
+            {/* Preview de imágenes subidas */}
+            {uploadedImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {uploadedImages.map((id, idx) => (
+                  <div key={id} className="relative group w-20 h-24 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700">
+                    <Image
+                      src={getCloudinaryUrl(id)}
+                      alt={`Imagen ${idx + 1}`}
+                      fill
+                      className="object-contain p-1"
+                      sizes="80px"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeUploadedImage(idx)}
+                      className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Eliminar imagen"
+                    >
+                      <Trash2 size={10} />
+                    </button>
+                    {idx === 0 && (
+                      <span className="absolute bottom-0 left-0 right-0 text-[9px] text-center bg-black/50 text-white py-0.5">Principal</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Zona de upload */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingImages || !form.title?.trim()}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-[#2b496d] hover:text-[#2b496d] dark:hover:border-[#5a7a9e] dark:hover:text-[#5a7a9e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploadingImages ? (
+                <><Loader2 size={16} className="animate-spin" /> Subiendo imágenes...</>
+              ) : (
+                <><ImagePlus size={16} /> {uploadedImages.length > 0 ? 'Agregar más imágenes' : 'Subir imágenes'}</>
+              )}
+            </button>
+            {!form.title?.trim() && (
+              <p className="text-[11px] text-amber-500 mt-1">Ingresa el título primero para nombrar las imágenes correctamente.</p>
+            )}
+            <p className="text-[11px] text-gray-400 mt-1">
+              Se guardarán en <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">
+                {form.country_code === 'JP' ? 'neko-manga/japan' : 'neko-manga/products'}
+              </code> con el nombre del título.
+            </p>
+
+            {/* Fallback: IDs manuales */}
+            <details className="mt-3">
+              <summary className="text-[11px] text-gray-400 cursor-pointer hover:text-gray-600">Ingresar IDs manualmente</summary>
+              <input className={`${inputClass} mt-1.5`} value={imagesInput} onChange={(e) => { setImagesInput(e.target.value); setUploadedImages(e.target.value.split(',').map(s => s.trim()).filter(Boolean)); }}
+                placeholder="neko-manga/japan/figura-marin, ..." />
+            </details>
           </section>
 
           {/* Atributos dinámicos */}
