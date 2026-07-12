@@ -4,7 +4,7 @@ export const EDITORIALS_BY_COUNTRY: Record<CountryCode, readonly string[]> = {
   AR: ['Ivrea', 'Ovnipress', 'Panini Argentina'],
   MX: ['Panini México', 'Kamite', 'Distrito Manga'],
   ES: ['Ivrea España', 'Planeta Cómic', 'Norma Editorial', 'Milky Way', 'ECC Ediciones'],
-  JP: ['Shueisha', 'Kodansha', 'Shogakukan', 'Kadokawa', 'Square Enix'],
+  JP: ['Shueisha', 'Kodansha', 'Shogakukan', 'Kadokawa', 'Square Enix', 'Grandista'],
 };
 
 export const ALL_EDITORIALS: readonly string[] = Object.values(EDITORIALS_BY_COUNTRY).flat();

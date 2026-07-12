@@ -111,6 +111,18 @@ body {
 }
 .animate-slide-up { animation: slide-up 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
+/* Marquee — tiras de portadas moviéndose en loop infinito (usadas en /links) */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+.animate-marquee-left  { animation: marquee-left 40s linear infinite; }
+.animate-marquee-right { animation: marquee-right 40s linear infinite; }
+
 /* ───────────────────────────────────────────── *
  * Utilities temáticas                           *
  * ───────────────────────────────────────────── */
@@ -186,7 +198,9 @@ body {
   .animate-pulse-glow,
   .animate-blob,
   .animate-sheen,
-  .animate-tilt-in {
+  .animate-tilt-in,
+  .animate-marquee-left,
+  .animate-marquee-right {
     animation: none !important;
   }
 }

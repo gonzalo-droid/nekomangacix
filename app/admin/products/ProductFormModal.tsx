@@ -9,6 +9,7 @@ import { COUNTRIES, COUNTRY_CODES, type CountryCode } from '@/lib/constants/coun
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
 import { DEMOGRAPHIC_LABELS, DEMOGRAPHICS } from '@/lib/constants/demographics';
 import { PRODUCT_TYPES, PRODUCT_TYPE_LABELS } from '@/lib/constants/productTypes';
+import ComboBox from './ComboBox';
 
 const STOCK_STATUSES = ['in_stock', 'preorder', 'out_of_stock'];
 
@@ -256,9 +257,13 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                   {form.country_code === 'JP' ? 'Fabricante' : 'Editorial'} {form.country_code !== 'JP' ? '*' : <span className="text-gray-400 font-normal">(opcional)</span>}
                 </label>
                 {form.country_code === 'JP' ? (
-                  <input className={inputClass} value={form.editorial ?? ''}
-                    onChange={(e) => set('editorial', e.target.value)}
-                    placeholder="Kotobukiya, Banpresto, Good Smile Company…" />
+                  <ComboBox
+                    className={inputClass}
+                    value={String(form.editorial ?? '')}
+                    onChange={(v) => set('editorial', v)}
+                    options={editorialOptions as string[]}
+                    placeholder="Kotobukiya, Banpresto, Good Smile Company… (opcional)"
+                  />
                 ) : (
                   <select className={inputClass} required value={form.editorial ?? ''}
                     onChange={(e) => set('editorial', e.target.value)}>

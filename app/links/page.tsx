@@ -11,6 +11,13 @@ import {
   Clock,
   ArrowRight,
 } from 'lucide-react';
+import MangaMarqueeBackground from './MangaMarqueeBackground';
+
+// public/images/manga/manga-001.webp … manga-050.webp
+const MARQUEE_COVERS = Array.from(
+  { length: 50 },
+  (_, i) => `/images/manga/manga-${String(i + 1).padStart(3, '0')}.webp`
+);
 
 export const metadata: Metadata = {
   title: 'Neko Manga Cix — Enlaces',
@@ -42,6 +49,10 @@ interface LinkItem {
   external?: boolean;
   icon: React.ReactNode;
   accent: string;
+  /** Color de la flecha y del glow al hover */
+  arrow: string;
+  /** true = CTA principal con fondo en gradiente completo */
+  primary?: boolean;
 }
 
 const LINKS: LinkItem[] = [
@@ -51,6 +62,8 @@ const LINKS: LinkItem[] = [
     subtitle: 'Manga, figuras y más',
     icon: <BookOpen size={20} />,
     accent: 'from-[#ec4899] to-[#f97316]',
+    arrow: 'text-white',
+    primary: true,
   },
   {
     href: '/products?stock=preorder',
@@ -58,6 +71,7 @@ const LINKS: LinkItem[] = [
     subtitle: 'Reserva con el 50% de adelanto',
     icon: <Clock size={20} />,
     accent: 'from-[#06b6d4] to-[#2b496d]',
+    arrow: 'text-[#06b6d4]',
   },
   {
     href: '/products?stock=in_stock',
@@ -65,6 +79,7 @@ const LINKS: LinkItem[] = [
     subtitle: 'Disponible para envío inmediato',
     icon: <Sparkles size={20} />,
     accent: 'from-[#eab308] to-[#ec4899]',
+    arrow: 'text-[#eab308]',
   },
   {
     href: `https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Neko%20Manga%20Cix%2C%20quiero%20consultar`,
@@ -73,60 +88,40 @@ const LINKS: LinkItem[] = [
     external: true,
     icon: <MessageCircle size={20} />,
     accent: 'from-[#25D366] to-[#128c4a]',
-  },
-  {
-    href: 'https://www.instagram.com/neko.manga.cix/',
-    title: 'Síguenos en Instagram',
-    external: true,
-    icon: <Instagram size={20} />,
-    accent: 'from-[#f58529] via-[#dd2a7b] to-[#515bd4]',
-  },
-  {
-    href: 'https://www.facebook.com/people/Neko-Manga-CIX/61562296206939/',
-    title: 'Síguenos en Facebook',
-    external: true,
-    icon: <Facebook size={20} />,
-    accent: 'from-[#1877f2] to-[#0d5bc7]',
-  },
-  {
-    href: 'https://www.tiktok.com/@neko.manga.cix',
-    title: 'Síguenos en TikTok',
-    external: true,
-    icon: <TikTokIcon size={20} />,
-    accent: 'from-gray-900 to-black',
+    arrow: 'text-[#25D366]',
   },
 ];
 
 export default function LinksPage() {
   return (
-    <div className="min-h-screen relative bg-[#050508] overflow-hidden">
-      {/* Fondo con blobs de color, sin depender de imágenes externas */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-[#ec4899] opacity-20 blur-[100px]" />
-        <div className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-[#06b6d4] opacity-15 blur-[110px]" />
-        <div className="absolute bottom-0 left-1/4 w-72 h-72 rounded-full bg-[#eab308] opacity-10 blur-[100px]" />
-      </div>
+    <div className="h-dvh w-full relative bg-[#050508] overflow-hidden flex">
+      {/* Portadas de manga moviéndose en diagonal, cubre toda la pantalla */}
+      <MangaMarqueeBackground covers={MARQUEE_COVERS} />
 
-      <div className="relative max-w-md mx-auto px-5 pt-14 pb-16 flex flex-col items-center">
-        {/* Logo */}
-        <div className="relative w-24 h-24 rounded-full overflow-hidden ring-2 ring-white/10 shadow-2xl shadow-black/40 mb-5">
-          <Image
-            src="/images/brand/neko_manga.png"
-            alt="Neko Manga Cix"
-            fill
-            className="object-cover"
-            priority
-            sizes="96px"
-          />
+      {/* Panel de contenido — 40% del ancho, alto completo, sin scroll */}
+      <div className="relative z-10 w-full sm:w-[40%] sm:min-w-[340px] h-full flex flex-col justify-center px-6 sm:px-8 py-6 shrink-0">
+        {/* Logo con glow de marca */}
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-4">
+          <div className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-[#ec4899] to-[#06b6d4] opacity-60 blur-md" aria-hidden="true" />
+          <div className="relative w-full h-full rounded-full overflow-hidden ring-2 ring-[#ec4899]/50 shadow-2xl shadow-black/40">
+            <Image
+              src="/images/brand/logo-dark-trimmed.png"
+              alt="Neko Manga Cix"
+              fill
+              className="object-cover"
+              priority
+              sizes="100px"
+            />
+          </div>
         </div>
 
-        <h1 className="text-white font-bold text-lg tracking-tight">@neko.manga.cix</h1>
-        <p className="text-gray-400 text-sm text-center mt-1.5 max-w-xs">
+        <h1 className="font-extrabold text-xl tracking-tight text-neko-gradient">@neko.manga.cix</h1>
+        <p className="text-gray-400 text-sm mt-1 max-w-xs">
           No esperes más, encuentra tu próximo manga favorito.
         </p>
 
-        {/* Iconos redes rápidos */}
-        <div className="flex items-center gap-3 mt-5">
+        {/* Iconos redes */}
+        <div className="flex items-center gap-2.5 mt-4">
           {SOCIAL_ICONS.map((s) => {
             const Icon = s.icon;
             return (
@@ -136,44 +131,46 @@ export default function LinksPage() {
                 target={s.href.startsWith('http') ? '_blank' : undefined}
                 rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={s.label}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/15 hover:scale-110 transition-all duration-200"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/15 hover:scale-110 transition-all duration-200"
               >
-                <Icon size={17} />
+                <Icon size={16} />
               </a>
             );
           })}
         </div>
 
-        {/* Título de sección */}
-        <div className="text-center mt-9 mb-5">
-          <p className="text-white font-bold text-base">Síguenos en nuestras redes</p>
-          <p className="text-gray-400 text-sm mt-1">Revisa nuestro catálogo y ofertas 👇</p>
-        </div>
-
         {/* Lista de enlaces */}
-        <div className="w-full flex flex-col gap-3.5">
+        <div className="w-full flex flex-col gap-3 mt-7">
           {LINKS.map((item) => {
             const Content = (
               <>
                 <span
-                  className={`flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${item.accent} flex items-center justify-center text-white shadow-lg`}
+                  className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${
+                    item.primary ? 'bg-white/20' : `bg-gradient-to-br ${item.accent}`
+                  }`}
                 >
                   {item.icon}
                 </span>
                 <span className="flex-1 min-w-0 text-left">
-                  <span className="block font-bold text-gray-900 dark:text-white text-[15px] leading-tight truncate">
+                  <span className="block font-bold text-white text-sm leading-tight truncate">
                     {item.title}
                   </span>
                   {item.subtitle && (
-                    <span className="block text-xs text-gray-500 mt-0.5 truncate">{item.subtitle}</span>
+                    <span className={`block text-xs mt-0.5 truncate ${item.primary ? 'text-white/80' : 'text-gray-400'}`}>
+                      {item.subtitle}
+                    </span>
                   )}
                 </span>
-                <ArrowRight size={16} className="flex-shrink-0 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight
+                  size={15}
+                  className={`flex-shrink-0 ${item.arrow} opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all`}
+                />
               </>
             );
 
-            const className =
-              'group w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-white dark:bg-gray-900/90 shadow-lg shadow-black/20 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 border border-white/5';
+            const className = item.primary
+              ? `group w-full flex items-center gap-3 px-3.5 py-3.5 rounded-2xl bg-gradient-to-r ${item.accent} shadow-lg shadow-[#ec4899]/30 hover:shadow-xl hover:shadow-[#ec4899]/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`
+              : 'group w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg shadow-black/20 hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200';
 
             return item.external ? (
               <a key={item.title} href={item.href} target="_blank" rel="noopener noreferrer" className={className}>
@@ -187,10 +184,13 @@ export default function LinksPage() {
           })}
         </div>
 
-        <p className="text-gray-600 text-xs mt-10">
+        <p className="text-gray-600 text-xs mt-6">
           © {new Date().getFullYear()} Neko Manga Cix · Chiclayo, Perú
         </p>
       </div>
+
+      {/* Espacio derecho — deja ver la animación de portadas de fondo */}
+      <div className="hidden sm:block sm:w-[60%] h-full pointer-events-none" aria-hidden="true" />
     </div>
   );
 }

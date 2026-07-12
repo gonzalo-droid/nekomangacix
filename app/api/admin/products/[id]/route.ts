@@ -32,7 +32,9 @@ export async function PUT(
   const supabase = getClient();
 
   const update: Record<string, unknown> = { ...body };
-  if (typeof update.country_code === 'string' && isCountryCode(update.country_code)) {
+  // Japón: el fabricante de figuras es libre (Kotobukiya, Banpresto, Grandista, etc.),
+  // no una lista fija de editoriales — y además opcional.
+  if (typeof update.country_code === 'string' && isCountryCode(update.country_code) && update.country_code !== 'JP') {
     if (typeof update.editorial === 'string' && update.editorial) {
       const allowed = getEditorialsForCountry(update.country_code);
       if (!allowed.includes(update.editorial)) {
