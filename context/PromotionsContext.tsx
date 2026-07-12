@@ -67,8 +67,8 @@ export function PromotionsProvider({ children }: { children: ReactNode }) {
         setCouponError(json.error ?? 'Cupón inválido');
         return;
       }
-      // Also validate client-side for expiry
-      const promo = validateCoupon(trimmed, [dbRowToPromotion(json.data)]);
+      // json.data ya viene mapeado a Promotion desde el API; re-validamos expiración
+      const promo = validateCoupon(trimmed, [json.data as Promotion]);
       if (!promo) {
         setCouponError('Cupón inválido o expirado');
         return;

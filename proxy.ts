@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const ADMIN_COOKIE = 'neko-admin-session';
 
-const MAINTENANCE_BYPASS = ['/coming-soon', '/admin', '/api', '/_next', '/favicon.ico'];
+const MAINTENANCE_BYPASS = ['/coming-soon', '/admin', '/api', '/_next', '/favicon.ico', '/links'];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -30,9 +30,10 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Verificar que el valor del cookie coincide con el PIN configurado
-    const pin = process.env.ADMIN_PIN || '1234';
-    if (session.value !== pin) {
+    // Verificar que el valor del cookie coincide con el PIN configurado.
+    // El fallback '1234' solo existe en desarrollo.
+    const pin = process.env.ADMIN_PIN ?? (process.env.NODE_ENV !== 'production' ? '1234' : undefined);
+    if (!pin || session.value !== pin) {
       const loginUrl = new URL('/admin/login', request.url);
       const response = NextResponse.redirect(loginUrl);
       response.cookies.delete(ADMIN_COOKIE);

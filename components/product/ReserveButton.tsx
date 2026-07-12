@@ -11,6 +11,7 @@ interface Props {
   editorial: string;
   slug: string;
   preorderDeposit?: number;
+  imageUrl?: string;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export default function ReserveButton({
   editorial,
   slug,
   preorderDeposit,
+  imageUrl,
   className,
 }: Props) {
   const { addToCart } = useCart();
@@ -31,6 +33,7 @@ export default function ReserveButton({
       stockStatus: 'preorder',
       preorderDeposit,
       slug,
+      imageUrl,
     });
     setReserved(true);
     setTimeout(() => setReserved(false), 2000);

@@ -253,15 +253,21 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
 
               <div>
                 <label className={labelClass}>
-                  Editorial {form.country_code !== 'JP' ? '*' : <span className="text-gray-400 font-normal">(opcional)</span>}
+                  {form.country_code === 'JP' ? 'Fabricante' : 'Editorial'} {form.country_code !== 'JP' ? '*' : <span className="text-gray-400 font-normal">(opcional)</span>}
                 </label>
-                <select className={inputClass} required={form.country_code !== 'JP'} value={form.editorial ?? ''}
-                  onChange={(e) => set('editorial', e.target.value)}>
-                  <option value="">— {form.country_code === 'JP' ? 'Sin editorial' : 'Selecciona editorial'} —</option>
-                  {editorialOptions.map((ed) => (
-                    <option key={ed} value={ed}>{ed}</option>
-                  ))}
-                </select>
+                {form.country_code === 'JP' ? (
+                  <input className={inputClass} value={form.editorial ?? ''}
+                    onChange={(e) => set('editorial', e.target.value)}
+                    placeholder="Kotobukiya, Banpresto, Good Smile Company…" />
+                ) : (
+                  <select className={inputClass} required value={form.editorial ?? ''}
+                    onChange={(e) => set('editorial', e.target.value)}>
+                    <option value="">— Selecciona editorial —</option>
+                    {editorialOptions.map((ed) => (
+                      <option key={ed} value={ed}>{ed}</option>
+                    ))}
+                  </select>
+                )}
                 {errors.editorial && <p className={errorClass}>{errors.editorial}</p>}
               </div>
 
@@ -426,7 +432,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
             </p>
 
             {/* Fallback: IDs manuales */}
-            <details className="mt-3">
+            <details className="mt-3" open>
               <summary className="text-[11px] text-gray-400 cursor-pointer hover:text-gray-600">Ingresar IDs manualmente</summary>
               <input className={`${inputClass} mt-1.5`} value={imagesInput} onChange={(e) => { setImagesInput(e.target.value); setUploadedImages(e.target.value.split(',').map(s => s.trim()).filter(Boolean)); }}
                 placeholder="neko-manga/japan/figura-marin, ..." />

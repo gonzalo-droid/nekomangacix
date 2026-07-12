@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminPin } from '@/lib/adminAuth';
 
 const ADMIN_COOKIE = 'neko-admin-session';
 const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 horas
@@ -6,9 +7,9 @@ const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 horas
 export async function POST(req: NextRequest) {
   const { pin } = await req.json();
 
-  const adminPin = process.env.ADMIN_PIN || '1234';
+  const adminPin = getAdminPin();
 
-  if (!pin || pin !== adminPin) {
+  if (!adminPin || !pin || pin !== adminPin) {
     return NextResponse.json({ error: 'PIN incorrecto' }, { status: 401 });
   }
 

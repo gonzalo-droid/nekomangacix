@@ -294,6 +294,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                     <ReserveButton
                       productId={product.id} title={product.title} price={product.pricePEN}
                       editorial={product.editorial} slug={product.slug} preorderDeposit={product.preorderDeposit}
+                      imageUrl={product.images?.[0] ? getCloudinaryUrl(product.images[0]) : undefined}
                     />
                   </div>
                 ) : (

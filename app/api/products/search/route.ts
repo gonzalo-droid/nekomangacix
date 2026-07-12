@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export async function GET(req: NextRequest) {
-  const q = req.nextUrl.searchParams.get('q')?.trim() ?? '';
+  // Comas y paréntesis rompen la sintaxis de filtros .or() de PostgREST
+  const q = (req.nextUrl.searchParams.get('q') ?? '').replace(/[,()%]/g, ' ').trim();
   if (!q || q.length < 3) return NextResponse.json([]);
 
   const supabase = createClient(

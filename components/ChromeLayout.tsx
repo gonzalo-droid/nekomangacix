@@ -9,7 +9,7 @@ import Footer from './Footer';
  * Rutas donde se oculta el chrome global (header + footer + botón flotante).
  * Usamos prefijos: cualquier ruta que empiece con uno de estos no muestra chrome.
  */
-const HIDE_CHROME_PREFIXES = ['/auth'];
+const HIDE_CHROME_PREFIXES = ['/auth', '/links'];
 
 interface Props {
   children: React.ReactNode;

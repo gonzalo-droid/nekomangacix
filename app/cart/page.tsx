@@ -138,6 +138,8 @@ export default function CartPage() {
           paymentMethod: selectedPayment,
           customerName: customerName || undefined,
           customerPhone: customerPhone || undefined,
+          customerAddress: customerAddress || undefined,
+          couponCode: coupon ? couponCode : undefined,
           shippingCost: totals.shipping,
         }),
       });
@@ -594,7 +596,7 @@ export default function CartPage() {
                   {PAYMENT_INFO[selectedPayment].hint}
                 </p>
                 <p className="text-xs font-bold text-[#06b6d4] mt-1.5">
-                  Monto a transferir hoy: S/ {totals.totalToPayNow.toFixed(2)}
+                  Monto a transferir hoy: S/ {Math.max(0, totals.totalToPayNow - couponDiscount).toFixed(2)}
                 </p>
               </div>
             )}

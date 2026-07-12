@@ -14,7 +14,9 @@ function normalizeProductRow(input: Record<string, unknown>): { row: Record<stri
   if (typeof row.title === 'string') row.title = row.title.trim();
   if (typeof row.series === 'string') row.series = row.series.trim();
   const cc = row.country_code;
-  if (typeof cc === 'string' && isCountryCode(cc)) {
+  // Japón: el fabricante de figuras es libre (Kotobukiya, Banpresto, Good Smile, etc.),
+  // no una lista fija de editoriales — y además opcional.
+  if (typeof cc === 'string' && isCountryCode(cc) && cc !== 'JP') {
     if (typeof row.editorial === 'string' && row.editorial) {
       const allowed = getEditorialsForCountry(cc);
       if (!allowed.includes(row.editorial)) {
@@ -59,7 +61,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page     = Math.max(1, parseInt(searchParams.get('page') ?? '1'));
   const pageSize = parseInt(searchParams.get('pageSize') ?? '20');
-  const search   = searchParams.get('search') ?? '';
+  // Comas y paréntesis rompen la sintaxis de filtros .or() de PostgREST
+  const search   = (searchParams.get('search') ?? '').replace(/[,()%]/g, ' ').trim();
   const status   = searchParams.get('status') ?? '';
   const editorial    = searchParams.get('editorial') ?? '';
   const country_code = searchParams.get('country_code') ?? '';
