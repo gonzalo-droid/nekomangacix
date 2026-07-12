@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const publicId = formData.get('public_id') as string | null;
+    // Carpeta explícita (nombre de archivo en public_id, sin ruta). Si no viene,
+    // usamos la carpeta por defecto y dejamos que public_id incluya su propia ruta
+    // (compatibilidad con el fallback manual de IDs).
+    const folder = (formData.get('folder') as string | null) || (publicId ? undefined : PRODUCTS_FOLDER);
 
     if (!file) {
       return NextResponse.json({ error: 'No se proporcionó archivo' }, { status: 400 });
@@ -26,7 +30,7 @@ export async function POST(request: NextRequest) {
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            ...(publicId ? {} : { folder: PRODUCTS_FOLDER }),
+            ...(folder ? { folder, asset_folder: folder } : {}),
             public_id: publicId || undefined,
             overwrite: true,
             resource_type: 'image',

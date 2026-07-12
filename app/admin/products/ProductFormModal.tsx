@@ -35,6 +35,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
   const [imagesInput, setImagesInput] = useState((product?.images ?? []).join(', '));
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>(product?.images ?? []);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tagsInput, setTagsInput] = useState((product?.tags ?? []).join(', '));
   const [attributes, setAttributes] = useState<Record<string, string>>(
@@ -86,9 +87,12 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
     });
   }
 
-  function buildPublicId(filename: string, idx: number): string {
+  function buildAssetFolder(): string {
     const isJP = form.country_code === 'JP';
-    const folder = isJP ? 'neko-manga/japan' : 'neko-manga/products';
+    return isJP ? 'neko-manga/japan' : 'neko-manga/products';
+  }
+
+  function buildFileName(idx: number): string {
     const title = (form.title ?? 'producto')
       .toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -96,20 +100,22 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
       .replace(/^-|-$/g, '')
       .slice(0, 60);
     const suffix = idx === 0 ? '' : `-${idx + 1}`;
-    return `${folder}/${title}${suffix}`;
+    return `${title}${suffix}`;
   }
 
   async function handleImageUpload(files: FileList) {
     setUploadingImages(true);
     const newIds: string[] = [];
     const startIdx = uploadedImages.length;
+    const folder = buildAssetFolder();
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const publicId = buildPublicId(file.name, startIdx + i);
+      const fileName = buildFileName(startIdx + i);
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('public_id', publicId);
+      fd.append('folder', folder);
+      fd.append('public_id', fileName);
 
       try {
         const res = await fetch('/api/cloudinary/upload', { method: 'POST', body: fd });
@@ -406,7 +412,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               </div>
             )}
 
-            {/* Zona de upload */}
+            {/* Zona de upload — click o arrastrar y soltar */}
             <input
               ref={fileInputRef}
               type="file"
@@ -419,12 +425,25 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingImages || !form.title?.trim()}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-[#2b496d] hover:text-[#2b496d] dark:hover:border-[#5a7a9e] dark:hover:text-[#5a7a9e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onDragOver={(e) => { e.preventDefault(); if (form.title?.trim()) setIsDraggingImage(true); }}
+              onDragLeave={() => setIsDraggingImage(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDraggingImage(false);
+                if (form.title?.trim() && e.dataTransfer.files.length > 0) handleImageUpload(e.dataTransfer.files);
+              }}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                isDraggingImage
+                  ? 'border-[#2b496d] dark:border-[#5a7a9e] bg-[#2b496d]/5 dark:bg-[#5a7a9e]/10 text-[#2b496d] dark:text-[#5a7a9e]'
+                  : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-[#2b496d] hover:text-[#2b496d] dark:hover:border-[#5a7a9e] dark:hover:text-[#5a7a9e]'
+              }`}
             >
               {uploadingImages ? (
                 <><Loader2 size={16} className="animate-spin" /> Subiendo imágenes...</>
+              ) : isDraggingImage ? (
+                <><ImagePlus size={16} /> Suelta para subir</>
               ) : (
-                <><ImagePlus size={16} /> {uploadedImages.length > 0 ? 'Agregar más imágenes' : 'Subir imágenes'}</>
+                <><ImagePlus size={16} /> {uploadedImages.length > 0 ? 'Agregar más imágenes' : 'Arrastra o haz clic para subir'}</>
               )}
             </button>
             {!form.title?.trim() && (
