@@ -14,7 +14,6 @@ const PRICE_MAX = 300;
 const STOCK_OPTIONS = [
   { value: 'in_stock', label: 'En stock' },
   { value: 'preorder', label: 'Preventa' },
-  { value: 'on_demand', label: 'A pedido' },
   { value: 'out_of_stock', label: 'Agotado' },
 ];
 
