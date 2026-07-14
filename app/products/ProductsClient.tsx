@@ -185,7 +185,8 @@ export default function ProductsClient({ products }: Props) {
   }, [products, dSearch, dAuthor, dMin, dMax, structuralFilters, selectedSeries, sortBy]);
 
   const facetCounts = useMemo(() => {
-    const base = products.filter((p) => matchesNonStructural(p, dSearch, dAuthor, dMin, dMax));
+    let base = products.filter((p) => matchesNonStructural(p, dSearch, dAuthor, dMin, dMax));
+    if (selectedSeries) base = base.filter((p) => p.series === selectedSeries);
     return {
       type: tally(base.filter((p) => matchesStructural(p, structuralFilters, 'type')), (p) => p.type),
       countryCode: tally(
@@ -205,7 +206,7 @@ export default function ProductsClient({ products }: Props) {
         (p) => p.stockStatus
       ),
     };
-  }, [products, dSearch, dAuthor, dMin, dMax, structuralFilters]);
+  }, [products, dSearch, dAuthor, dMin, dMax, structuralFilters, selectedSeries]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
