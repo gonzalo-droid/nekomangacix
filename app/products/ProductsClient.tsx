@@ -17,18 +17,107 @@ interface Props {
   products: Product[];
 }
 
+function parseArrayParam(value: string | null): string[] {
+  if (!value) return [];
+  return value.split(',').filter(Boolean);
+}
+
+interface StructuralFilterState {
+  type: ProductType[];
+  countryCode: CountryCode[];
+  editorial: string[];
+  demographic: Demographic[];
+  stockStatus: string[];
+}
+
+type StructuralField = keyof StructuralFilterState;
+
+function matchesNonStructural(
+  p: Product,
+  dSearch: string,
+  dAuthor: string,
+  dMin: number,
+  dMax: number
+): boolean {
+  if (dSearch) {
+    const q = dSearch.toLowerCase();
+    const hit =
+      p.title.toLowerCase().includes(q) ||
+      p.editorial.toLowerCase().includes(q) ||
+      (p.author ?? '').toLowerCase().includes(q);
+    if (!hit) return false;
+  }
+  if (dAuthor && !(p.author ?? '').toLowerCase().includes(dAuthor.toLowerCase())) {
+    return false;
+  }
+  if (p.pricePEN < dMin || p.pricePEN > dMax) return false;
+  return true;
+}
+
+function matchesStructural(
+  p: Product,
+  filters: StructuralFilterState,
+  exclude?: StructuralField
+): boolean {
+  if (exclude !== 'type' && filters.type.length > 0 && !filters.type.includes(p.type)) {
+    return false;
+  }
+  if (
+    exclude !== 'countryCode' &&
+    filters.countryCode.length > 0 &&
+    !filters.countryCode.includes(p.countryCode)
+  ) {
+    return false;
+  }
+  if (
+    exclude !== 'editorial' &&
+    filters.editorial.length > 0 &&
+    !filters.editorial.includes(p.editorial)
+  ) {
+    return false;
+  }
+  if (
+    exclude !== 'demographic' &&
+    filters.demographic.length > 0 &&
+    (p.demographic === undefined || !filters.demographic.includes(p.demographic))
+  ) {
+    return false;
+  }
+  if (
+    exclude !== 'stockStatus' &&
+    filters.stockStatus.length > 0 &&
+    !filters.stockStatus.includes(p.stockStatus)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function tally<T extends string>(
+  list: Product[],
+  getValue: (p: Product) => T | undefined
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const p of list) {
+    const v = getValue(p);
+    if (v === undefined) continue;
+    counts[v] = (counts[v] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export default function ProductsClient({ products }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const urlSearch = searchParams.get('search') ?? '';
-  const urlType = searchParams.get('type');
-  const urlCountry = searchParams.get('country');
-  const urlEditorial = searchParams.get('editorial');
-  const urlDemographic = searchParams.get('demographic');
+  const urlType = parseArrayParam(searchParams.get('type'));
+  const urlCountry = parseArrayParam(searchParams.get('country'));
+  const urlEditorial = parseArrayParam(searchParams.get('editorial'));
+  const urlDemographic = parseArrayParam(searchParams.get('demographic'));
   const urlSeries = searchParams.get('series');
-  const urlStock = searchParams.get('stock') ?? '';
+  const urlStock = parseArrayParam(searchParams.get('stock'));
 
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [authorQuery, setAuthorQuery] = useState('');
@@ -39,22 +128,27 @@ export default function ProductsClient({ products }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // La URL es la fuente de verdad de los filtros estructurales (compartibles)
-  const selectedType: ProductType | null = urlType && isProductType(urlType) ? urlType : null;
-  const selectedCountryCode: CountryCode | null =
-    urlCountry && isCountryCode(urlCountry) ? urlCountry : null;
-  const selectedEditorial: string | null = urlEditorial;
-  const selectedDemographic: Demographic | null =
-    urlDemographic && isDemographic(urlDemographic) ? urlDemographic : null;
+  const selectedType = useMemo(() => urlType.filter(isProductType) as ProductType[], [urlType]);
+  const selectedCountryCode = useMemo(
+    () => urlCountry.filter(isCountryCode) as CountryCode[],
+    [urlCountry]
+  );
+  const selectedEditorial = urlEditorial;
+  const selectedDemographic = useMemo(
+    () => urlDemographic.filter(isDemographic) as Demographic[],
+    [urlDemographic]
+  );
   const selectedSeries: string | null = urlSeries;
-  const selectedStock: string = urlStock;
+  const selectedStock = urlStock;
 
   // Sincroniza filtros activos a la URL para que sean compartibles/bookmarkeables
   const syncUrl = useCallback(
-    (patch: Record<string, string | null>) => {
+    (patch: Record<string, string | string[] | null>) => {
       const params = new URLSearchParams(searchParams.toString());
       for (const [k, v] of Object.entries(patch)) {
-        if (v === null || v === '') params.delete(k);
-        else params.set(k, v);
+        const isEmpty = v === null || v === '' || (Array.isArray(v) && v.length === 0);
+        if (isEmpty) params.delete(k);
+        else params.set(k, Array.isArray(v) ? v.join(',') : v);
       }
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -67,49 +161,52 @@ export default function ProductsClient({ products }: Props) {
   const dMin = useDebouncedValue(minPrice, 150);
   const dMax = useDebouncedValue(maxPrice, 150);
 
-  const filtered = useMemo(() => {
-    let list = products;
+  const structuralFilters: StructuralFilterState = useMemo(
+    () => ({
+      type: selectedType,
+      countryCode: selectedCountryCode,
+      editorial: selectedEditorial,
+      demographic: selectedDemographic,
+      stockStatus: selectedStock,
+    }),
+    [selectedType, selectedCountryCode, selectedEditorial, selectedDemographic, selectedStock]
+  );
 
-    if (dSearch) {
-      const q = dSearch.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.editorial.toLowerCase().includes(q) ||
-          (p.author ?? '').toLowerCase().includes(q)
-      );
-    }
-    if (selectedType) list = list.filter((p) => p.type === selectedType);
-    if (selectedCountryCode) list = list.filter((p) => p.countryCode === selectedCountryCode);
-    if (selectedEditorial) list = list.filter((p) => p.editorial === selectedEditorial);
-    if (selectedDemographic) list = list.filter((p) => p.demographic === selectedDemographic);
+  const filtered = useMemo(() => {
+    let list = products.filter((p) => matchesNonStructural(p, dSearch, dAuthor, dMin, dMax));
+    list = list.filter((p) => matchesStructural(p, structuralFilters));
     if (selectedSeries) list = list.filter((p) => p.series === selectedSeries);
-    if (selectedStock) list = list.filter((p) => p.stockStatus === selectedStock);
-    if (dAuthor) {
-      const a = dAuthor.toLowerCase();
-      list = list.filter((p) => (p.author ?? '').toLowerCase().includes(a));
-    }
-    list = list.filter((p) => p.pricePEN >= dMin && p.pricePEN <= dMax);
 
     if (sortBy === 'price_asc') list = [...list].sort((a, b) => a.pricePEN - b.pricePEN);
     else if (sortBy === 'price_desc') list = [...list].sort((a, b) => b.pricePEN - a.pricePEN);
     else if (sortBy === 'name_asc') list = [...list].sort((a, b) => a.title.localeCompare(b.title, 'es'));
 
     return list;
-  }, [
-    products,
-    dSearch,
-    dAuthor,
-    dMin,
-    dMax,
-    selectedType,
-    selectedCountryCode,
-    selectedEditorial,
-    selectedDemographic,
-    selectedSeries,
-    selectedStock,
-    sortBy,
-  ]);
+  }, [products, dSearch, dAuthor, dMin, dMax, structuralFilters, selectedSeries, sortBy]);
+
+  const facetCounts = useMemo(() => {
+    let base = products.filter((p) => matchesNonStructural(p, dSearch, dAuthor, dMin, dMax));
+    if (selectedSeries) base = base.filter((p) => p.series === selectedSeries);
+    return {
+      type: tally(base.filter((p) => matchesStructural(p, structuralFilters, 'type')), (p) => p.type),
+      countryCode: tally(
+        base.filter((p) => matchesStructural(p, structuralFilters, 'countryCode')),
+        (p) => p.countryCode
+      ),
+      editorial: tally(
+        base.filter((p) => matchesStructural(p, structuralFilters, 'editorial')),
+        (p) => p.editorial
+      ),
+      demographic: tally(
+        base.filter((p) => matchesStructural(p, structuralFilters, 'demographic')),
+        (p) => p.demographic
+      ),
+      stockStatus: tally(
+        base.filter((p) => matchesStructural(p, structuralFilters, 'stockStatus')),
+        (p) => p.stockStatus
+      ),
+    };
+  }, [products, dSearch, dAuthor, dMin, dMax, structuralFilters, selectedSeries]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
@@ -117,29 +214,34 @@ export default function ProductsClient({ products }: Props) {
 
   const resetPage = () => setCurrentPage(1);
 
-  const handleTypeChange = (t: ProductType | null) => {
-    // Al cambiar a un tipo distinto de manga, descartar demografía (no aplica)
-    if (t !== null && t !== 'manga' && selectedDemographic !== null) {
-      syncUrl({ type: t, demographic: null });
+  const handleTypeChange = (types: ProductType[]) => {
+    // Al quitar "manga" de la selección, descartar demografía (no aplica)
+    const stillApplicable = types.length === 0 || types.includes('manga');
+    if (!stillApplicable && selectedDemographic.length > 0) {
+      syncUrl({ type: types, demographic: [] });
     } else {
-      syncUrl({ type: t });
+      syncUrl({ type: types });
     }
     resetPage();
   };
 
-  const handleDemographicChange = (d: Demographic | null) => {
-    syncUrl({ demographic: d });
+  const handleDemographicChange = (demographics: Demographic[]) => {
+    syncUrl({ demographic: demographics });
     resetPage();
   };
 
-  const handleCountryEditorialChange = ({
-    country,
-    editorial,
-  }: {
-    country: CountryCode | null;
-    editorial: string | null;
-  }) => {
-    syncUrl({ country, editorial });
+  const handleCountryChange = (countries: CountryCode[]) => {
+    syncUrl({ country: countries });
+    resetPage();
+  };
+
+  const handleEditorialChange = (editorials: string[]) => {
+    syncUrl({ editorial: editorials });
+    resetPage();
+  };
+
+  const handleStockChange = (stocks: string[]) => {
+    syncUrl({ stock: stocks });
     resetPage();
   };
 
@@ -167,7 +269,11 @@ export default function ProductsClient({ products }: Props) {
         >
           <SlidersHorizontal size={16} />
           Filtros
-          {(selectedType || selectedStock || selectedCountryCode || selectedEditorial || selectedDemographic) && (
+          {(selectedType.length > 0 ||
+            selectedStock.length > 0 ||
+            selectedCountryCode.length > 0 ||
+            selectedEditorial.length > 0 ||
+            selectedDemographic.length > 0) && (
             <span className="w-2 h-2 rounded-full bg-[#ec4899] ml-0.5" />
           )}
         </button>
@@ -199,15 +305,21 @@ export default function ProductsClient({ products }: Props) {
               onSearch={(q) => { setSearchQuery(q); resetPage(); }}
               onAuthorChange={(v) => { setAuthorQuery(v); resetPage(); }}
               onPriceChange={(mn, mx) => { setMinPrice(mn); setMaxPrice(mx); resetPage(); }}
-              onTypeChange={(t) => { handleTypeChange(t); }}
-              onDemographicChange={(d) => { handleDemographicChange(d); }}
-              onCountryEditorialChange={(v) => { handleCountryEditorialChange(v); }}
-              onStockChange={(s) => { syncUrl({ stock: s }); resetPage(); }}
+              onTypeChange={handleTypeChange}
+              onDemographicChange={handleDemographicChange}
+              onCountryChange={handleCountryChange}
+              onEditorialChange={handleEditorialChange}
+              onStockChange={handleStockChange}
               selectedType={selectedType}
               selectedDemographic={selectedDemographic}
               selectedCountry={selectedCountryCode}
               selectedEditorial={selectedEditorial}
               selectedStock={selectedStock}
+              typeCounts={facetCounts.type}
+              demographicCounts={facetCounts.demographic}
+              countryCounts={facetCounts.countryCode}
+              editorialCounts={facetCounts.editorial}
+              stockCounts={facetCounts.stockStatus}
             />
             <div className="p-4 border-t border-gray-100 dark:border-white/5">
               <button
@@ -230,13 +342,19 @@ export default function ProductsClient({ products }: Props) {
             onPriceChange={(mn, mx) => { setMinPrice(mn); setMaxPrice(mx); resetPage(); }}
             onTypeChange={handleTypeChange}
             onDemographicChange={handleDemographicChange}
-            onCountryEditorialChange={handleCountryEditorialChange}
-            onStockChange={(s) => { syncUrl({ stock: s }); resetPage(); }}
+            onCountryChange={handleCountryChange}
+            onEditorialChange={handleEditorialChange}
+            onStockChange={handleStockChange}
             selectedType={selectedType}
             selectedDemographic={selectedDemographic}
             selectedCountry={selectedCountryCode}
             selectedEditorial={selectedEditorial}
             selectedStock={selectedStock}
+            typeCounts={facetCounts.type}
+            demographicCounts={facetCounts.demographic}
+            countryCounts={facetCounts.countryCode}
+            editorialCounts={facetCounts.editorial}
+            stockCounts={facetCounts.stockStatus}
           />
         </aside>
 

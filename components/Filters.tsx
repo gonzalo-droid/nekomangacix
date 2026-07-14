@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
-import HierarchicalCountryFilter from './filters/HierarchicalCountryFilter';
-import type { CountryCode } from '@/lib/constants/countries';
+import MultiSelectFilterGroup from './filters/MultiSelectFilterGroup';
+import { COUNTRY_CODES, COUNTRIES, type CountryCode } from '@/lib/constants/countries';
+import { ALL_EDITORIALS, EDITORIALS_BY_COUNTRY } from '@/lib/constants/editorials';
 import { PRODUCT_TYPES, PRODUCT_TYPE_LABELS, type ProductType } from '@/lib/constants/productTypes';
 import { DEMOGRAPHICS, DEMOGRAPHIC_LABELS, type Demographic } from '@/lib/constants/demographics';
 
@@ -11,10 +12,9 @@ const PRICE_MIN = 0;
 const PRICE_MAX = 300;
 
 const STOCK_OPTIONS = [
-  { value: 'in_stock',    label: 'En stock',  color: 'bg-emerald-500', dot: 'bg-emerald-400' },
-  { value: 'preorder',    label: 'Preventa',  color: 'bg-blue-500',    dot: 'bg-blue-400' },
-  { value: 'on_demand',   label: 'A pedido',  color: 'bg-orange-500',  dot: 'bg-orange-400' },
-  { value: 'out_of_stock',label: 'Agotado',   color: 'bg-red-500',     dot: 'bg-red-400' },
+  { value: 'in_stock', label: 'En stock' },
+  { value: 'preorder', label: 'Preventa' },
+  { value: 'out_of_stock', label: 'Agotado' },
 ];
 
 const TYPE_ICONS: Record<string, string> = {
@@ -38,15 +38,21 @@ interface FiltersProps {
   onSearch: (query: string) => void;
   onAuthorChange: (author: string) => void;
   onPriceChange: (min: number, max: number) => void;
-  onTypeChange: (type: ProductType | null) => void;
-  onDemographicChange: (demographic: Demographic | null) => void;
-  onCountryEditorialChange: (next: { country: CountryCode | null; editorial: string | null }) => void;
-  onStockChange: (stock: string) => void;
-  selectedType: ProductType | null;
-  selectedDemographic: Demographic | null;
-  selectedCountry: CountryCode | null;
-  selectedEditorial: string | null;
-  selectedStock: string;
+  onTypeChange: (types: ProductType[]) => void;
+  onDemographicChange: (demographics: Demographic[]) => void;
+  onCountryChange: (countries: CountryCode[]) => void;
+  onEditorialChange: (editorials: string[]) => void;
+  onStockChange: (stocks: string[]) => void;
+  selectedType: ProductType[];
+  selectedDemographic: Demographic[];
+  selectedCountry: CountryCode[];
+  selectedEditorial: string[];
+  selectedStock: string[];
+  typeCounts: Record<string, number>;
+  demographicCounts: Record<string, number>;
+  countryCounts: Record<string, number>;
+  editorialCounts: Record<string, number>;
+  stockCounts: Record<string, number>;
 }
 
 function Section({
@@ -83,29 +89,89 @@ function Section({
 
 export default function Filters({
   onSearch, onAuthorChange, onPriceChange, onTypeChange,
-  onDemographicChange, onCountryEditorialChange, onStockChange,
+  onDemographicChange, onCountryChange, onEditorialChange, onStockChange,
   selectedType, selectedDemographic, selectedCountry, selectedEditorial, selectedStock,
+  typeCounts, demographicCounts, countryCounts, editorialCounts, stockCounts,
 }: FiltersProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [authorQuery, setAuthorQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([PRICE_MIN, PRICE_MAX]);
 
-  const activeCount = [
-    searchQuery, selectedStock, selectedType, selectedDemographic,
-    selectedCountry, selectedEditorial, authorQuery,
-    priceRange[0] > PRICE_MIN || priceRange[1] < PRICE_MAX ? 'price' : null,
-  ].filter(Boolean).length;
+  const activeCount =
+    (searchQuery ? 1 : 0) +
+    selectedStock.length +
+    selectedType.length +
+    selectedDemographic.length +
+    selectedCountry.length +
+    selectedEditorial.length +
+    (authorQuery ? 1 : 0) +
+    (priceRange[0] > PRICE_MIN || priceRange[1] < PRICE_MAX ? 1 : 0);
 
   const clearAll = () => {
     setSearchQuery(''); setAuthorQuery(''); setPriceRange([PRICE_MIN, PRICE_MAX]);
     onSearch(''); onAuthorChange(''); onPriceChange(PRICE_MIN, Infinity);
-    onTypeChange(null); onDemographicChange(null);
-    onCountryEditorialChange({ country: null, editorial: null });
-    onStockChange('');
+    onTypeChange([]); onDemographicChange([]);
+    onCountryChange([]); onEditorialChange([]);
+    onStockChange([]);
   };
 
   const minPct = ((priceRange[0] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
   const maxPct = ((priceRange[1] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
+
+  const typeOptions = useMemo(
+    () =>
+      PRODUCT_TYPES.map((t) => ({
+        value: t,
+        label: `${TYPE_ICONS[t] ?? '📦'} ${PRODUCT_TYPE_LABELS[t]}`,
+        count: typeCounts[t] ?? 0,
+      })),
+    [typeCounts]
+  );
+
+  const demographicOptions = useMemo(
+    () =>
+      DEMOGRAPHICS.map((d) => ({
+        value: d,
+        label: `${DEMO_ICONS[d] ?? '📚'} ${DEMOGRAPHIC_LABELS[d]}`,
+        count: demographicCounts[d] ?? 0,
+      })),
+    [demographicCounts]
+  );
+
+  const stockOptions = useMemo(
+    () =>
+      STOCK_OPTIONS.map((s) => ({
+        value: s.value,
+        label: s.label,
+        count: stockCounts[s.value] ?? 0,
+      })),
+    [stockCounts]
+  );
+
+  const countryOptions = useMemo(
+    () =>
+      COUNTRY_CODES.map((code) => ({
+        value: code,
+        label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
+        count: countryCounts[code] ?? 0,
+      })),
+    [countryCounts]
+  );
+
+  const editorialOptions = useMemo(() => {
+    const pool =
+      selectedCountry.length > 0
+        ? selectedCountry.flatMap((code) => EDITORIALS_BY_COUNTRY[code])
+        : ALL_EDITORIALS;
+    const unique = Array.from(new Set(pool));
+    return unique.map((ed) => ({
+      value: ed,
+      label: ed,
+      count: editorialCounts[ed] ?? 0,
+    }));
+  }, [selectedCountry, editorialCounts]);
+
+  const showDemographic = selectedType.length === 0 || selectedType.includes('manga');
 
   return (
     <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
@@ -146,116 +212,58 @@ export default function Filters({
         </Section>
 
         {/* 2. Disponibilidad */}
-        <Section id="stock" title="Disponibilidad" badge={selectedStock ? 1 : 0}>
-          <div className="grid grid-cols-2 gap-2">
-            {STOCK_OPTIONS.map(({ value, label, color, dot }) => {
-              const active = selectedStock === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => onStockChange(active ? '' : value)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
-                    active
-                      ? `${color} text-white border-transparent shadow-md scale-[1.02]`
-                      : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700/50'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-white/70' : dot}`} />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </Section>
-
-        {/* 3. Tipo */}
-        <Section id="type" title="Tipo" badge={selectedType ? 1 : 0}>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => onTypeChange(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all ${
-                selectedType === null
-                  ? 'bg-[#2b496d] text-white border-[#2b496d]'
-                  : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
-              }`}
-            >
-              Todos
-            </button>
-            {PRODUCT_TYPES.map((t) => {
-              const active = selectedType === t;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => onTypeChange(active ? null : t)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all flex items-center gap-1 ${
-                    active
-                      ? 'bg-[#2b496d] text-white border-[#2b496d] shadow-sm'
-                      : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-[#2b496d]/40 hover:text-[#2b496d] dark:hover:text-white'
-                  }`}
-                >
-                  <span>{TYPE_ICONS[t] ?? '📦'}</span>
-                  {PRODUCT_TYPE_LABELS[t]}
-                </button>
-              );
-            })}
-          </div>
-        </Section>
-
-        {/* 4. Demografía — solo para manga */}
-        {(selectedType === null || selectedType === 'manga') && (
-          <Section id="demographic" title="Demografía" badge={selectedDemographic ? 1 : 0}>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => onDemographicChange(null)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all ${
-                  selectedDemographic === null
-                    ? 'bg-[#ec4899] text-white border-[#ec4899]'
-                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
-                }`}
-              >
-                Todas
-              </button>
-              {DEMOGRAPHICS.map((d) => {
-                const active = selectedDemographic === d;
-                return (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => onDemographicChange(active ? null : d)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all flex items-center gap-1 ${
-                      active
-                        ? 'bg-[#ec4899] text-white border-[#ec4899] shadow-sm'
-                        : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-[#ec4899]/40 hover:text-[#ec4899]'
-                    }`}
-                  >
-                    <span>{DEMO_ICONS[d] ?? '📚'}</span>
-                    {DEMOGRAPHIC_LABELS[d]}
-                  </button>
-                );
-              })}
-            </div>
-          </Section>
-        )}
-
-        {/* 5. Origen y editorial */}
-        <Section
-          id="country"
-          title="Origen y editorial"
-          badge={(selectedCountry ? 1 : 0) + (selectedEditorial ? 1 : 0)}
-          defaultOpen={false}
-        >
-          <HierarchicalCountryFilter
-            selectedCountry={selectedCountry}
-            selectedEditorial={selectedEditorial}
-            onChange={onCountryEditorialChange}
+        <Section id="stock" title="Disponibilidad" badge={selectedStock.length}>
+          <MultiSelectFilterGroup
+            options={stockOptions}
+            selected={selectedStock}
+            onChange={onStockChange}
+            searchable={false}
           />
         </Section>
 
-        {/* 6. Precio */}
+        {/* 3. Tipo */}
+        <Section id="type" title="Tipo" badge={selectedType.length}>
+          <MultiSelectFilterGroup
+            options={typeOptions}
+            selected={selectedType}
+            onChange={(next) => onTypeChange(next as ProductType[])}
+            searchPlaceholder="Buscar tipo..."
+          />
+        </Section>
+
+        {/* 4. Demografía — solo para manga */}
+        {showDemographic && (
+          <Section id="demographic" title="Demografía" badge={selectedDemographic.length}>
+            <MultiSelectFilterGroup
+              options={demographicOptions}
+              selected={selectedDemographic}
+              onChange={(next) => onDemographicChange(next as Demographic[])}
+              searchPlaceholder="Buscar demografía..."
+            />
+          </Section>
+        )}
+
+        {/* 5. País */}
+        <Section id="country" title="País" badge={selectedCountry.length} defaultOpen={false}>
+          <MultiSelectFilterGroup
+            options={countryOptions}
+            selected={selectedCountry}
+            onChange={(next) => onCountryChange(next as CountryCode[])}
+            searchable={false}
+          />
+        </Section>
+
+        {/* 6. Editorial */}
+        <Section id="editorial" title="Editorial" badge={selectedEditorial.length} defaultOpen={false}>
+          <MultiSelectFilterGroup
+            options={editorialOptions}
+            selected={selectedEditorial}
+            onChange={onEditorialChange}
+            searchPlaceholder="Buscar editorial..."
+          />
+        </Section>
+
+        {/* 7. Precio */}
         <Section id="price" title="Precio" defaultOpen={false}>
           <div className="px-1">
             <div className="flex justify-between text-sm font-bold text-[#2b496d] dark:text-blue-300 mb-4">
@@ -299,7 +307,7 @@ export default function Filters({
           </div>
         </Section>
 
-        {/* 7. Autor */}
+        {/* 8. Autor */}
         <Section id="author" title="Autor" defaultOpen={false}>
           <input
             type="text"
