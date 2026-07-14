@@ -52,7 +52,18 @@
       "Bash(curl -s \"http://localhost:3000/api/cloudinary/images\" -H \"Cookie: neko-admin-session=1234\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('resources:', len\\(d['resources']\\), '| subfolders:', d['subfolders'], '| first:', d['resources'][0]['public_id'] if d['resources'] else 'none'\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('resources:', len\\(d['resources']\\), '| total:', d['total'], '| first:', d['resources'][0]['display_name'] if d['resources'] else 'none'\\)\")",
-      "Bash(node_modules/.bin/tsc --noEmit)"
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "WebSearch",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0 Safari/537.36\" \"https://www.penguinlibros.com/ar/960307-manga\" -o /private/tmp/claude-502/-Volumes-Neko-webs-nekomangacix/eb9a785e-1bd8-4d91-9fb7-db4b36e47951/scratchpad/manga_page1.html -w \"HTTP %{http_code}, size %{size_download} bytes\\\\n\")",
+      "Bash(python3 -c \"import bs4; print\\(bs4.__version__\\)\")",
+      "Bash(node -e \"require.resolve\\('cheerio'\\)\")",
+      "Bash(npm init *)",
+      "Bash(curl -s -A \"Mozilla/5.0\" \"https://www.penguinlibros.com/ar/40989-comic\" -o comic_page1.html -w \"HTTP %{http_code} size %{size_download}\\\\n\")",
+      "Bash(node extract_listing.js)",
+      "Bash(curl -s -A \"Mozilla/5.0\" \"https://www.penguinlibros.com/ar/960307-manga?order=name.asc&pageno=1\" -o pages/manga_p1.html)",
+      "Bash(curl -s -A \"Mozilla/5.0\" \"https://www.penguinlibros.com/ar/960307-manga?order=name.asc&pageno=2\" -o pages/manga_p2.html)",
+      "Bash(node match.js)"
     ]
   }
 }
