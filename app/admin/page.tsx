@@ -2,15 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag, BookMarked, Megaphone } from 'lucide-react';
+import { ImageIcon, Package, ShoppingBag, ChevronLeft, Tag, BookMarked, Megaphone, Calendar } from 'lucide-react';
 import CloudinaryUploader from '@/components/CloudinaryUploader';
 import CloudinaryManager from '@/components/CloudinaryManager';
 import ProductsManager from './products/ProductsManager';
 import PromotionsManager from './promotions/PromotionsManager';
 import LegendView from './legend/LegendView';
 import BannersManager from './banners/BannersManager';
+import CampaignsManager from './campaigns/CampaignsManager';
 
-type AdminTab = 'products' | 'promotions' | 'images' | 'legend' | 'banners';
+type AdminTab = 'products' | 'promotions' | 'campaigns' | 'images' | 'legend' | 'banners';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
@@ -53,6 +54,9 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('promotions')} className={tabClass('promotions')}>
               <Tag size={18} /> Promociones
             </button>
+            <button onClick={() => setActiveTab('campaigns')} className={tabClass('campaigns')}>
+              <Calendar size={18} /> Campañas
+            </button>
             <button onClick={() => setActiveTab('images')} className={tabClass('images')}>
               <ImageIcon size={18} /> Imágenes (Cloudinary)
             </button>
@@ -70,6 +74,9 @@ export default function AdminPage() {
 
         {/* Promotions Tab */}
         {activeTab === 'promotions' && <PromotionsManager />}
+
+        {/* Campaigns Tab */}
+        {activeTab === 'campaigns' && <CampaignsManager />}
 
         {/* Banners Tab */}
         {activeTab === 'banners' && <BannersManager />}
