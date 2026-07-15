@@ -88,11 +88,14 @@ export default function CampaignsManager() {
   }
 
   async function toggleStatus(c: Campaign) {
-    await fetch(`/api/admin/campaigns/${c.id}`, {
+    setError(null);
+    const res = await fetch(`/api/admin/campaigns/${c.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: c.status === 'open' ? 'closed' : 'open' }),
     });
+    const json = await res.json();
+    if (!res.ok) { setError(json.error ?? 'Error al cambiar el estado'); return; }
     load();
   }
 
@@ -112,6 +115,10 @@ export default function CampaignsManager() {
           <Plus size={16} /> Nueva campaña
         </button>
       </div>
+
+      {error && !showForm && (
+        <p className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{error}</p>
+      )}
 
       {loading ? (
         <p className="text-sm text-gray-500">Cargando...</p>
