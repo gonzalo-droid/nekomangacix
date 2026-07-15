@@ -224,6 +224,7 @@ export interface Database {
           title: string;
           item_type: OrderItemType;
           estimated_arrival: string | null;
+          campaign_id: string | null;
         };
         Insert: {
           id?: string;
@@ -234,6 +235,7 @@ export interface Database {
           title: string;
           item_type?: OrderItemType;
           estimated_arrival?: string | null;
+          campaign_id?: string | null;
         };
         Update: never;
       };
