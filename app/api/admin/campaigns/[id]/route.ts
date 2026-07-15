@@ -18,17 +18,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = (await req.json()) as Partial<DbCampaign>;
   const supabase = getClient();
 
-  const willBeOpen = body.status === 'open' || (body.status === undefined && body.starts_at !== undefined);
-  if (willBeOpen && (body.country_code || body.starts_at || body.ends_at)) {
-    const { data: current } = await supabase
-      .from('campaigns')
-      .select('country_code, starts_at, ends_at')
-      .eq('id', id)
-      .single();
+  const { data: current, error: currentError } = await supabase
+    .from('campaigns')
+    .select('country_code, starts_at, ends_at, status')
+    .eq('id', id)
+    .single();
 
-    const countryCode = body.country_code ?? current?.country_code;
-    const startsAt = body.starts_at ?? current?.starts_at;
-    const endsAt = body.ends_at ?? current?.ends_at;
+  if (currentError || !current) {
+    return NextResponse.json({ error: 'Campaña no encontrada' }, { status: 404 });
+  }
+
+  const finalStatus = body.status ?? current.status;
+
+  if (finalStatus === 'open') {
+    const countryCode = body.country_code ?? current.country_code;
+    const startsAt = body.starts_at ?? current.starts_at;
+    const endsAt = body.ends_at ?? current.ends_at;
 
     if (countryCode && startsAt && endsAt) {
       const { data: existingOpen } = await supabase
@@ -43,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       );
       if (conflict) {
         return NextResponse.json(
-          { error: `Se superpone con la campaña abierta "${conflict.name}"` },
+          { error: `Se superpone con la campaña abierta "${conflict.name}" (${new Date(conflict.starts_at).toLocaleDateString('es-PE', { timeZone: 'UTC' })} – ${new Date(conflict.ends_at).toLocaleDateString('es-PE', { timeZone: 'UTC' })})` },
           { status: 400 }
         );
       }

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     );
     if (conflict) {
       return NextResponse.json(
-        { error: `Se superpone con la campaña abierta "${conflict.name}" (${new Date(conflict.starts_at).toLocaleDateString('es-PE')} – ${new Date(conflict.ends_at).toLocaleDateString('es-PE')})` },
+        { error: `Se superpone con la campaña abierta "${conflict.name}" (${new Date(conflict.starts_at).toLocaleDateString('es-PE', { timeZone: 'UTC' })} – ${new Date(conflict.ends_at).toLocaleDateString('es-PE', { timeZone: 'UTC' })})` },
         { status: 400 }
       );
     }
