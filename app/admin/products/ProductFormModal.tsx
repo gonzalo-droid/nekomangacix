@@ -325,12 +325,14 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               <div>
                 <label className={labelClass}>Precio PEN (S/) *</label>
                 <input type="number" min="0" step="0.01" className={inputClass} required
-                  value={form.price_pen ?? 0} onChange={(e) => set('price_pen', parseFloat(e.target.value))} />
+                  value={form.price_pen ?? 0}
+                  onChange={(e) => set('price_pen', e.target.value ? parseFloat(e.target.value) : 0)} />
               </div>
               <div>
                 <label className={labelClass}>Stock</label>
                 <input type="number" min="0" className={inputClass}
-                  value={form.stock ?? 0} onChange={(e) => set('stock', parseInt(e.target.value))} />
+                  value={form.stock ?? 0}
+                  onChange={(e) => set('stock', e.target.value ? parseInt(e.target.value) : 0)} />
               </div>
               <div>
                 <label className={labelClass}>Estado de stock *</label>
