@@ -115,10 +115,20 @@ export default async function AdminOrdersPage() {
           <ChevronLeft size={16} />
           Volver al Admin
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Pedidos</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-          {orders?.length ?? 0} pedidos totales
-        </p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Pedidos</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+              {orders?.length ?? 0} pedidos totales
+            </p>
+          </div>
+          <Link
+            href="/admin/orders/new"
+            className="inline-flex items-center gap-2 bg-[#ec4899] hover:bg-[#d63384] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            Cargar pedido manual
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
