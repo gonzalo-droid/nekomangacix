@@ -4,8 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { calculateCartTotals } from '@/lib/domain/cart/calculate';
 import { dbRowToPromotion, validateCoupon, applyCouponDiscount, type DbPromotion } from '@/lib/promotions';
+import { getActiveCampaignForCountry } from '@/lib/campaigns';
 import type { StockStatus } from '@/lib/products';
 import type { CartItem } from '@/context/CartContext';
+import type { CountryCode } from '@/lib/constants/countries';
 
 interface OrderItemInput {
   productId: string;
@@ -48,17 +50,18 @@ export async function POST(req: NextRequest) {
 
   // Precios y estados reales desde la DB — no confiamos en los del cliente
   const productIds = items.map((i) => i.productId).filter(Boolean);
-  const priceMap = new Map<string, { price: number; stockStatus: StockStatus; title: string }>();
+  const priceMap = new Map<string, { price: number; stockStatus: StockStatus; title: string; countryCode: CountryCode }>();
   if (productIds.length > 0) {
     const { data: dbProducts } = await supabase
       .from('products')
-      .select('id, title, price_pen, stock_status')
+      .select('id, title, price_pen, stock_status, country_code')
       .in('id', productIds);
     for (const p of dbProducts ?? []) {
       priceMap.set(p.id as string, {
         price: Number(p.price_pen),
         stockStatus: p.stock_status as StockStatus,
         title: p.title as string,
+        countryCode: p.country_code as CountryCode,
       });
     }
   }
@@ -85,6 +88,24 @@ export async function POST(req: NextRequest) {
       stockStatus: db?.stockStatus ?? i.stockStatus,
     };
   });
+
+  // Resolver campaña vigente para cada ítem de preventa. Si un país no tiene
+  // ninguna campaña abierta ahora mismo, se rechaza el pedido completo con un
+  // mensaje claro en vez de crear un ítem de preventa "huérfano".
+  const campaignIdByProductId = new Map<string, string | null>();
+  for (const item of cartItems) {
+    if (item.stockStatus !== 'preorder') continue;
+    const db = priceMap.get(item.productId);
+    if (!db) continue;
+    const campaign = await getActiveCampaignForCountry(db.countryCode, supabase);
+    if (!campaign) {
+      return NextResponse.json(
+        { error: `No hay preventa abierta para ${db.countryCode} en este momento (producto: ${item.title})` },
+        { status: 400 }
+      );
+    }
+    campaignIdByProductId.set(item.productId, campaign.id);
+  }
 
   const totals = calculateCartTotals({ items: cartItems, isFirstPurchase });
 
@@ -149,6 +170,7 @@ export async function POST(req: NextRequest) {
     unit_price: item.price,
     title: item.title,
     item_type: item.stockStatus === 'preorder' ? 'preorder' : 'stock',
+    campaign_id: campaignIdByProductId.get(item.productId) ?? null,
   }));
 
   await supabase.from('order_items').insert(orderItems);
