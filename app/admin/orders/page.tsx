@@ -102,7 +102,8 @@ export default async function AdminOrdersPage({
   const { data: campaigns } = await supabase
     .from('campaigns')
     .select('id, name')
-    .order('starts_at', { ascending: false });
+    .order('starts_at', { ascending: false })
+    .returns<{ id: string; name: string }[]>();
   const campaignNameById = new Map((campaigns ?? []).map((c) => [c.id as string, c.name as string]));
 
   const { data: allOrders } = await supabase

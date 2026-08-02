@@ -239,6 +239,36 @@ export interface Database {
         };
         Update: never;
       };
+      campaigns: {
+        Row: {
+          id: string;
+          name: string;
+          country_code: CountryCode;
+          starts_at: string;
+          ends_at: string;
+          status: 'open' | 'closed';
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          country_code: CountryCode;
+          starts_at: string;
+          ends_at: string;
+          status?: 'open' | 'closed';
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          name?: string;
+          country_code?: CountryCode;
+          starts_at?: string;
+          ends_at?: string;
+          status?: 'open' | 'closed';
+          notes?: string | null;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
