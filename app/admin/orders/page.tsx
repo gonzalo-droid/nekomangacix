@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/core/supabase/server';
+import { createSupabaseAdminClient } from '@/core/supabase/server';
 import type { Metadata } from 'next';
 import type { OrderStatus } from '@/types/database.types';
 import { isOrderState, type OrderState } from '@/lib/constants/orderStates';
@@ -88,7 +88,10 @@ export default async function AdminOrdersPage() {
     );
   }
 
-  const supabase = await createSupabaseServerClient();
+  // El admin se autentica con PIN, no con Supabase Auth, así que auth.uid()
+  // es null aquí — con la anon key, RLS ("Users see own orders") bloquea
+  // todas las filas. Usamos service role para esta lectura interna.
+  const supabase = await createSupabaseAdminClient();
 
   const { data: orders } = await supabase
     .from('orders')
