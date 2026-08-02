@@ -109,7 +109,14 @@ export async function POST(req: NextRequest) {
 
   const paymentType = totals.preorderSubtotal > 0 ? 'split_preorder' : 'full';
 
-  const { data: order, error: orderError } = await supabase
+  // Postgres exige que una fila insertada con RETURNING también pase la
+  // policy de SELECT ("Users see own orders": auth.uid() = user_id). Para un
+  // pedido de invitado user_id es null, así que con la anon key el RETURNING
+  // siempre falla con "violates row-level security policy". Usamos service
+  // role para este insert (igual que el incremento de uso de cupón más abajo).
+  const admin = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  const { data: order, error: orderError } = await admin
     .from('orders')
     .insert({
       user_id: user?.id ?? null,
@@ -155,8 +162,7 @@ export async function POST(req: NextRequest) {
 
   // Incrementar uso del cupón (para que max_uses tenga efecto).
   // RLS bloquea updates con anon key, así que usamos service role.
-  if (couponPromoId && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const admin = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  if (couponPromoId) {
     const { data: promo } = await admin
       .from('promotions')
       .select('uses_count')
