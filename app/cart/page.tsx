@@ -48,10 +48,10 @@ const PAYMENT_INFO = {
   },
   transferencia: {
     label: 'Transferencia BCP',
-    number: '123-456789-0-12',
+    number: '41592417151054',
     holder: 'NekoMangaCix SAC',
     brand: 'bg-[#002B5C]',
-    hint: 'Transfiere a la cuenta BCP indicada y guarda tu voucher.',
+    hint: 'Transfiere a la cuenta BCP indicada y guarda tu voucher. ¿Tu banco no es BCP? Usa la cuenta interbancaria (CCI): 00241519241715105488.',
   },
 } as const;
 
