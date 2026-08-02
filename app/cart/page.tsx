@@ -105,14 +105,21 @@ export default function CartPage() {
     [items]
   );
 
-  const totals = useMemo(
+  const preliminaryTotals = useMemo(
     () => calculateCartTotals({ items, isFirstPurchase }),
     [items, isFirstPurchase]
   );
 
   const couponDiscount = useMemo(
-    () => getCouponDiscount(totals.subtotal),
-    [getCouponDiscount, totals.subtotal]
+    () => getCouponDiscount(preliminaryTotals.subtotal),
+    [getCouponDiscount, preliminaryTotals.subtotal]
+  );
+
+  // El cupón se prorratea igual que el descuento de bienvenida: en preventa solo
+  // afecta el depósito de hoy, el resto reduce el saldo al llegar.
+  const totals = useMemo(
+    () => calculateCartTotals({ items, isFirstPurchase, couponDiscount }),
+    [items, isFirstPurchase, couponDiscount]
   );
 
   const hasPreorder = lines.some((l) => l.split.isPreorder);
@@ -170,11 +177,11 @@ export default function CartPage() {
       hasPreorder && preorderLines.join('\n'),
       ``,
       `Subtotal: S/ ${totals.subtotal.toFixed(2)}`,
-      totals.discount > 0 && `Descuento bienvenida (10%): -S/ ${totals.discount.toFixed(2)}`,
+      totals.welcomeDiscount > 0 && `Descuento bienvenida (10%): -S/ ${totals.welcomeDiscount.toFixed(2)}`,
       couponDiscount > 0 && `Cupón ${couponCode}: -S/ ${couponDiscount.toFixed(2)}`,
       totals.shipping === 0 ? `Envío: GRATIS 🎁` : `Envío: S/ ${totals.shipping.toFixed(2)}`,
       ``,
-      `💰 Total a pagar ahora: S/ ${Math.max(0, totals.totalToPayNow - couponDiscount).toFixed(2)}`,
+      `💰 Total a pagar ahora: S/ ${Math.max(0, totals.totalToPayNow).toFixed(2)}`,
       hasPreorder && `💳 Saldo al llegar: S/ ${totals.balanceDue.toFixed(2)}`,
       ``,
       `Método de pago: ${paymentLabel}`,
@@ -469,12 +476,12 @@ export default function CartPage() {
                 </div>
               )}
 
-              {totals.discount > 0 && (
+              {totals.welcomeDiscount > 0 && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
                   <span className="flex items-center gap-1">
                     <Tag size={11} /> Descuento bienvenida (10%)
                   </span>
-                  <span>-S/ {totals.discount.toFixed(2)}</span>
+                  <span>-S/ {totals.welcomeDiscount.toFixed(2)}</span>
                 </div>
               )}
 
@@ -508,7 +515,7 @@ export default function CartPage() {
               <div className="flex justify-between items-baseline">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">Total a pagar hoy</span>
                 <span className="text-2xl font-extrabold text-neko-gradient">
-                  S/ {Math.max(0, totals.totalToPayNow - couponDiscount).toFixed(2)}
+                  S/ {Math.max(0, totals.totalToPayNow).toFixed(2)}
                 </span>
               </div>
 
@@ -596,7 +603,7 @@ export default function CartPage() {
                   {PAYMENT_INFO[selectedPayment].hint}
                 </p>
                 <p className="text-xs font-bold text-[#06b6d4] mt-1.5">
-                  Monto a transferir hoy: S/ {Math.max(0, totals.totalToPayNow - couponDiscount).toFixed(2)}
+                  Monto a transferir hoy: S/ {Math.max(0, totals.totalToPayNow).toFixed(2)}
                 </p>
               </div>
             )}

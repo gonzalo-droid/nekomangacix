@@ -9,6 +9,8 @@ export type CartTotals = {
   stockSubtotal: number;
   preorderSubtotal: number;
   subtotal: number;
+  welcomeDiscount: number;
+  couponDiscount: number;
   discount: number;
   shipping: number;
   preorderDeposit: number;
@@ -24,8 +26,10 @@ function round2(n: number): number {
 export function calculateCartTotals(args: {
   items: CartItem[];
   isFirstPurchase: boolean;
+  /** Descuento de cupón ya validado, como monto plano sobre el subtotal (antes de prorratear). */
+  couponDiscount?: number;
 }): CartTotals {
-  const { items, isFirstPurchase } = args;
+  const { items, isFirstPurchase, couponDiscount: rawCouponDiscount = 0 } = args;
 
   let stockSubtotal = 0;
   let preorderSubtotal = 0;
@@ -44,9 +48,13 @@ export function calculateCartTotals(args: {
   const subtotal = round2(stockSubtotal + preorderSubtotal);
 
   const appliedFirstPurchaseDiscount = isFirstPurchase && subtotal > 0;
-  const discount = appliedFirstPurchaseDiscount
+  const welcomeDiscount = appliedFirstPurchaseDiscount
     ? round2(subtotal * FIRST_PURCHASE_DISCOUNT_RATE)
     : 0;
+  const couponDiscount = round2(Math.max(0, rawCouponDiscount));
+  // Bienvenida y cupón se prorratean juntos entre stock/preventa y, dentro de
+  // preventa, solo afectan el depósito de hoy — el resto reduce el saldo al llegar.
+  const discount = round2(welcomeDiscount + couponDiscount);
 
   // Reparto proporcional del descuento entre stock y preventa
   const stockDiscountShare =
@@ -58,7 +66,9 @@ export function calculateCartTotals(args: {
   const preorderDepositDiscountShare = round2(preorderDiscountShare * PREORDER_DEPOSIT_RATE);
   const balanceDue = round2(preorderSubtotal - preorderDeposit - (preorderDiscountShare - preorderDepositDiscountShare));
 
-  const afterDiscount = round2(subtotal - discount);
+  // El envío gratis se evalúa solo contra el descuento de bienvenida, no el cupón
+  // (decisión de negocio: un cupón no debe hacerte perder el envío gratis ni ganarlo).
+  const afterDiscount = round2(subtotal - welcomeDiscount);
   const shipping =
     subtotal > 0 && afterDiscount >= FREE_SHIPPING_THRESHOLD_PEN
       ? 0
@@ -76,6 +86,8 @@ export function calculateCartTotals(args: {
     stockSubtotal,
     preorderSubtotal,
     subtotal,
+    welcomeDiscount,
+    couponDiscount,
     discount,
     shipping,
     preorderDeposit,

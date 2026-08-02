@@ -107,7 +107,8 @@ export async function POST(req: NextRequest) {
     campaignIdByProductId.set(item.productId, campaign.id);
   }
 
-  const totals = calculateCartTotals({ items: cartItems, isFirstPurchase });
+  // Pasada preliminar solo para tener el subtotal y poder validar/calcular el cupón sobre él.
+  const preliminaryTotals = calculateCartTotals({ items: cartItems, isFirstPurchase });
 
   // Validar cupón en servidor y calcular su descuento sobre el subtotal
   let couponDiscount = 0;
@@ -123,10 +124,14 @@ export async function POST(req: NextRequest) {
       ((promoRows ?? []) as DbPromotion[]).map(dbRowToPromotion)
     );
     if (matched) {
-      couponDiscount = Math.round((totals.subtotal - applyCouponDiscount(totals.subtotal, matched)) * 100) / 100;
+      couponDiscount = Math.round((preliminaryTotals.subtotal - applyCouponDiscount(preliminaryTotals.subtotal, matched)) * 100) / 100;
       couponPromoId = matched.id;
     }
   }
+
+  // Pasada final: el cupón se prorratea igual que el descuento de bienvenida (solo
+  // afecta el depósito de hoy en items de preventa, el resto reduce el saldo al llegar).
+  const totals = calculateCartTotals({ items: cartItems, isFirstPurchase, couponDiscount });
 
   const paymentType = totals.preorderSubtotal > 0 ? 'split_preorder' : 'full';
 
@@ -144,11 +149,11 @@ export async function POST(req: NextRequest) {
       status: 'pending_deposit',
       payment_type: paymentType,
       subtotal_pen: totals.subtotal,
-      discount_pen: Math.round((totals.discount + couponDiscount) * 100) / 100,
+      discount_pen: totals.discount,
       shipping_cost: totals.shipping,
       deposit_pen: totals.preorderDeposit,
       balance_pen: totals.balanceDue,
-      total_pen: Math.max(0, Math.round((totals.totalToPayNow - couponDiscount) * 100) / 100),
+      total_pen: Math.max(0, totals.totalToPayNow),
       payment_method: paymentMethod,
       customer_name: customerName || user?.user_metadata?.full_name || null,
       customer_phone: customerPhone || null,
