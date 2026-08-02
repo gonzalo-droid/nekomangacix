@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { StockStatus } from '@/lib/products';
+import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
 
 /** Depósito por defecto (S/) por unidad de preventa si el producto no define preorderDeposit propio */
 export const DEFAULT_PREORDER_DEPOSIT = 10;
@@ -164,13 +165,14 @@ export function useCart() {
 
 /**
  * Helpers para cálculos de pago "hoy" vs "al llegar".
- * Un item de preventa reserva con el 50% del precio unitario (redondeado a 2 decimales);
- * el resto de estados pagan el precio completo. El campo `preorderDeposit` del producto
- * y `DEFAULT_PREORDER_DEPOSIT` quedan por compatibilidad pero ya no se usan en el split.
+ * Un item de preventa reserva con PREORDER_DEPOSIT_RATE del precio unitario (redondeado
+ * a 2 decimales); el resto de estados pagan el precio completo. El campo `preorderDeposit`
+ * del producto y `DEFAULT_PREORDER_DEPOSIT` quedan por compatibilidad pero ya no se usan
+ * en el split. Misma tasa que `calculateCartTotals` — no la dupliques acá.
  */
 export function getItemPaymentSplit(item: CartItem) {
   const isPreorder = item.stockStatus === 'preorder';
-  const unitDeposit = isPreorder ? Math.round(item.price * 0.5 * 100) / 100 : 0;
+  const unitDeposit = isPreorder ? Math.round(item.price * PREORDER_DEPOSIT_RATE * 100) / 100 : 0;
   const unitNow = isPreorder ? unitDeposit : item.price;
   const unitLater = isPreorder ? Math.max(0, item.price - unitDeposit) : 0;
   return {

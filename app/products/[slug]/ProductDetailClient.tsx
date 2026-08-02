@@ -10,6 +10,7 @@ import { getCategoryLabel, getStockStatusLabel } from '@/hooks/useProducts';
 import { Product } from '@/lib/products';
 import { getCloudinaryUrl } from '@/lib/cloudinary';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
+import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
 import MangaFormatGuide from '@/components/MangaFormatGuide';
 import TrustBadges from '@/components/TrustBadges';
 import ProductCard from '@/components/ProductCard';
@@ -255,7 +256,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   </div>
                 )}
                 <p className="text-blue-600 dark:text-blue-400 text-sm">
-                  Reserva con <strong>S/ {(product.pricePEN * 0.5).toFixed(2)}</strong> (50%) y paga el resto al llegar.
+                  Reserva con <strong>S/ {(product.pricePEN * PREORDER_DEPOSIT_RATE).toFixed(2)}</strong> ({PREORDER_DEPOSIT_RATE * 100}%) y paga el resto al llegar.
                 </p>
               </div>
             )}

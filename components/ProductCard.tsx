@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext';
 import type { ProductType } from '@/lib/constants/productTypes';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
 import { getCloudinaryUrl } from '@/lib/cloudinary';
+import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import ProductImage from './ProductImage';
 
@@ -306,7 +307,7 @@ export default function ProductCard({
 
           {(isPreorder || isOutOfStock) && (
             <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight">
-              Reserva con S/ {(finalPrice * 0.5).toFixed(2)} — paga el resto al llegar.
+              Reserva con S/ {(finalPrice * PREORDER_DEPOSIT_RATE).toFixed(2)} — paga el resto al llegar.
             </p>
           )}
         </div>
