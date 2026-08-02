@@ -19,6 +19,7 @@ type OrderItem = {
   unit_price: number;
   item_type: string | null;
   estimated_arrival: string | null;
+  campaign_id: string | null;
 };
 
 type OrderRow = {
@@ -71,7 +72,12 @@ const SUMMARY_LABELS: Record<OrderState, string> = {
   cancelled: 'Cancelado',
 };
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ campaign?: string }>;
+}) {
+  const { campaign: campaignFilter } = await searchParams;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseNotConfigured = !supabaseUrl || supabaseUrl.includes('tu-proyecto');
 
@@ -93,14 +99,24 @@ export default async function AdminOrdersPage() {
   // todas las filas. Usamos service role para esta lectura interna.
   const supabase = await createSupabaseAdminClient();
 
-  const { data: orders } = await supabase
+  const { data: campaigns } = await supabase
+    .from('campaigns')
+    .select('id, name')
+    .order('starts_at', { ascending: false });
+  const campaignNameById = new Map((campaigns ?? []).map((c) => [c.id as string, c.name as string]));
+
+  const { data: allOrders } = await supabase
     .from('orders')
     .select(
-      'id, status, payment_type, total_pen, subtotal_pen, discount_pen, deposit_pen, balance_pen, shipping_cost, estimated_arrival, payment_proof_url, payment_proof_confirmed_at, payment_method, customer_name, customer_phone, notes, created_at, order_items(id, title, quantity, unit_price, item_type, estimated_arrival)',
+      'id, status, payment_type, total_pen, subtotal_pen, discount_pen, deposit_pen, balance_pen, shipping_cost, estimated_arrival, payment_proof_url, payment_proof_confirmed_at, payment_method, customer_name, customer_phone, notes, created_at, order_items(id, title, quantity, unit_price, item_type, estimated_arrival, campaign_id)',
     )
     .order('created_at', { ascending: false })
     .limit(100)
     .returns<OrderRow[]>();
+
+  const orders = campaignFilter
+    ? (allOrders ?? []).filter((o) => o.order_items?.some((i) => i.campaign_id === campaignFilter))
+    : allOrders;
 
   const statusCounts = (orders ?? []).reduce<Record<string, number>>((acc, o) => {
     const n = normalize(o.status);
@@ -129,6 +145,27 @@ export default async function AdminOrdersPage() {
             Cargar pedido manual
           </Link>
         </div>
+
+        {(campaigns ?? []).length > 0 && (
+          <form className="mt-4 flex items-center gap-2" method="get">
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              Filtrar por campaña
+            </label>
+            <select
+              name="campaign"
+              defaultValue={campaignFilter ?? ''}
+              className="text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2b496d]"
+            >
+              <option value="">Todas</option>
+              {(campaigns ?? []).map((c) => (
+                <option key={c.id as string} value={c.id as string}>{c.name as string}</option>
+              ))}
+            </select>
+            <button type="submit" className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#2b496d] hover:bg-[#1e3550] text-white transition-colors">
+              Filtrar
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
@@ -218,6 +255,11 @@ export default async function AdminOrdersPage() {
                         {item.item_type === 'preorder' && (
                           <span className="text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
                             Preventa
+                          </span>
+                        )}
+                        {item.item_type === 'preorder' && (
+                          <span className="text-[10px] text-gray-400">
+                            {item.campaign_id ? campaignNameById.get(item.campaign_id) ?? 'campaña eliminada' : 'sin campaña'}
                           </span>
                         )}
                       </li>
