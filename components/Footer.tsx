@@ -13,7 +13,7 @@ function TikTokIcon({ size = 18 }: { size?: number }) {
 
 const SOCIALS = [
   { name: 'Facebook', href: 'https://www.facebook.com/people/Neko-Manga-CIX/61562296206939/', icon: Facebook, hover: 'hover:bg-[#1877f2] hover:border-[#1877f2]', label: 'Facebook' },
-  { name: 'WhatsApp', href: 'https://wa.me/51924262747', icon: MessageCircle, hover: 'hover:bg-[#25D366] hover:border-[#25D366]', label: 'WhatsApp' },
+  { name: 'WhatsApp', href: 'https://wa.me/51924462641', icon: MessageCircle, hover: 'hover:bg-[#25D366] hover:border-[#25D366]', label: 'WhatsApp' },
   { name: 'Instagram', href: 'https://www.instagram.com/neko.manga.cix/', icon: Instagram, hover: 'hover:bg-gradient-to-br hover:from-[#f58529] hover:via-[#dd2a7b] hover:to-[#515bd4] hover:border-transparent', label: 'Instagram' },
   { name: 'TikTok', href: 'https://www.tiktok.com/@neko.manga.cix', icon: TikTokIcon, hover: 'hover:bg-white hover:text-black hover:border-white', label: 'TikTok' },
 ] as const;
@@ -66,7 +66,7 @@ export default function Footer() {
               </div>
               <div className="flex flex-col items-start sm:items-end gap-2 flex-shrink-0">
                 <a
-                  href="https://wa.me/51924262747?text=Hola%20Neko%20Manga%20Cix%2C%20quiero%20consultar"
+                  href="https://wa.me/51924462641?text=Hola%20Neko%20Manga%20Cix%2C%20quiero%20consultar"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-base shadow-xl shadow-[#25D366]/20 transition-all hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap"
@@ -172,10 +172,10 @@ export default function Footer() {
               </h3>
               <ul className="space-y-4 text-sm">
                 <li>
-                  <a href="https://wa.me/51924262747" target="_blank" rel="noopener noreferrer"
+                  <a href="https://wa.me/51924462641" target="_blank" rel="noopener noreferrer"
                     className="flex items-start gap-3 text-gray-500 hover:text-[#25D366] transition-colors group">
                     <MessageCircle size={15} className="text-[#25D366] mt-0.5 flex-shrink-0" />
-                    <span>(+51) 924 262 747</span>
+                    <span>(+51) 924 462 641</span>
                   </a>
                 </li>
                 <li>

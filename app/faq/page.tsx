@@ -23,7 +23,7 @@ const faqs = [
   {
     category: 'Pagos',
     items: [
-      { q: '¿Qué métodos de pago aceptan?', a: 'Aceptamos Yape (924 262 747), Plin (924 262 747) y transferencia bancaria BCP. El pago se realiza antes del envío.' },
+      { q: '¿Qué métodos de pago aceptan?', a: 'Aceptamos Yape (924 462 641), Plin (924 462 641) y transferencia bancaria BCP. El pago se realiza antes del envío.' },
       { q: '¿Cómo confirmo mi pago?', a: 'Realiza la transferencia o pago por Yape/Plin y envíanos el comprobante (screenshot) por WhatsApp para confirmar tu pedido.' },
       { q: '¿Ofrecen boleta o factura?', a: 'Por el momento emitimos boleta de venta. Contáctanos si necesitas una factura para tu empresa.' },
       { q: '¿Es seguro pagar?', a: 'Sí. Usamos Yape y Plin que son plataformas reguladas. Nunca pedimos tus datos bancarios directamente.' },
@@ -104,7 +104,7 @@ export default function FaqPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               <a
-                href="https://wa.me/51924262747"
+                href="https://wa.me/51924462641"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/25 hover:scale-[1.02] active:scale-95 transition-all"

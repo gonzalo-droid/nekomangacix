@@ -29,19 +29,19 @@ import {
 
 type PaymentMethod = 'yape' | 'plin' | 'transferencia' | null;
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '51924262747';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '51924462641';
 
 const PAYMENT_INFO = {
   yape: {
     label: 'Yape',
-    number: '924 262 747',
+    number: '924 462 641',
     holder: 'NekoMangaCix',
     brand: 'bg-[#742774]',
     hint: 'Abre Yape, busca el número y envía el monto exacto.',
   },
   plin: {
     label: 'Plin',
-    number: '924 262 747',
+    number: '924 462 641',
     holder: 'NekoMangaCix',
     brand: 'bg-[#00BF6F]',
     hint: 'Abre Plin, ingresa el número y transfiere el monto total.',

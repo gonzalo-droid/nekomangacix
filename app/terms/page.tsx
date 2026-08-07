@@ -108,8 +108,8 @@ export default function TermsPage() {
             contacto@nekomangacix.com
           </a>{' '}
           o por WhatsApp al{' '}
-          <a href="https://wa.me/51924262747" target="_blank" rel="noopener noreferrer" className="text-[#25D366] font-semibold hover:underline">
-            (+51) 924 262 747
+          <a href="https://wa.me/51924462641" target="_blank" rel="noopener noreferrer" className="text-[#25D366] font-semibold hover:underline">
+            (+51) 924 462 641
           </a>
           .
         </p>

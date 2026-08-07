@@ -219,7 +219,7 @@ export default function ShippingPage() {
           </Link>
 
           <a
-            href="https://wa.me/51924262747?text=Hola%2C%20quiero%20consultar%20sobre%20un%20env%C3%ADo"
+            href="https://wa.me/51924462641?text=Hola%2C%20quiero%20consultar%20sobre%20un%20env%C3%ADo"
             target="_blank"
             rel="noopener noreferrer"
             className="group rounded-2xl p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 hover:border-[#25D366]/50 transition-all hover:shadow-lg"

@@ -28,9 +28,9 @@ const CHANNELS = [
   {
     Icon: MessageCircle,
     title: 'WhatsApp',
-    detail: '(+51) 924 262 747',
+    detail: '(+51) 924 462 641',
     sub: 'Disponible todos los días',
-    href: 'https://wa.me/51924262747',
+    href: 'https://wa.me/51924462641',
     accent: 'text-[#25D366]',
     bg: 'bg-[#25D366]/10',
     ring: 'ring-[#25D366]/20',
@@ -288,7 +288,7 @@ export default function ContactPage() {
                   Escríbenos por WhatsApp y te respondemos en minutos.
                 </p>
                 <a
-                  href="https://wa.me/51924262747?text=Hola%20Neko%20Manga%20Cix"
+                  href="https://wa.me/51924462641?text=Hola%20Neko%20Manga%20Cix"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm transition-all active:scale-95"

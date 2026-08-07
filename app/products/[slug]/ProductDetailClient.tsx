@@ -371,7 +371,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
 
             {/* Consultar por WhatsApp */}
             <a
-              href={`https://wa.me/51924262747?text=Hola%2C%20quisiera%20consultar%20sobre%20${encodeURIComponent(product.title)}`}
+              href={`https://wa.me/51924462641?text=Hola%2C%20quisiera%20consultar%20sobre%20${encodeURIComponent(product.title)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-[#25D366]/40 text-[#25D366] hover:bg-[#25D366]/10 transition-colors text-sm font-semibold"

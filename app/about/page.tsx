@@ -217,13 +217,13 @@ export default function AboutPage() {
             <ul className="space-y-3 text-sm">
               <li>
                 <a
-                  href="https://wa.me/51924262747"
+                  href="https://wa.me/51924462641"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-[#25D366] transition-colors"
                 >
                   <MessageCircle size={18} className="text-[#25D366]" />
-                  <span>(+51) 924 262 747</span>
+                  <span>(+51) 924 462 641</span>
                 </a>
               </li>
               <li>
