@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { getCloudinaryUrl } from '@/lib/cloudinary';
+import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 
 interface Props {
   src?: string;
@@ -41,6 +41,7 @@ export default function ProductImage({
           src={resolvedSrc}
           alt={alt}
           fill
+          loader={cloudinaryLoader}
           sizes={sizes}
           priority={priority}
           className={`${fitClass} ${hoverScale ? 'transition-transform duration-500 group-hover:scale-[1.04]' : ''}`}

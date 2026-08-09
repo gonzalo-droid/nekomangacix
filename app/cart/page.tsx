@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePromotions } from '@/context/PromotionsContext';
 import { createSupabaseClient } from '@/core/supabase/client';
 import { calculateCartTotals } from '@/lib/domain/cart/calculate';
+import { cloudinaryLoader } from '@/lib/cloudinary';
 import Image from 'next/image';
 import Link from 'next/link';
 import Wordmark from '@/components/Wordmark';
@@ -318,6 +319,7 @@ export default function CartPage() {
                       src={item.imageUrl}
                       alt={item.title}
                       fill
+                      loader={cloudinaryLoader}
                       className="object-contain p-1"
                       sizes="80px"
                     />

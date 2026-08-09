@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { getCategoryLabel, getStockStatusLabel } from '@/hooks/useProducts';
 import { Product } from '@/lib/products';
-import { getCloudinaryUrl } from '@/lib/cloudinary';
+import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
 import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
 import MangaFormatGuide from '@/components/MangaFormatGuide';
@@ -139,6 +139,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   src={getCloudinaryUrl(product.images[selectedImage])}
                   alt={product.title}
                   fill
+                  loader={cloudinaryLoader}
                   className="object-contain p-6"
                   onError={() => setImgError(true)}
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -171,7 +172,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   >
                     <div className="w-full h-full rounded-lg overflow-hidden relative bg-gray-100 dark:bg-gray-800">
                       {img
-                        ? <Image src={getCloudinaryUrl(img)} alt={`${product.title} ${idx + 1}`} fill className="object-contain p-1" sizes="64px" />
+                        ? <Image src={getCloudinaryUrl(img)} alt={`${product.title} ${idx + 1}`} fill loader={cloudinaryLoader} className="object-contain p-1" sizes="64px" />
                         : <span className="text-lg flex items-center justify-center h-full">📚</span>
                       }
                     </div>

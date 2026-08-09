@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getCloudinaryUrl } from '@/lib/cloudinary';
+import { getSocialImageUrl } from '@/lib/cloudinary';
 import {
   getAllProductSlugs,
   getProductBySlugServer,
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = `${product.description} | ${product.editorial} | S/ ${product.pricePEN.toFixed(2)} | Envíos a todo Perú.`;
 
   const firstImage = product.images[0];
-  const ogImageRaw = firstImage ? getCloudinaryUrl(firstImage) : null;
+  const ogImageRaw = firstImage ? getSocialImageUrl(firstImage) : null;
   const ogImage =
     ogImageRaw && ogImageRaw.startsWith('http')
       ? ogImageRaw

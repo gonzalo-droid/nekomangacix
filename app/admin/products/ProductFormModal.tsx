@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, FormEvent } from 'react';
 import Image from 'next/image';
 import { X, Loader2, Upload, ImagePlus, Trash2 } from 'lucide-react';
-import { getCloudinaryUrl } from '@/lib/cloudinary';
+import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import type { AdminProduct } from './useAdminProducts';
 import { COUNTRIES, COUNTRY_CODES, type CountryCode } from '@/lib/constants/countries';
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
@@ -395,6 +395,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                       src={getCloudinaryUrl(id)}
                       alt={`Imagen ${idx + 1}`}
                       fill
+                      loader={cloudinaryLoader}
                       className="object-contain p-1"
                       sizes="80px"
                     />

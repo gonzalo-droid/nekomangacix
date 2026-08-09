@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Search, X, ArrowRight } from 'lucide-react';
-import { getCloudinaryUrl } from '@/lib/cloudinary';
+import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface SearchResult {
@@ -150,7 +150,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
                     >
                       <div className="w-10 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 relative">
                         {imgUrl ? (
-                          <Image src={imgUrl} alt={item.title} fill className="object-contain p-0.5" sizes="40px" />
+                          <Image src={imgUrl} alt={item.title} fill loader={cloudinaryLoader} className="object-contain p-0.5" sizes="40px" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-lg">📚</div>
                         )}
