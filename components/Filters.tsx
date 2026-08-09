@@ -48,6 +48,11 @@ interface FiltersProps {
   selectedCountry: CountryCode[];
   selectedEditorial: string[];
   selectedStock: string[];
+  /** Valores iniciales de los inputs libres, para reflejar la URL al cargar */
+  initialSearch?: string;
+  initialAuthor?: string;
+  initialMinPrice?: number | null;
+  initialMaxPrice?: number | null;
   typeCounts: Record<string, number>;
   demographicCounts: Record<string, number>;
   countryCounts: Record<string, number>;
@@ -92,10 +97,14 @@ export default function Filters({
   onDemographicChange, onCountryChange, onEditorialChange, onStockChange,
   selectedType, selectedDemographic, selectedCountry, selectedEditorial, selectedStock,
   typeCounts, demographicCounts, countryCounts, editorialCounts, stockCounts,
+  initialSearch = '', initialAuthor = '', initialMinPrice = null, initialMaxPrice = null,
 }: FiltersProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [authorQuery, setAuthorQuery] = useState('');
-  const [priceRange, setPriceRange] = useState<[number, number]>([PRICE_MIN, PRICE_MAX]);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [authorQuery, setAuthorQuery] = useState(initialAuthor);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    initialMinPrice ?? PRICE_MIN,
+    initialMaxPrice ?? PRICE_MAX,
+  ]);
 
   const activeCount =
     (searchQuery ? 1 : 0) +

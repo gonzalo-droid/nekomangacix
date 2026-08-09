@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
@@ -17,6 +17,8 @@ function revalidateProductCaches(slug?: string) {
   revalidatePath('/');
   revalidatePath('/products');
   revalidatePath('/sitemap.xml');
+  // Invalida el unstable_cache de la vista por defecto del catálogo
+  revalidateTag('products', 'max');
   if (slug) revalidatePath(`/products/${slug}`);
 }
 
