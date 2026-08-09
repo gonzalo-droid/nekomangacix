@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Imágenes de producto scrapeadas de las editoriales.
+# Viven en Cloudinary; la copia local es solo material de trabajo para el
+# matching de catálogos. Son ~145 MB / 1.5k archivos: no van al repo.
+/public/images/panini/
+
+# Volcados de catálogo generados al cruzar los listados de las editoriales
+# con Cloudinary. Se regeneran; no son fuente de verdad.
+# (ovnipress-* y penguin-* quedaron trackeados de antes — ver README/notas)
+/panini-catalog-matched.json
