@@ -72,7 +72,7 @@ function EditorialLine({ countryCode, editorial }: { countryCode?: CountryCode; 
 
 export default function ProductCard({
   id, slug, title, editorial, countryCode, pricePEN, stock, type = 'manga',
-  tags = [], description, images, stockStatus, preorderDeposit, seriesStatus,
+  tags = [], images, stockStatus, preorderDeposit, seriesStatus,
   variant = 'default', priority = false, onRemove,
   showFavoriteToggle = false, sizes, showQuickAdd = false,
 }: Props) {
@@ -150,7 +150,7 @@ export default function ProductCard({
               </p>
               {hasDiscount && <p className="text-[10px] line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
             </div>
-            {!isOutOfStock && (
+            {showQuickAdd && !isOutOfStock && (
               <button
                 type="button"
                 onClick={isPreorder ? handleReserve : handleAdd}
