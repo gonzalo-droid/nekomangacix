@@ -3,6 +3,13 @@ import type { Product } from './products';
 import { products as staticProducts } from './products';
 import { dbRowToProduct } from './productMappers';
 import { findRelatedProducts } from './domain/products/related';
+import {
+  CARD_COLUMNS,
+  FEATURED_FILTER,
+  MAX_FEATURED_PER_COUNTRY,
+  isFeatured,
+} from './domain/products/featured';
+import type { CountryCode } from './constants/countries';
 
 function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -48,6 +55,50 @@ export async function getAllActiveProducts(): Promise<Product[]> {
   } catch { /* fall through */ }
 
   return staticProducts;
+}
+
+/**
+ * Productos destacados para el home, agrupados por país.
+ *
+ * Trae solo las filas marcadas con `attributes.featured` y solo las columnas
+ * que renderiza la card. Antes el home pedía el catálogo completo (6k+ filas
+ * con sinopsis incluidas) para quedarse con unas pocas.
+ */
+export async function getFeaturedProductsByCountry(): Promise<
+  Record<CountryCode, Product[]>
+> {
+  const empty = { AR: [], MX: [], ES: [], JP: [] } as Record<CountryCode, Product[]>;
+  const supabase = getClient();
+
+  const grouped: Record<CountryCode, Product[]> = { AR: [], MX: [], ES: [], JP: [] };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(CARD_COLUMNS)
+        .eq('is_active', true)
+        .contains('attributes', FEATURED_FILTER)
+        .order('title', { ascending: true });
+
+      if (!error && data) {
+        for (const row of data as unknown as Record<string, unknown>[]) {
+          const product = dbRowToProduct(row);
+          const bucket = grouped[product.countryCode];
+          if (bucket && bucket.length < MAX_FEATURED_PER_COUNTRY) bucket.push(product);
+        }
+        return grouped;
+      }
+    } catch { /* fall through */ }
+  }
+
+  // Fallback sin Supabase: usar el set estático marcado como destacado
+  for (const p of staticProducts) {
+    if (!isFeatured(p.attributes)) continue;
+    const bucket = grouped[p.countryCode];
+    if (bucket && bucket.length < MAX_FEATURED_PER_COUNTRY) bucket.push(p);
+  }
+  return Object.values(grouped).some((v) => v.length > 0) ? grouped : empty;
 }
 
 export async function getProductBySlugServer(slug: string): Promise<Product | null> {

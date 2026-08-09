@@ -9,6 +9,7 @@ import { COUNTRIES, COUNTRY_CODES, type CountryCode } from '@/lib/constants/coun
 import { getEditorialsForCountry } from '@/lib/constants/editorials';
 import { DEMOGRAPHIC_LABELS, DEMOGRAPHICS } from '@/lib/constants/demographics';
 import { PRODUCT_TYPES, PRODUCT_TYPE_LABELS } from '@/lib/constants/productTypes';
+import { FEATURED_ATTRIBUTE, isFeatured, withFeaturedFlag } from '@/lib/domain/products/featured';
 import ComboBox from './ComboBox';
 
 const STOCK_STATUSES = ['in_stock', 'preorder', 'out_of_stock'];
@@ -38,11 +39,15 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tagsInput, setTagsInput] = useState((product?.tags ?? []).join(', '));
+  // `featured` se maneja con su propio switch, no como fila del editor de atributos
   const [attributes, setAttributes] = useState<Record<string, string>>(
     Object.fromEntries(
-      Object.entries(product?.attributes ?? {}).map(([k, v]) => [k, String(v)])
+      Object.entries(product?.attributes ?? {})
+        .filter(([k]) => k !== FEATURED_ATTRIBUTE)
+        .map(([k, v]) => [k, String(v)])
     )
   );
+  const [featured, setFeatured] = useState(isFeatured(product?.attributes));
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -161,7 +166,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
 
     const parsedAttributes: Record<string, string | number | boolean> = {};
     for (const [k, v] of Object.entries(attributes)) {
-      if (!k.trim()) continue;
+      if (!k.trim() || k.trim() === FEATURED_ATTRIBUTE) continue;
       const num = Number(v);
       if (!isNaN(num) && v.trim() !== '') {
         parsedAttributes[k.trim()] = num;
@@ -178,7 +183,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
       ...form,
       images,
       tags,
-      attributes: parsedAttributes,
+      attributes: withFeaturedFlag(parsedAttributes, featured) as Record<string, string | number | boolean>,
       author: (form.author as string)?.trim() || null,
       description: (form.description as string)?.trim() || null,
       full_description: (form.full_description as string)?.trim() || null,
@@ -513,6 +518,35 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
             <label htmlFor="is_active" className="text-sm text-gray-700 dark:text-gray-300">
               Producto visible en la tienda
             </label>
+          </div>
+
+          {/* Destacado en el home */}
+          <div className="flex items-start justify-between gap-4 rounded-xl border border-[#ec4899]/25 bg-[#ec4899]/[0.04] px-4 py-3">
+            <div>
+              <label htmlFor="featured" className="text-sm font-semibold text-gray-800 dark:text-gray-200 cursor-pointer">
+                Destacar en el home
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Aparece en la sección de {COUNTRIES[currentCountry].name} de la portada.
+                Se muestran hasta 10 por país, en orden alfabético.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={featured}
+              id="featured"
+              onClick={() => setFeatured((v) => !v)}
+              className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 ${
+                featured ? 'bg-[#ec4899]' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                  featured ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
           </div>
         </form>
 
