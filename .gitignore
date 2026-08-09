@@ -40,6 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Worktrees de Claude Code: cada uno es un checkout completo del proyecto.
+# Nunca deben versionarse dentro del propio repo.
+/.claude/worktrees/
+
 # Imágenes de producto scrapeadas de las editoriales.
 # Viven en Cloudinary; la copia local es solo material de trabajo para el
 # matching de catálogos. Son ~145 MB / 1.5k archivos: no van al repo.
