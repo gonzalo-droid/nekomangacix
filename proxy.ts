@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-
-const ADMIN_COOKIE = 'neko-admin-session';
+import { ADMIN_SESSION_COOKIE, verifyToken } from '@/lib/adminToken';
 
 const MAINTENANCE_BYPASS = ['/coming-soon', '/admin', '/api', '/_next', '/favicon.ico', '/links'];
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Modo mantenimiento: redirigir todo excepto rutas de bypass
@@ -22,21 +21,14 @@ export function proxy(request: NextRequest) {
 
   // Proteger todas las rutas /admin/*
   if (pathname.startsWith('/admin')) {
-    const session = request.cookies.get(ADMIN_COOKIE);
+    const session = request.cookies.get(ADMIN_SESSION_COOKIE);
+    const payload = await verifyToken(session?.value);
 
-    if (!session?.value) {
+    if (payload?.stage !== 'authenticated') {
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Verificar que el valor del cookie coincide con el PIN configurado.
-    // El fallback '1234' solo existe en desarrollo.
-    const pin = process.env.ADMIN_PIN ?? (process.env.NODE_ENV !== 'production' ? '1234' : undefined);
-    if (!pin || session.value !== pin) {
-      const loginUrl = new URL('/admin/login', request.url);
       const response = NextResponse.redirect(loginUrl);
-      response.cookies.delete(ADMIN_COOKIE);
+      response.cookies.delete(ADMIN_SESSION_COOKIE);
       return response;
     }
   }

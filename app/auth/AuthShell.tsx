@@ -51,34 +51,6 @@ export default function AuthShell({ title, subtitle, children }: Props) {
           aria-hidden="true"
         />
 
-        {/* Portadas flotantes */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div
-            className="absolute left-[10%] top-[15%] w-[150px] -rotate-[8deg] animate-float-slow"
-            style={{ '--r': '-8deg' } as React.CSSProperties}
-          >
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-white/10">
-              <Image src="/images/manga/naruto_02.png" alt="" fill sizes="150px" className="object-cover" />
-            </div>
-          </div>
-          <div
-            className="absolute right-[12%] top-[8%] w-[170px] rotate-[6deg] animate-float-slow z-10"
-            style={{ '--r': '6deg', animationDelay: '1.4s' } as React.CSSProperties}
-          >
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-white/10">
-              <Image src="/images/manga/one_piece_02.png" alt="" fill sizes="170px" className="object-cover" />
-            </div>
-          </div>
-          <div
-            className="absolute right-[22%] bottom-[14%] w-[140px] -rotate-[4deg] animate-float-slow"
-            style={{ '--r': '-4deg', animationDelay: '2.8s' } as React.CSSProperties}
-          >
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-white/10">
-              <Image src="/images/manga/jujutsu_kaisen_02.png" alt="" fill sizes="140px" className="object-cover" />
-            </div>
-          </div>
-        </div>
-
         {/* Top: logo + wordmark */}
         <div className="relative">
           <Link

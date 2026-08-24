@@ -30,7 +30,13 @@ export async function POST(request: NextRequest) {
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            ...(folder ? { folder, asset_folder: folder } : {}),
+            // Solo `asset_folder` (Dynamic Folders): organiza el asset en la
+            // carpeta sin prefijarla al public_id. El catálogo guarda IDs
+            // planos en Supabase (ver memoria "catalog-data-reality"); pasar
+            // `folder` (legacy) además de `asset_folder` hace que Cloudinary
+            // devuelva un public_id con la ruta incluida, rompiendo esa
+            // convención.
+            ...(folder ? { asset_folder: folder } : {}),
             public_id: publicId || undefined,
             overwrite: true,
             resource_type: 'image',

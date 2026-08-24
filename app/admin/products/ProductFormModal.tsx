@@ -94,7 +94,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
 
   function buildAssetFolder(): string {
     const isJP = form.country_code === 'JP';
-    return isJP ? 'neko-manga/japan' : 'neko-manga/products';
+    return isJP ? 'neko-manga/japan' : 'neko-manga/book';
   }
 
   function buildFileName(idx: number): string {
@@ -459,7 +459,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
             )}
             <p className="text-[11px] text-gray-400 mt-1">
               Se guardarán en <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">
-                {form.country_code === 'JP' ? 'neko-manga/japan' : 'neko-manga/products'}
+                {form.country_code === 'JP' ? 'neko-manga/japan' : 'neko-manga/book'}
               </code> con el nombre del título.
             </p>
 

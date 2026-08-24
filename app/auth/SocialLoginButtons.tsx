@@ -46,6 +46,7 @@ export default function SocialLoginButtons({ next = '/profile' }: Props) {
       </button>
 
       {/* Facebook */}
+      {/* 
       <button
         type="button"
         onClick={() => handleOAuth('facebook')}
@@ -58,7 +59,7 @@ export default function SocialLoginButtons({ next = '/profile' }: Props) {
           <FacebookIcon />
         )}
         Continuar con Facebook
-      </button>
+      </button>*/}
     </div>
   );
 }

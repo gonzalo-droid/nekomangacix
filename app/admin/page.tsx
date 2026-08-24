@@ -92,7 +92,7 @@ export default function AdminPage() {
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Subir imagen</h3>
               <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm">
                 <p className="text-blue-800 dark:text-blue-300">
-                  Usa el formato <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">neko-manga/products/ivrea-mashle-16</code> como nombre. Varias imágenes por producto: sepáralas con coma en el Excel.
+                  Usa solo el ID sin carpeta, ej. <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">ivrea-mashle-16</code>, como nombre. Varias imágenes por producto: sepáralas con coma en el Excel.
                 </p>
               </div>
               <CloudinaryUploader />
