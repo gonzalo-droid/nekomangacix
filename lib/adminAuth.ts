@@ -21,6 +21,16 @@ export function getAdminPin(): string | undefined {
   return process.env.ADMIN_PIN ?? (process.env.NODE_ENV !== 'production' ? '1234' : undefined);
 }
 
+/**
+ * El segundo factor es opt-in: sin `ADMIN_REQUIRE_2FA=true` el PIN alcanza para
+ * entrar, que es el comportamiento previo al 2FA. Ese camino no consulta
+ * `admin_security`, así que tampoco aplica rate-limiting — para volver a exigir
+ * TOTP y recuperar el freno a fuerza bruta, setear la variable en Vercel.
+ */
+export function isTwoFactorBypassed(): boolean {
+  return process.env.ADMIN_REQUIRE_2FA !== 'true';
+}
+
 export async function isPinStageVerified(): Promise<boolean> {
   const cookieStore = await cookies();
   const payload = await verifyToken(cookieStore.get(ADMIN_PENDING_COOKIE)?.value);

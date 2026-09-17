@@ -36,6 +36,9 @@ function AdminLoginForm() {
     if (!res.ok) {
       setError(data.error || 'PIN incorrecto. Inténtalo de nuevo.');
       setPin('');
+    } else if (data.skipped2fa) {
+      router.push(redirect);
+      router.refresh();
     } else if (data.needsSetup) {
       setStep({ name: 'setup', qrCodeDataUrl: data.qrCodeDataUrl, otpauthUrl: data.otpauthUrl });
     } else {

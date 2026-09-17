@@ -5,8 +5,11 @@ import {
   ADMIN_SESSION_COOKIE,
   ADMIN_PENDING_COOKIE,
   PENDING_MAX_AGE,
+  SESSION_MAX_AGE,
   getAdminPin,
+  isTwoFactorBypassed,
   signPendingToken,
+  signSessionToken,
   checkRateLimit,
   registerFailedAttempt,
   getAdminSecurityState,
@@ -16,6 +19,24 @@ import {
 export async function POST(req: NextRequest) {
   const { pin } = await req.json();
   const adminPin = getAdminPin();
+
+  // Sin ADMIN_REQUIRE_2FA el PIN alcanza y se emite la sesión directo. Corta
+  // antes del rate-limit a propósito: así el login no depende de la tabla
+  // `admin_security`, que no está versionada en `supabase/migrations/`.
+  if (isTwoFactorBypassed()) {
+    if (!adminPin || !pin || pin !== adminPin) {
+      return NextResponse.json({ error: 'PIN incorrecto' }, { status: 401 });
+    }
+    const response = NextResponse.json({ pinOk: true, needsSetup: false, skipped2fa: true });
+    response.cookies.set(ADMIN_SESSION_COOKIE, await signSessionToken(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: SESSION_MAX_AGE,
+      path: '/',
+    });
+    return response;
+  }
 
   const rateLimit = await checkRateLimit();
   if (rateLimit.locked) {
