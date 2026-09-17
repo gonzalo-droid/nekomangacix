@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     values: Record<string, unknown>;
   };
 
-  if (!series || !fields?.length || !values) {
+  if (typeof series !== 'string' || !series.trim() || !Array.isArray(fields) || !fields.length || !values || typeof values !== 'object') {
     return NextResponse.json({ error: 'series, fields y values son requeridos' }, { status: 400 });
   }
 
