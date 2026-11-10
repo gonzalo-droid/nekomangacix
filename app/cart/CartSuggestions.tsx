@@ -57,7 +57,7 @@ export default function CartSuggestions({ items }: Props) {
       <div className="mb-6 relative">
         <div className="inline-flex items-center gap-2 mb-1.5">
           <Sparkles size={14} className="text-[#eab308]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink">
+          <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink">
             {'// Tal vez te interese'}
           </span>
         </div>

@@ -50,7 +50,7 @@ export default function ProductImage({
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center">
           <div className="text-5xl mb-1.5 opacity-70">📚</div>
-          <p className="text-gray-500 dark:text-gray-400 text-[11px] line-clamp-2 font-medium px-1">
+          <p className="text-gray-500 dark:text-gray-400 text-xs line-clamp-2 font-medium px-1">
             {alt}
           </p>
         </div>

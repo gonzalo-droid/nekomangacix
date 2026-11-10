@@ -48,7 +48,7 @@ function FieldRow({ field, type, required, values, note }: {
     <tr className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <td className="py-2.5 pr-4 align-top">
         <Code>{field}</Code>
-        {required && <span className="ml-1 text-[10px] text-red-500 font-bold">*</span>}
+        {required && <span className="ml-1 text-[11px] text-red-500 font-bold">*</span>}
       </td>
       <td className="py-2.5 pr-4 align-top text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{type}</td>
       <td className="py-2.5 pr-4 align-top text-xs">{values}</td>

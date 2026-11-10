@@ -17,7 +17,7 @@ interface Props {
 }
 
 const SIZE_MAP: Record<Size, { text: string; tracking: string; gap: string; dot: string }> = {
-  xs:  { text: 'text-[10px]', tracking: 'tracking-[0.22em]', gap: 'gap-1',  dot: 'w-0.5 h-0.5' },
+  xs:  { text: 'text-[11px]', tracking: 'tracking-[0.22em]', gap: 'gap-1',  dot: 'w-0.5 h-0.5' },
   sm:  { text: 'text-xs',     tracking: 'tracking-[0.2em]',  gap: 'gap-1.5', dot: 'w-1 h-1' },
   md:  { text: 'text-sm',     tracking: 'tracking-[0.18em]', gap: 'gap-2',   dot: 'w-1 h-1' },
   lg:  { text: 'text-base',   tracking: 'tracking-[0.16em]', gap: 'gap-2',   dot: 'w-1.5 h-1.5' },

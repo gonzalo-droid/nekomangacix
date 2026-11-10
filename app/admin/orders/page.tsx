@@ -254,12 +254,12 @@ export default async function AdminOrdersPage({
                           {item.title} × {item.quantity} — S/ {(item.unit_price * item.quantity).toFixed(2)}
                         </span>
                         {item.item_type === 'preorder' && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
                             Preventa
                           </span>
                         )}
                         {item.item_type === 'preorder' && (
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-[11px] text-gray-400">
                             {item.campaign_id ? campaignNameById.get(item.campaign_id) ?? 'campaña eliminada' : 'sin campaña'}
                           </span>
                         )}

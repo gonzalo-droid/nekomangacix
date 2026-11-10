@@ -43,8 +43,8 @@ export default function MangaFormatGuide({ variant = 'primary', floating = false
 
   const buttonBase = 'inline-flex items-center gap-2 font-semibold rounded-lg transition-all active:scale-95';
   const variants = {
-    primary: 'px-4 py-2.5 bg-[#2b496d] text-white hover:bg-[#1e3550] shadow-md hover:shadow-lg',
-    ghost:   'px-3 py-2 text-[#2b496d] dark:text-neko-navy-ink hover:bg-[#2b496d]/10 border border-[#2b496d]/30',
+    primary: 'px-4 min-h-11 justify-center bg-[#2b496d] text-white hover:bg-[#1e3550] shadow-md hover:shadow-lg',
+    ghost:   'px-3 min-h-11 justify-center text-[#2b496d] dark:text-neko-navy-ink hover:bg-[#2b496d]/10 border border-[#2b496d]/30',
   };
   const floatingClass = floating
     ? 'fixed bottom-20 right-6 z-40 px-4 py-3 bg-[#2b496d] text-white hover:bg-[#1e3550] shadow-xl'

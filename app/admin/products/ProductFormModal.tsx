@@ -413,7 +413,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                       <Trash2 size={10} />
                     </button>
                     {idx === 0 && (
-                      <span className="absolute bottom-0 left-0 right-0 text-[9px] text-center bg-black/50 text-white py-0.5">Principal</span>
+                      <span className="absolute bottom-0 left-0 right-0 text-[11px] text-center bg-black/50 text-white py-0.5">Principal</span>
                     )}
                   </div>
                 ))}

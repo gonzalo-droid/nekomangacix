@@ -77,7 +77,7 @@ function Section({
         <span className="font-semibold text-sm text-gray-800 dark:text-gray-200 flex items-center gap-2">
           {title}
           {badge != null && badge > 0 && (
-            <span className="text-[10px] font-bold bg-[#ec4899] text-white rounded-full w-4 h-4 flex items-center justify-center leading-none">
+            <span className="text-[11px] font-bold bg-[#ec4899] text-white rounded-full w-4 h-4 flex items-center justify-center leading-none">
               {badge}
             </span>
           )}

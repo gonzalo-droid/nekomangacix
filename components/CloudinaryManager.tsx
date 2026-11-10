@@ -241,7 +241,7 @@ export default function CloudinaryManager() {
                   <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200 truncate" title={r.public_id}>
                     {r.display_name}
                   </p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{formatBytes(r.bytes)}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{formatBytes(r.bytes)}</p>
                 </div>
               </div>
             );

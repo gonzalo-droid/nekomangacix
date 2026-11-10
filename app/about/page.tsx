@@ -81,7 +81,7 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
-            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
               {'// Nuestra misión'}
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
@@ -132,7 +132,7 @@ export default function AboutPage() {
       {/* Valores */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8 relative">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
             {'// Nuestros valores'}
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
@@ -169,7 +169,7 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2b496d]/[0.04] via-transparent to-[#ec4899]/[0.05] dark:from-[#06b6d4]/[0.05] dark:to-[#ec4899]/[0.05] border border-gray-100 dark:border-white/5 p-8 sm:p-12">
           <div className="mb-8">
-            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-cyan-ink mb-2">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-cyan-ink mb-2">
               {'// Qué ofrecemos'}
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -244,7 +244,7 @@ export default function AboutPage() {
             </ul>
             <Link
               href="/contact"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] transition-colors"
+              className="mt-6 inline-flex items-center gap-2 min-h-11 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] transition-colors"
             >
               Envíanos un mensaje <ArrowRight size={16} />
             </Link>
