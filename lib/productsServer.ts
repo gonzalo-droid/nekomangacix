@@ -182,12 +182,24 @@ export async function getAllProductSlugs(): Promise<string[]> {
   const supabase = getClient();
   if (supabase) {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('slug')
-        .eq('is_active', true);
-      if (!error && data !== null) {
-        return (data as { slug: string }[]).map((r) => r.slug);
+      // PostgREST devuelve como máximo 1.000 filas por consulta, así que hay
+      // que pedir el catálogo por tramos: sin esto solo se prerenderizaba la
+      // primera página de productos y el resto quedaba renderizándose a pedido.
+      const PAGE = 1000;
+      const slugs: string[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from('products')
+          .select('slug')
+          .eq('is_active', true)
+          .order('slug')
+          .range(from, from + PAGE - 1);
+        if (error || data === null) {
+          // Si falla un tramo, es mejor devolver lo que ya se juntó que nada.
+          return slugs.length > 0 ? slugs : staticProducts.map((p) => p.slug);
+        }
+        slugs.push(...(data as { slug: string }[]).map((r) => r.slug));
+        if (data.length < PAGE) return slugs;
       }
     } catch { /* fall through */ }
   }
