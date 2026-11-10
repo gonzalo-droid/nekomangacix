@@ -247,7 +247,7 @@ export default function CartPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#ec4899]/15 to-[#06b6d4]/15 border-2 border-[#ec4899]/20 mb-6">
             <ShoppingBag size={36} className="text-[#ec4899]" />
           </div>
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
             {'// Carrito vacío'}
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
@@ -271,7 +271,7 @@ export default function CartPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8 relative">
-        <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
+        <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
           {'// Checkout'}
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
@@ -340,7 +340,7 @@ export default function CartPage() {
                       <h3 className="font-semibold text-gray-900 dark:text-white truncate">{item.title}</h3>
                     )}
                     {split.isPreorder && (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
                         <Clock size={10} /> Preventa
                       </span>
                     )}
@@ -359,7 +359,7 @@ export default function CartPage() {
                   <div className="inline-flex items-center border border-gray-200 dark:border-white/10 rounded-lg mt-3 overflow-hidden">
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      className="p-1.5 hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors disabled:opacity-40"
+                      className="w-11 h-11 flex items-center justify-center hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors disabled:opacity-40"
                       disabled={item.quantity <= 1}
                       aria-label="Menos"
                     >
@@ -370,7 +370,7 @@ export default function CartPage() {
                     </span>
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="p-1.5 hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors"
+                      className="w-11 h-11 flex items-center justify-center hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors"
                       aria-label="Más"
                     >
                       <Plus size={14} />
@@ -380,11 +380,11 @@ export default function CartPage() {
                 <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
                   {split.isPreorder ? (
                     <div className="text-right">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400">Hoy</p>
+                      <p className="text-[11px] uppercase tracking-wider text-gray-400">Hoy</p>
                       <p className="font-extrabold text-[#06b6d4]">
                         S/ {split.now.toFixed(2)}
                       </p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
                     </div>
                   ) : (
                     <p className="font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
@@ -393,7 +393,7 @@ export default function CartPage() {
                   )}
                   <button
                     onClick={() => removeFromCart(item.productId)}
-                    className="text-gray-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    className="w-11 h-11 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     aria-label={`Eliminar ${item.title}`}
                   >
                     <Trash2 size={15} />
@@ -405,7 +405,7 @@ export default function CartPage() {
 
           <Link
             href="/products"
-            className="inline-flex items-center gap-1.5 text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 min-h-11 text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] text-sm font-semibold transition-colors"
           >
             <ArrowLeft size={14} /> Continuar comprando
           </Link>
@@ -423,7 +423,7 @@ export default function CartPage() {
         </div>
 
         {/* Checkout panel */}
-        <aside className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 space-y-4">
           {/* Resumen */}
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6">
             <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
@@ -440,23 +440,29 @@ export default function CartPage() {
                   onSubmit={(e) => { e.preventDefault(); applyCoupon(couponInput); }}
                   className="flex gap-2"
                 >
+                  <label htmlFor="cupon" className="sr-only">Código de cupón</label>
                   <input
+                    id="cupon"
                     type="text"
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                     placeholder="Código de cupón"
-                    className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50"
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    aria-describedby={couponError ? 'cupon-error' : undefined}
+                    aria-invalid={couponError ? true : undefined}
+                    className="flex-1 px-3 py-3 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50"
                   />
                   <button
                     type="submit"
                     disabled={isValidatingCoupon || !couponInput.trim()}
-                    className="px-4 py-2 text-sm font-semibold bg-[#2b496d] text-white rounded-lg hover:bg-[#1e3550] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 min-h-11 text-sm font-semibold bg-[#2b496d] text-white rounded-lg hover:bg-[#1e3550] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isValidatingCoupon ? '...' : 'Aplicar'}
                   </button>
                 </form>
                 {couponError && (
-                  <p className="text-xs text-red-500 mt-1">{couponError}</p>
+                  <p id="cupon-error" role="alert" className="text-xs text-red-600 dark:text-red-400 mt-1">{couponError}</p>
                 )}
               </div>
             )}
@@ -531,7 +537,7 @@ export default function CartPage() {
                       S/ {totals.balanceDue.toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2 leading-relaxed flex gap-1.5">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2 leading-relaxed flex gap-1.5">
                     <Info size={11} className="flex-shrink-0 mt-0.5" />
                     Coordinamos el pago del saldo y envío por WhatsApp cuando llegue el preorder.
                   </p>
@@ -543,27 +549,52 @@ export default function CartPage() {
           {/* Datos de contacto */}
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6 space-y-3">
             <h2 className="text-base font-bold text-gray-900 dark:text-white">Tus datos</h2>
-            <input
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Tu nombre (opcional)"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
-            />
-            <input
-              type="tel"
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="Teléfono (opcional)"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
-            />
-            <input
-              type="text"
-              value={customerAddress}
-              onChange={(e) => setCustomerAddress(e.target.value)}
-              placeholder="Dirección de envío (opcional)"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
-            />
+            <div>
+              <label htmlFor="cliente-nombre" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Nombre <span className="font-normal text-gray-500 dark:text-gray-400">(opcional)</span>
+              </label>
+              <input
+                id="cliente-nombre"
+                type="text"
+                name="name"
+                autoComplete="name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Tu nombre"
+                className="w-full px-3 py-3 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+              />
+            </div>
+            <div>
+              <label htmlFor="cliente-telefono" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Teléfono <span className="font-normal text-gray-500 dark:text-gray-400">(opcional)</span>
+              </label>
+              <input
+                id="cliente-telefono"
+                type="tel"
+                name="tel"
+                autoComplete="tel"
+                inputMode="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="924 462 641"
+                className="w-full px-3 py-3 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+              />
+            </div>
+            <div>
+              <label htmlFor="cliente-direccion" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Dirección de envío <span className="font-normal text-gray-500 dark:text-gray-400">(opcional)</span>
+              </label>
+              <input
+                id="cliente-direccion"
+                type="text"
+                name="street-address"
+                autoComplete="street-address"
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="Calle, número, distrito y ciudad"
+                className="w-full px-3 py-3 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+              />
+            </div>
           </div>
 
           {/* Método de pago */}
@@ -628,7 +659,7 @@ export default function CartPage() {
               Selecciona un método de pago para continuar
             </p>
           )}
-        </aside>
+        </div>
       </div>
 
       {/* Sugerencias — productos de misma serie/categoría que los del carrito */}
