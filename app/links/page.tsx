@@ -184,7 +184,7 @@ export default function LinksPage() {
           })}
         </div>
 
-        <p className="text-gray-600 text-xs mt-6">
+        <p className="text-gray-400 text-xs mt-6">
           © {new Date().getFullYear()} Neko Manga Cix · Chiclayo, Perú
         </p>
       </div>

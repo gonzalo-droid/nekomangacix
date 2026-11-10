@@ -104,11 +104,11 @@ export default function TermsPage() {
       <LegalSection id="contacto" number="10" title="Contacto">
         <p>
           Para consultas sobre estos términos, contáctanos en{' '}
-          <a href="mailto:contacto@nekomangacix.com" className="text-[#ec4899] font-semibold hover:underline">
+          <a href="mailto:contacto@nekomangacix.com" className="text-neko-magenta-ink font-semibold hover:underline">
             contacto@nekomangacix.com
           </a>{' '}
           o por WhatsApp al{' '}
-          <a href="https://wa.me/51924462641" target="_blank" rel="noopener noreferrer" className="text-[#25D366] font-semibold hover:underline">
+          <a href="https://wa.me/51924462641" target="_blank" rel="noopener noreferrer" className="text-neko-green-ink font-semibold hover:underline">
             (+51) 924 462 641
           </a>
           .

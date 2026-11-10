@@ -7,7 +7,7 @@ import type { Product } from '@/lib/products';
 function SectionHeader({ badge, title, description }: { badge: string; title: string; description: string }) {
   return (
     <div className="relative mb-8">
-      <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-2">
+      <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-2">
         {badge}
       </span>
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
@@ -38,7 +38,7 @@ function FeaturedSection({ products, badge, title, description, href, linkLabel 
         <SectionHeader badge={badge} title={title} description={description} />
         <Link
           href={href}
-          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-colors group mb-8"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-colors group mb-8"
         >
           {linkLabel} <span className="transition-transform group-hover:translate-x-1">→</span>
         </Link>
@@ -102,7 +102,7 @@ function JaponSection({ products, badge, title, description, href, linkLabel }: 
         <div className="sm:hidden mt-6 text-center">
           <Link
             href={href}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#06b6d4] text-white text-sm font-semibold"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#06b6d4] text-[#0a0a0f] text-sm font-semibold"
           >
             {linkLabel} →
           </Link>

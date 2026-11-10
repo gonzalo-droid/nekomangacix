@@ -70,7 +70,7 @@ export default function RegisterPage() {
 
       <div className="flex items-center gap-3 my-5">
         <hr className="flex-1 border-gray-200 dark:border-white/10" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">o con email</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">o con email</span>
         <hr className="flex-1 border-gray-200 dark:border-white/10" />
       </div>
 
@@ -129,7 +129,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/auth/login" className="font-semibold text-[#ec4899] hover:underline">
+        <Link href="/auth/login" className="font-semibold text-neko-magenta-ink hover:underline">
           Iniciar sesión
         </Link>
       </p>

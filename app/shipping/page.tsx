@@ -105,7 +105,7 @@ export default function ShippingPage() {
         {/* Tabla de tarifas */}
         <div>
           <div className="mb-6 relative">
-            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-2">
+            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
               {'// Tarifas'}
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -131,7 +131,7 @@ export default function ShippingPage() {
                   {RATES.map((row) => (
                     <tr key={row.dest} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                       <td className="py-3.5 px-5 text-gray-900 dark:text-white font-medium">{row.dest}</td>
-                      <td className="py-3.5 px-5 font-bold text-[#ec4899]">{row.cost}</td>
+                      <td className="py-3.5 px-5 font-bold text-neko-magenta-ink">{row.cost}</td>
                       <td className="py-3.5 px-5 text-gray-600 dark:text-gray-400">{row.time}</td>
                     </tr>
                   ))}
@@ -144,7 +144,7 @@ export default function ShippingPage() {
         {/* Proceso */}
         <div>
           <div className="mb-6 relative">
-            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#06b6d4] mb-2">
+            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-cyan-ink mb-2">
               {'// Paso a paso'}
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -170,7 +170,7 @@ export default function ShippingPage() {
                     <Icon size={18} />
                   </div>
                   <div className="flex-1 pb-2 min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">
                       Paso {String(idx + 1).padStart(2, '0')}
                     </p>
                     <p className="font-bold text-gray-900 dark:text-white">{s.title}</p>
@@ -226,7 +226,7 @@ export default function ShippingPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
                   ¿Tienes dudas?
                 </p>
                 <p className="text-xl font-extrabold text-gray-900 dark:text-white group-hover:text-[#25D366] transition-colors">

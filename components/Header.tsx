@@ -57,7 +57,7 @@ export default function Header() {
             </div>
             <div className="hidden sm:flex flex-col leading-[1]">
               <Wordmark size="sm" tone="auto" className="group-hover:scale-[1.02] transition-transform origin-left" />
-              <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
+              <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
                 Manga · Coleccionables
               </span>
             </div>
@@ -73,7 +73,7 @@ export default function Header() {
                   href={item.href}
                   className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
                     active
-                      ? 'bg-[#ec4899]/10 text-[#ec4899] dark:bg-[#ec4899]/15'
+                      ? 'bg-[#ec4899]/10 text-neko-magenta-ink dark:bg-[#ec4899]/15'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
@@ -158,7 +158,7 @@ export default function Header() {
                   href={item.href}
                   className={`flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-sm transition-colors ${
                     active
-                      ? 'bg-[#ec4899]/10 text-[#ec4899]'
+                      ? 'bg-[#ec4899]/10 text-neko-magenta-ink'
                       : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}

@@ -76,7 +76,7 @@ export default function ProductPicker({ onPick }: Props) {
                     {p.stock_status === 'preorder' ? 'Preventa' : `Stock: ${p.stock}`}
                   </span>
                 </span>
-                <span className="flex items-center gap-1 text-xs font-semibold text-[#2b496d] dark:text-[#5a7a9e] shrink-0">
+                <span className="flex items-center gap-1 text-xs font-semibold text-[#2b496d] dark:text-neko-navy-ink shrink-0">
                   <Plus size={12} /> S/ {Number(p.price_pen).toFixed(2)}
                 </span>
               </button>

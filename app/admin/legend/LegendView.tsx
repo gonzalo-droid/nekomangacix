@@ -63,7 +63,7 @@ export default function LegendView() {
     <div className="space-y-4 max-w-5xl">
 
       <div className="bg-[#2b496d]/5 dark:bg-[#5a7a9e]/10 border border-[#2b496d]/20 dark:border-[#5a7a9e]/20 rounded-xl px-5 py-4">
-        <p className="text-sm text-[#2b496d] dark:text-[#5a7a9e]">
+        <p className="text-sm text-[#2b496d] dark:text-neko-navy-ink">
           Esta vista es solo referencia. Los campos marcados con <span className="text-red-500 font-bold">*</span> son obligatorios al crear un producto.
         </p>
       </div>
@@ -72,7 +72,7 @@ export default function LegendView() {
       <Section title="📦 Producto — campos principales" defaultOpen>
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+            <tr className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
               <th className="text-left pb-2 pr-4">Campo</th>
               <th className="text-left pb-2 pr-4">Tipo</th>
               <th className="text-left pb-2 pr-4">Valores posibles</th>
@@ -113,7 +113,7 @@ export default function LegendView() {
       <Section title="📝 Producto — campos opcionales">
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+            <tr className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
               <th className="text-left pb-2 pr-4">Campo</th>
               <th className="text-left pb-2 pr-4">Tipo</th>
               <th className="text-left pb-2 pr-4">Valores posibles</th>
@@ -171,12 +171,12 @@ export default function LegendView() {
               <Code>{key}</Code>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{desc}</p>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">ej: <span className="font-mono">{example}</span></p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">ej: <span className="font-mono">{example}</span></p>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
           Puedes agregar cualquier otro atributo personalizado desde el formulario de edición → sección "Atributos".
         </p>
       </Section>
@@ -212,7 +212,7 @@ export default function LegendView() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
           El campo <Code>editorial</Code> debe ser uno de estos valores exactos (respetando mayúsculas). Si no coincide, el sistema mostrará una advertencia.
         </p>
       </Section>
@@ -221,7 +221,7 @@ export default function LegendView() {
       <Section title="📚 Series — campos">
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+            <tr className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
               <th className="text-left pb-2 pr-4">Campo</th>
               <th className="text-left pb-2 pr-4">Tipo</th>
               <th className="text-left pb-2 pr-4">Valores</th>
@@ -275,7 +275,7 @@ export default function LegendView() {
               <Badge color={color}>{type}</Badge>
               <p className="font-semibold text-sm text-gray-900 dark:text-white mt-2">{label}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">{desc}</p>
-              {fields.map((f) => <p key={f} className="text-[11px] font-mono text-gray-400 dark:text-gray-500">{f}</p>)}
+              {fields.map((f) => <p key={f} className="text-[11px] font-mono text-gray-500 dark:text-gray-400">{f}</p>)}
             </div>
           ))}
         </div>

@@ -138,7 +138,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
                 <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">{detail}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center gap-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                   <Clock size={12} /> {sub}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
               <div className="mb-6 relative">
-                <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-1.5">
+                <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
                   {'// Formulario'}
                 </span>
                 <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
@@ -291,7 +291,7 @@ export default function ContactPage() {
                   href="https://wa.me/51924462641?text=Hola%20Neko%20Manga%20Cix"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm transition-all active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-sm transition-all active:scale-95"
                 >
                   <MessageCircle size={16} /> Abrir WhatsApp
                 </a>
@@ -323,7 +323,7 @@ export default function ContactPage() {
       {/* FAQ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="mb-8 relative">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-2">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
             {'// Preguntas frecuentes'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -351,7 +351,7 @@ export default function ContactPage() {
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           ¿No encuentras tu respuesta?{' '}
-          <Link href="/faq" className="text-[#ec4899] font-semibold hover:underline">
+          <Link href="/faq" className="text-neko-magenta-ink font-semibold hover:underline">
             Ver FAQ completa
           </Link>
         </p>

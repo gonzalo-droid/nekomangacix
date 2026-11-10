@@ -25,6 +25,17 @@
   --color-neko-gold: #eab308;           /* dorado — premium/ofertas */
   --color-neko-gold-glow: #eab30840;
 
+  /* Acentos en versión "tinta" — para TEXTO sobre fondo claro.
+     Los de arriba son colores de marca pensados para fondos, bordes e íconos
+     grandes: sobre blanco no llegan al 4.5:1 que pide WCAG AA para texto
+     (#ec4899 → 3.5:1, #06b6d4 → 2.4:1, #eab308 → 1.9:1). Estos sí.
+     En modo oscuro se invierten a la variante clara del mismo tono. */
+  --neko-magenta-ink: #be185d;
+  --neko-cyan-ink: #0e7490;
+  --neko-gold-ink: #854d0e;
+  --neko-green-ink: #047857;
+  --neko-navy-ink: #2b496d;
+
   /* Base */
   --background: #ffffff;
   --foreground: #0a0a0a;
@@ -44,11 +55,23 @@
   --color-neko-magenta: #ec4899;
   --color-neko-cyan: #06b6d4;
   --color-neko-gold: #eab308;
+  --color-neko-magenta-ink: var(--neko-magenta-ink);
+  --color-neko-cyan-ink: var(--neko-cyan-ink);
+  --color-neko-gold-ink: var(--neko-gold-ink);
+  --color-neko-green-ink: var(--neko-green-ink);
+  --color-neko-navy-ink: var(--neko-navy-ink);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 .dark {
+  /* Sobre fondo oscuro la tinta se aclara, no se oscurece */
+  --neko-magenta-ink: #f9a8d4;
+  --neko-cyan-ink: #67e8f9;
+  --neko-gold-ink: #fde047;
+  --neko-green-ink: #6ee7b7;
+  --neko-navy-ink: #9db8d4;
+
   --background: #0a0a0f;              /* casi negro, con tinte azul */
   --foreground: #ededed;
   --muted: #1f2937;

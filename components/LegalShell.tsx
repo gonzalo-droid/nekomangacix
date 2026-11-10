@@ -58,7 +58,7 @@ export default function LegalShell({
       <PageHero eyebrow={eyebrow} title={heroTitle} subtitle={heroSubtitle} size="sm" />
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-xs text-gray-500 dark:text-gray-500 mb-8">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-8">
           Última actualización: <strong className="text-gray-700 dark:text-gray-300">{updatedAt}</strong>
         </p>
 
@@ -66,7 +66,7 @@ export default function LegalShell({
           {/* TOC sticky — desktop */}
           <aside className="hidden lg:block">
             <nav className="sticky top-24" aria-label="Tabla de contenidos">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-3">
                 {'// Secciones'}
               </p>
               <ul className="space-y-1">
@@ -76,7 +76,7 @@ export default function LegalShell({
                       href={`#${s.id}`}
                       className={`block text-sm py-1.5 px-2 rounded border-l-2 transition-colors ${
                         active === s.id
-                          ? 'border-[#ec4899] text-[#ec4899] bg-[#ec4899]/5 font-semibold'
+                          ? 'border-[#ec4899] text-neko-magenta-ink bg-[#ec4899]/5 font-semibold'
                           : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-[#ec4899] hover:bg-gray-50 dark:hover:bg-white/5'
                       }`}
                     >

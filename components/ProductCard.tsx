@@ -56,7 +56,7 @@ function getTagAccent(tag: string, idx: number): string {
 }
 
 const STOCK_BADGE: Record<string, { label: string; cls: string }> = {
-  preorder:     { label: 'Preventa',  cls: 'bg-blue-500 text-white' },
+  preorder:     { label: 'Preventa',  cls: 'bg-blue-600 text-white' },
   out_of_stock: { label: 'Agotado',   cls: 'bg-red-600 text-white' },
   in_stock:     { label: 'En stock',  cls: 'bg-emerald-500 text-white' },
 };
@@ -64,7 +64,7 @@ const STOCK_BADGE: Record<string, { label: string; cls: string }> = {
 function EditorialLine({ countryCode, editorial }: { countryCode?: CountryCode; editorial: string }) {
   const countryName = countryCode ? COUNTRIES[countryCode]?.name : null;
   return (
-    <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-2 line-clamp-1 tracking-wide">
+    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-2 line-clamp-1 tracking-wide">
       {countryName ? `${countryName}, ${editorial}` : editorial}
     </p>
   );
@@ -145,7 +145,7 @@ export default function ProductCard({
           <EditorialLine countryCode={countryCode} editorial={editorial} />
           <div className="mt-auto pt-2 flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-sm font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+              <p className="text-sm font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
                 S/ {finalPrice.toFixed(2)}
               </p>
               {hasDiscount && <p className="text-[10px] line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
@@ -158,8 +158,8 @@ export default function ProductCard({
                   added
                     ? 'bg-emerald-500 text-white'
                     : isPreorder
-                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white'
-                    : 'bg-[#ec4899]/10 text-[#ec4899] hover:bg-[#ec4899] hover:text-white'
+                    ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white'
+                    : 'bg-[#ec4899]/10 text-neko-magenta-ink hover:bg-[#ec4899] hover:text-white'
                 }`}
                 aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
               >
@@ -190,7 +190,7 @@ export default function ProductCard({
           <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-[2.5rem]">{title}</h3>
             <EditorialLine countryCode={countryCode} editorial={editorial} />
-            <p className="text-base font-bold text-[#2b496d] dark:text-[#5a7a9e] mt-1">S/ {finalPrice.toFixed(2)}</p>
+            <p className="text-base font-bold text-[#2b496d] dark:text-neko-navy-ink mt-1">S/ {finalPrice.toFixed(2)}</p>
             {hasDiscount && <p className="text-xs line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
           </div>
         </Link>
@@ -284,9 +284,9 @@ export default function ProductCard({
         <div className="mt-auto">
           {seriesStatus && (
             <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-2 ${
-              seriesStatus === 'single' ? 'bg-[#eab308]/15 text-[#eab308]'
-              : seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-              : 'bg-[#ec4899]/15 text-[#ec4899]'
+              seriesStatus === 'single' ? 'bg-[#eab308]/15 text-neko-gold-ink'
+              : seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+              : 'bg-[#ec4899]/15 text-neko-magenta-ink'
             }`}>
               {seriesStatus === 'single' ? 'Tomo único' : seriesStatus === 'completed' ? 'Completado' : 'En curso'}
             </span>
@@ -294,7 +294,7 @@ export default function ProductCard({
 
           <div className="flex items-baseline justify-between gap-2">
             <div>
-              <p className="text-xl font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+              <p className="text-xl font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
                 S/ {finalPrice.toFixed(2)}
               </p>
               {hasDiscount && <p className="text-xs line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
@@ -308,7 +308,7 @@ export default function ProductCard({
           </div>
 
           {(isPreorder || isOutOfStock) && (
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight">
               Reserva con S/ {(finalPrice * PREORDER_DEPOSIT_RATE).toFixed(2)} — paga el resto al llegar.
             </p>
           )}

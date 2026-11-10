@@ -121,7 +121,7 @@ export default function ExcelImportPanel({ onImport, onClose }: Props) {
               </div>
 
               <button onClick={downloadTemplate}
-                className="flex items-center gap-2 text-sm text-[#2b496d] dark:text-[#5a7a9e] hover:underline">
+                className="flex items-center gap-2 text-sm text-[#2b496d] dark:text-neko-navy-ink hover:underline">
                 <Download size={15} /> Descargar plantilla Excel
               </button>
 

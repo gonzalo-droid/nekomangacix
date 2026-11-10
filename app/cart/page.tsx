@@ -247,12 +247,12 @@ export default function CartPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#ec4899]/15 to-[#06b6d4]/15 border-2 border-[#ec4899]/20 mb-6">
             <ShoppingBag size={36} className="text-[#ec4899]" />
           </div>
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-2">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
             {'// Carrito vacío'}
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
             Aún no tienes productos
-          </h2>
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8 text-sm">
             Explora nuestro catálogo y agrega tus mangas favoritos al carrito.
           </p>
@@ -271,7 +271,7 @@ export default function CartPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8 relative">
-        <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-1.5">
+        <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
           {'// Checkout'}
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
@@ -345,8 +345,8 @@ export default function CartPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{item.editorial}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.editorial}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     S/ {item.price.toFixed(2)} c/u
                   </p>
 
@@ -387,7 +387,7 @@ export default function CartPage() {
                       <p className="text-[10px] text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
                     </div>
                   ) : (
-                    <p className="font-extrabold text-[#2b496d] dark:text-[#5a7a9e]">
+                    <p className="font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
                       S/ {split.full.toFixed(2)}
                     </p>
                   )}
@@ -405,7 +405,7 @@ export default function CartPage() {
 
           <Link
             href="/products"
-            className="inline-flex items-center gap-1.5 text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#ec4899] text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] text-sm font-semibold transition-colors"
           >
             <ArrowLeft size={14} /> Continuar comprando
           </Link>
@@ -531,7 +531,7 @@ export default function CartPage() {
                       S/ {totals.balanceDue.toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-2 leading-relaxed flex gap-1.5">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2 leading-relaxed flex gap-1.5">
                     <Info size={11} className="flex-shrink-0 mt-0.5" />
                     Coordinamos el pago del saldo y envío por WhatsApp cuando llegue el preorder.
                   </p>
@@ -584,12 +584,15 @@ export default function CartPage() {
                         : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
                     }`}
                   >
-                    <div className={`w-9 h-9 ${info.brand} rounded-md flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0`}>
+                    <div
+                      aria-hidden="true"
+                      className={`w-9 h-9 ${info.brand} rounded-md flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0`}
+                    >
                       {info.label.slice(0, 1)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 dark:text-white text-sm">{info.label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {info.number} · {info.holder}
                       </p>
                     </div>
@@ -615,7 +618,7 @@ export default function CartPage() {
           <button
             onClick={handleWhatsAppOrder}
             disabled={!selectedPayment || placing}
-            className="w-full bg-[#25D366] hover:bg-[#1ebe5a] disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-white disabled:text-gray-500 font-bold py-3.5 rounded-xl shadow-lg shadow-[#25D366]/25 hover:shadow-[#25D366]/45 disabled:shadow-none hover:scale-[1.01] active:scale-[0.98] disabled:scale-100 transition-all flex items-center justify-center gap-2 text-base"
+            className="w-full bg-[#0b8043] hover:bg-[#09703a] disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-white disabled:text-gray-500 font-bold py-3.5 rounded-xl shadow-lg shadow-[#25D366]/25 hover:shadow-[#25D366]/45 disabled:shadow-none hover:scale-[1.01] active:scale-[0.98] disabled:scale-100 transition-all flex items-center justify-center gap-2 text-base"
           >
             <MessageCircle size={18} />
             {placing ? 'Procesando...' : hasPreorder ? 'Reservar por WhatsApp' : 'Confirmar por WhatsApp'}

@@ -107,7 +107,7 @@ export default function FaqPage() {
                 href="https://wa.me/51924462641"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/25 hover:scale-[1.02] active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/25 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 <MessageCircle size={16} /> WhatsApp
               </a>

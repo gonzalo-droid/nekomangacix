@@ -73,7 +73,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
 
         {/* Bottom: mensaje + beneficios */}
         <div className="relative max-w-md">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-3">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-3">
             {'// Bienvenido'}
           </span>
           <h2 className="text-3xl xl:text-4xl font-extrabold leading-tight mb-4">
@@ -138,7 +138,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
 
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl p-7 sm:p-8">
             <div className="mb-6">
-              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-1.5">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
                 {'// Bienvenido'}
               </span>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{title}</h1>
@@ -160,7 +160,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
             </Link>
           </div>
 
-          <p className="mt-5 text-center text-xs text-gray-500 dark:text-gray-500">
+          <p className="mt-5 text-center text-xs text-gray-500 dark:text-gray-400">
             Al continuar aceptas nuestros{' '}
             <Link href="/terms" className="underline hover:text-[#ec4899]">Términos</Link>
             {' '}y{' '}

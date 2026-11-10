@@ -159,7 +159,7 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-10 relative">
-        <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-2">
+        <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-2">
           {'// Catálogo completo'}
         </span>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">

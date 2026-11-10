@@ -97,7 +97,7 @@ export default function ProfileTabs({ user, profile, orders, initialTab }: Props
           />
         </div>
         <div className="min-w-0 flex-1">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-0.5">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-0.5">
             {'// Mi cuenta'}
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white truncate">
@@ -189,7 +189,7 @@ function DataTab({ user, profile }: { user: Props['user']; profile: Profile }) {
               {user.email_confirmed_at ? '✓ Verificado' : '⚠ Sin verificar'}
             </p>
           </div>
-          <span className="text-xs text-gray-400 dark:text-gray-500">No editable</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">No editable</span>
         </div>
       </div>
     </div>
@@ -342,7 +342,7 @@ function OrdersTab({ orders, userId }: { orders: OrderRow[]; userId: string }) {
                 <span>Envío</span>
                 <span>S/ {order.shipping_cost.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between font-bold text-[#2b496d] dark:text-[#5a7a9e] pt-1">
+              <div className="flex justify-between font-bold text-[#2b496d] dark:text-neko-navy-ink pt-1">
                 <span>Total</span>
                 <span>S/ {order.total_pen.toFixed(2)}</span>
               </div>

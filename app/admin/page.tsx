@@ -28,7 +28,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/products" className="flex items-center text-[#2b496d] dark:text-[#5a7a9e] hover:underline mb-4 text-sm">
+          <Link href="/products" className="flex items-center text-[#2b496d] dark:text-neko-navy-ink hover:underline mb-4 text-sm">
             <ChevronLeft size={18} /> Volver a productos
           </Link>
           <div className="flex items-center justify-between">

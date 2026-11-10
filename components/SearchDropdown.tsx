@@ -160,7 +160,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
                         <p className="text-xs text-gray-400 truncate">{item.editorial}</p>
                       </div>
                       <div className="flex-shrink-0 text-right">
-                        <p className="text-sm font-bold text-[#2b496d] dark:text-[#5a7a9e]">S/ {item.price_pen.toFixed(2)}</p>
+                        <p className="text-sm font-bold text-[#2b496d] dark:text-neko-navy-ink">S/ {item.price_pen.toFixed(2)}</p>
                         {stock && <p className={`text-[10px] font-semibold ${stock.cls}`}>{stock.label}</p>}
                       </div>
                     </Link>

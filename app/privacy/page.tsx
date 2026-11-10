@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <p>
           NekoMangaCix, con domicilio en Chiclayo, Perú, es el responsable del tratamiento de tus datos
           personales. Contacto:{' '}
-          <a href="mailto:contacto@nekomangacix.com" className="text-[#ec4899] font-semibold hover:underline">
+          <a href="mailto:contacto@nekomangacix.com" className="text-neko-magenta-ink font-semibold hover:underline">
             contacto@nekomangacix.com
           </a>
         </p>
@@ -104,7 +104,7 @@ export default function PrivacyPage() {
         </ul>
         <p className="mt-3">
           Para ejercer estos derechos, contáctanos en{' '}
-          <a href="mailto:contacto@nekomangacix.com" className="text-[#ec4899] font-semibold hover:underline">
+          <a href="mailto:contacto@nekomangacix.com" className="text-neko-magenta-ink font-semibold hover:underline">
             contacto@nekomangacix.com
           </a>.
         </p>
