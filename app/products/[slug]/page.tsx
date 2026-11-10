@@ -12,8 +12,19 @@ type Props = { params: Promise<{ slug: string }> };
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nekomangacix.com';
 
-// ISR: revalida cada 60 segundos para reflejar cambios del admin sin rebuild
+// ISR: revalida cada 60 segundos para reflejar cambios del admin sin rebuild.
+// Esto sigue valiendo para los productos ya publicados: precio, stock, imágenes
+// y descripción se actualizan solos dentro del minuto.
 export const revalidate = 60;
+
+// Solo existen los slugs que `generateStaticParams` devolvió en el build.
+// Cualquier otro devuelve un 404 de verdad, en vez del 200 con cuerpo de 404 que
+// servía Next al cachear el `notFound()` de una ruta ISR.
+//
+// El precio: un producto NUEVO cargado desde el admin no es alcanzable hasta el
+// siguiente despliegue. Los cambios sobre productos existentes no se ven
+// afectados. Decisión tomada a conciencia el 2026-11-10.
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const slugs = await getAllProductSlugs();
