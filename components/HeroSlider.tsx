@@ -28,11 +28,13 @@ interface Banner {
   type: string;
 }
 
+// Fondos sólidos y oscuros: el distintivo se apoya sobre la ilustración del
+// banner, así que con opacidad el texto blanco no llegaba a 4.5:1.
 const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
-  preventa: { label: '🔖 Preventa activa', cls: 'bg-blue-500/80 text-white' },
-  feria:    { label: '🎪 Próxima feria',    cls: 'bg-purple-500/80 text-white' },
-  novedad:  { label: '✨ Novedad',           cls: 'bg-pink-500/80 text-white' },
-  general:  { label: '📢 Anuncio',           cls: 'bg-white/10 text-white border border-white/20' },
+  preventa: { label: '🔖 Preventa activa', cls: 'bg-blue-700 text-white' },
+  feria:    { label: '🎪 Próxima feria',    cls: 'bg-purple-700 text-white' },
+  novedad:  { label: '✨ Novedad',           cls: 'bg-pink-700 text-white' },
+  general:  { label: '📢 Anuncio',           cls: 'bg-black/80 text-white border border-white/20' },
 };
 
 const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'nekomangacix';
@@ -44,7 +46,7 @@ function resolveImg(ref: string) {
 
 const COVERS = [
   { src: '/images/manga/one_piece_02.png', alt: 'One Piece', cls: 'absolute right-[8%] top-[8%] w-[160px] lg:w-[210px] rotate-[8deg] animate-float-slow z-10', delay: '1.5s' },
-  { src: '/images/manga/jujutsu_kaisen_02.png', alt: 'Jujutsu Kaisen', cls: 'absolute right-[18%] bottom-[5%] w-[130px] lg:w-[170px] -rotate-[6deg] animate-float-slow', delay: '3s' },
+  { src: '/images/manga/jujutsu_kaisen_01.png', alt: 'Jujutsu Kaisen', cls: 'absolute right-[18%] bottom-[5%] w-[130px] lg:w-[170px] -rotate-[6deg] animate-float-slow', delay: '3s' },
 ];
 
 function StaticHero() {
@@ -123,20 +125,46 @@ function BannerHero({ banners }: { banners: Banner[] }) {
   const badge = TYPE_BADGE[b.type] ?? TYPE_BADGE.general;
   const imgSrc = resolveImg(b.image_url);
 
+  const nombreAccesible = `${b.title}. ${b.subtitle ?? ''}`.trim();
+  // Con <img> a pelo el PNG del banner se servía tal cual (2,4 MB) y era el
+  // elemento LCP de la portada. next/image lo reescala y lo entrega en AVIF o
+  // WebP; además va perezoso, porque la franja queda bajo el hero.
+  const imagen = (
+    <Image
+      key={b.id}
+      src={imgSrc}
+      alt={b.title}
+      fill
+      sizes="(max-width: 1280px) 100vw, 1280px"
+      loading="lazy"
+      className="object-cover transition-opacity duration-700"
+    />
+  );
+
   return (
-    <section className="relative overflow-hidden text-white isolate w-full" style={{ aspectRatio: '16/5', minHeight: '300px' }}>
+    <section
+      aria-label="Promociones"
+      aria-roledescription="carrusel"
+      className="relative overflow-hidden text-white isolate w-full rounded-2xl"
+      style={{ aspectRatio: '16/5', minHeight: '180px' }}
+    >
       {/* Imagen de fondo con transición */}
       {imgSrc && (
-        <div className="absolute inset-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            key={b.id}
-            src={imgSrc}
-            alt={b.title}
-            className="w-full h-full object-cover transition-opacity duration-700"
-          />
-        </div>
+        b.link ? (
+          <Link href={b.link} aria-label={nombreAccesible} className="absolute inset-0 block">
+            {imagen}
+          </Link>
+        ) : (
+          <div className="absolute inset-0 block">{imagen}</div>
+        )
       )}
+
+      {/* Distintivo del tipo de promoción, como texto y no dentro del JPG */}
+      <span
+        className={`absolute top-3 left-3 sm:top-4 sm:left-4 inline-block text-[11px] font-bold px-3 py-1.5 rounded-full pointer-events-none ${badge.cls}`}
+      >
+        {badge.label}
+      </span>
 
       {/* Sin imagen: fondo oscuro como el hero original */}
       {!imgSrc && (
@@ -178,7 +206,7 @@ function BannerHero({ banners }: { banners: Banner[] }) {
                 onClick={() => setIdx(i)}
                 aria-label={`Ir al banner ${i + 1} de ${banners.length}`}
                 aria-current={i === idx ? 'true' : undefined}
-                className="h-11 px-1.5 flex items-center justify-center group"
+                className="h-11 min-w-11 flex items-center justify-center group"
               >
                 <span
                   aria-hidden="true"
@@ -207,15 +235,7 @@ function BannerHero({ banners }: { banners: Banner[] }) {
 }
 
 export default function HeroSlider() {
-  const [banners, setBanners] = useState<Banner[] | null>(null);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   useEffect(() => {
     fetch('/api/banners')
@@ -224,10 +244,18 @@ export default function HeroSlider() {
       .catch(() => setBanners([]));
   }, []);
 
-  // Espera a conocer el tamaño de pantalla y los banners antes de renderizar
-  if (isMobile === null || banners === null) return null;
-
-  if (isMobile || banners.length === 0) return <StaticHero />;
-
-  return <BannerHero banners={banners} />;
+  // El hero de texto se renderiza siempre, en todos los anchos y también en el
+  // HTML que sirve el servidor: antes dependía de `window.innerWidth`, así que
+  // por encima de 768 px el mensaje solo existía dibujado dentro del banner y
+  // la página se servía sin nada sobre el pliegue.
+  return (
+    <>
+      <StaticHero />
+      {banners.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-10">
+          <BannerHero banners={banners} />
+        </div>
+      )}
+    </>
+  );
 }
