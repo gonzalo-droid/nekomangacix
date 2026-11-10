@@ -23,7 +23,15 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlugServer(slug);
-  if (!product) return { title: 'Producto no encontrado — NekoMangaCix' };
+  // Sin esto el layout aporta su `index, follow` y la respuesta sale con dos
+  // meta robots contradictorios: `index, follow` y el `noindex` que agrega Next
+  // al renderizar el not-found.
+  if (!product) {
+    return {
+      title: 'Producto no encontrado',
+      robots: { index: false, follow: true },
+    };
+  }
 
   const title = `${product.title} — NekoMangaCix`;
   const description = `${product.description} | ${product.editorial} | S/ ${product.pricePEN.toFixed(2)} | Envíos a todo Perú.`;
