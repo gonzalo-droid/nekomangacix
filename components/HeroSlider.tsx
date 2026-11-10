@@ -3,8 +3,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, ArrowRight, Sparkles, ShieldCheck, Truck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Sparkles, ShieldCheck, Truck, Pause, Play } from 'lucide-react';
 import Wordmark from './Wordmark';
+
+/** `true` cuando el sistema pide reducir el movimiento. */
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReduce(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  return reduce;
+}
 
 interface Banner {
   id: string;
@@ -60,7 +73,7 @@ function StaticHero() {
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-5 animate-tilt-in" style={{ animationDelay: '0.1s' }}>
             Inicia tu colección{' '}
-            <span className="text-neko-gradient">aventura manga</span>
+            <span className="text-neko-gradient">aventura manga</span>{' '}
             <br />empieza aquí.
           </h1>
           <p className="text-base sm:text-lg text-white/75 mb-8 max-w-xl leading-relaxed animate-tilt-in" style={{ animationDelay: '0.2s' }}>
@@ -93,15 +106,18 @@ function StaticHero() {
 
 function BannerHero({ banners }: { banners: Banner[] }) {
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reduceMotion = usePrefersReducedMotion();
 
   const prev = useCallback(() => setIdx((i) => (i - 1 + banners.length) % banners.length), [banners.length]);
   const next = useCallback(() => setIdx((i) => (i + 1) % banners.length), [banners.length]);
 
+  // El avance automático se detiene si el usuario lo pausa o pide reducir el movimiento.
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (banners.length <= 1 || paused || reduceMotion) return;
     const t = setInterval(next, 6000);
     return () => clearInterval(t);
-  }, [banners.length, next]);
+  }, [banners.length, next, paused, reduceMotion]);
 
   const b = banners[idx];
   const badge = TYPE_BADGE[b.type] ?? TYPE_BADGE.general;
@@ -136,22 +152,52 @@ function BannerHero({ banners }: { banners: Banner[] }) {
       {/* Controles de navegación */}
       {banners.length > 1 && (
         <>
-          <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm">
-            <ChevronLeft size={20} />
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="Banner anterior"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+          >
+            <ChevronLeft size={20} aria-hidden="true" />
           </button>
-          <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm">
-            <ChevronRight size={20} />
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Banner siguiente"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+          >
+            <ChevronRight size={20} aria-hidden="true" />
           </button>
 
-          {/* Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          {/* Dots + pausa */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
             {banners.map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => setIdx(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === idx ? 'bg-white w-8' : 'bg-white/40 w-2'}`}
-              />
+                aria-label={`Ir al banner ${i + 1} de ${banners.length}`}
+                aria-current={i === idx ? 'true' : undefined}
+                className="h-11 px-1.5 flex items-center justify-center group"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`block h-1.5 rounded-full transition-all duration-300 ${
+                    i === idx ? 'bg-white w-8' : 'bg-white/40 w-2 group-hover:bg-white/70'
+                  }`}
+                />
+              </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setPaused((p) => !p)}
+              aria-label={paused ? 'Reanudar el cambio automático de banners' : 'Pausar el cambio automático de banners'}
+              className="ml-1 w-11 h-11 rounded-full text-white/80 hover:text-white hover:bg-black/40 flex items-center justify-center transition-colors"
+            >
+              {paused
+                ? <Play size={14} aria-hidden="true" />
+                : <Pause size={14} aria-hidden="true" />}
+            </button>
           </div>
         </>
       )}
