@@ -1,9 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { products } from '@/lib/products';
+import { getAllProductSlugs } from '@/lib/productsServer';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nekomangacix.com';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: SITE_URL,                          lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
     { url: `${SITE_URL}/products`,            lastModified: new Date(), changeFrequency: 'daily',   priority: 0.9 },
@@ -15,8 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/shipping`,            lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ];
 
-  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
-    url: `${SITE_URL}/products/${p.slug}`,
+  // Antes se mapeaba el array estático de `lib/products.ts`, que está vacío
+  // desde que el catálogo vive en Supabase: el sitemap no listaba ni un solo
+  // producto. Es la misma fuente que decide qué URLs existen, ahora que la
+  // ficha usa `dynamicParams = false`.
+  const slugs = await getAllProductSlugs();
+  const productRoutes: MetadataRoute.Sitemap = slugs.map((slug) => ({
+    url: `${SITE_URL}/products/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
