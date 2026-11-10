@@ -102,7 +102,7 @@ export default function ContactPage() {
   };
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 ${
+    `w-full px-4 py-3 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 ${
       errors[field]
         ? 'border-red-400 bg-red-50 dark:bg-red-900/10'
         : 'border-gray-200 dark:border-white/10 focus:border-[#06b6d4]'
@@ -136,7 +136,7 @@ export default function ContactPage() {
                 <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${bg} ${accent} mb-3`}>
                   <Icon size={20} />
                 </div>
-                <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
+                <h2 className="font-bold text-gray-900 dark:text-white">{title}</h2>
                 <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">{detail}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                   <Clock size={12} /> {sub}
@@ -161,7 +161,7 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
               <div className="mb-6 relative">
-                <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
+                <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
                   {'// Formulario'}
                 </span>
                 <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
@@ -277,7 +277,7 @@ export default function ContactPage() {
           </div>
 
           {/* Sidebar */}
-          <aside className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-4">
             {/* WhatsApp bloque destacado */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0a0f] via-[#1e3550] to-[#0a0a0f] text-white p-6">
               <div className="absolute inset-0 bg-halftone opacity-40 pointer-events-none" aria-hidden="true" />
@@ -291,7 +291,7 @@ export default function ContactPage() {
                   href="https://wa.me/51924462641?text=Hola%20Neko%20Manga%20Cix"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-sm transition-all active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-sm transition-all active:scale-95"
                 >
                   <MessageCircle size={16} /> Abrir WhatsApp
                 </a>
@@ -316,14 +316,14 @@ export default function ContactPage() {
                 </div>
               </dl>
             </div>
-          </aside>
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="mb-8 relative">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
             {'// Preguntas frecuentes'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">

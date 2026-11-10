@@ -94,7 +94,7 @@ export default function ShippingPage() {
               <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${bg} ${accent} mb-3`}>
                 <Icon size={20} />
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
+              <h2 className="font-bold text-gray-900 dark:text-white">{title}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">{desc}</p>
             </div>
           ))}
@@ -105,7 +105,7 @@ export default function ShippingPage() {
         {/* Tabla de tarifas */}
         <div>
           <div className="mb-6 relative">
-            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
               {'// Tarifas'}
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -144,7 +144,7 @@ export default function ShippingPage() {
         {/* Proceso */}
         <div>
           <div className="mb-6 relative">
-            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-neko-cyan-ink mb-2">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-cyan-ink mb-2">
               {'// Paso a paso'}
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -170,7 +170,7 @@ export default function ShippingPage() {
                     <Icon size={18} />
                   </div>
                   <div className="flex-1 pb-2 min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">
                       Paso {String(idx + 1).padStart(2, '0')}
                     </p>
                     <p className="font-bold text-gray-900 dark:text-white">{s.title}</p>
@@ -209,7 +209,7 @@ export default function ShippingPage() {
             <div className="absolute inset-0 bg-halftone opacity-30 pointer-events-none" aria-hidden="true" />
             <div className="relative flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-white/80 mb-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-white/80 mb-1">
                   Explorar
                 </p>
                 <p className="text-xl font-extrabold">Ver catálogo</p>
@@ -226,7 +226,7 @@ export default function ShippingPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
                   ¿Tienes dudas?
                 </p>
                 <p className="text-xl font-extrabold text-gray-900 dark:text-white group-hover:text-[#25D366] transition-colors">

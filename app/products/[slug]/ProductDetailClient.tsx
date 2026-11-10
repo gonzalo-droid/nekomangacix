@@ -117,8 +117,8 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Breadcrumb */}
-        <nav className="mb-8 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <Link href="/products" className="flex items-center gap-1 hover:text-[#ec4899] transition-colors">
+        <nav aria-label="Ruta de navegación" className="mb-8 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <Link href="/products" className="inline-flex items-center gap-1 min-h-11 hover:text-[#ec4899] transition-colors">
             <ChevronLeft size={16} />
             Productos
           </Link>
@@ -269,7 +269,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 <button
                   onClick={() => handleQuantityChange(-1)}
                   disabled={quantity <= 1}
-                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   aria-label="Disminuir cantidad"
                 >
                   <Minus size={16} />
@@ -280,7 +280,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 <button
                   onClick={() => handleQuantityChange(1)}
                   disabled={product.stockStatus === 'in_stock' && quantity >= product.stock}
-                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   aria-label="Aumentar cantidad"
                 >
                   <Plus size={16} />
@@ -436,7 +436,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
         {relatedProducts.length > 0 && (
           <section className="mb-8">
             <div className="mb-6 relative">
-              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-1.5">
+              <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-1.5">
                 {'// También te puede gustar'}
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Filters from '@/components/Filters';
+import { useDismissable } from '@/hooks/useDismissable';
 import type { Product } from '@/lib/products';
 import type { CountryCode } from '@/lib/constants/countries';
 import type { ProductType } from '@/lib/constants/productTypes';
@@ -43,6 +44,22 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const closeFilters = useCallback(() => setFiltersOpen(false), []);
+
+  // El botón flotante de filtros se aparta al llegar al final de la lista,
+  // donde ya no sirve y se superpondría al pie de página.
+  const finDeLista = useRef<HTMLDivElement>(null);
+  const [alFinal, setAlFinal] = useState(false);
+  useEffect(() => {
+    const el = finDeLista.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => setAlFinal(entry.isIntersecting));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  // Diálogo modal: tapa la página, así que atrapa el foco y bloquea el scroll.
+  const filtersPanelRef = useDismissable({ open: filtersOpen, onClose: closeFilters, modal: true });
 
   /**
    * Todo el estado vive en la URL: el servidor la lee, consulta esa página y
@@ -159,7 +176,7 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-10 relative">
-        <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-2">
+        <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-2">
           {'// Catálogo completo'}
         </span>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
@@ -172,7 +189,12 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
       </div>
 
       {/* Mobile: botón flotante de filtros */}
-      <div className="md:hidden fixed bottom-6 left-4 z-40">
+      <div
+        className={`md:hidden fixed bottom-6 left-4 z-40 transition-opacity duration-200 ${
+          alFinal ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        aria-hidden={alFinal}
+      >
         <button
           type="button"
           onClick={() => setFiltersOpen(true)}
@@ -186,15 +208,23 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
 
       {/* Mobile drawer */}
       {filtersOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+        <div
+          className="md:hidden fixed inset-0 z-50 flex flex-col justify-end"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-filtros"
+        >
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setFiltersOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up">
+          <div
+            ref={filtersPanelRef}
+            className="relative bg-white dark:bg-gray-900 rounded-t-3xl max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up"
+          >
             <div className="sticky top-0 bg-white dark:bg-gray-900 flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/5 z-10">
-              <h2 className="font-bold text-gray-900 dark:text-white">Filtros</h2>
+              <h2 id="titulo-filtros" className="font-bold text-gray-900 dark:text-white">Filtros</h2>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
@@ -219,11 +249,14 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
-        <aside className="hidden md:block md:col-span-1">
+        <div className="hidden md:block md:col-span-1">
           <Filters {...filterProps} />
-        </aside>
+        </div>
 
-        <main className="md:col-span-3">
+        <div className="md:col-span-3">
+          {/* El panel de filtros con su <h2> está oculto en móvil, así que sin
+              esto los títulos de tarjeta (h3) colgarían directo del h1. */}
+          <h2 className="sr-only">Resultados</h2>
           <div className="mb-6 flex flex-wrap justify-between items-center gap-3">
             <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
               {isPending && <Loader2 size={14} className="animate-spin text-[#ec4899]" />}
@@ -244,7 +277,7 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
               <select
                 value={query.sort}
                 onChange={(e) => syncUrl({ sort: e.target.value === DEFAULT_SORT ? null : e.target.value })}
-                className="text-xs rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/30 cursor-pointer"
+                className="text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 min-h-11 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/30 cursor-pointer"
                 aria-label="Ordenar resultados"
               >
                 {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
@@ -282,8 +315,10 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
           ) : (
             <EmptyState />
           )}
-        </main>
+        </div>
       </div>
+
+      <div ref={finDeLista} aria-hidden="true" className="h-px" />
     </div>
   );
 }
@@ -339,7 +374,7 @@ function Pagination({
         type="button"
         onClick={() => onChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="px-4 min-h-11 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         aria-label="Página anterior"
       >
         ← Anterior
@@ -354,7 +389,7 @@ function Pagination({
               key={p}
               type="button"
               onClick={() => onChange(p)}
-              className={`w-10 h-10 rounded-lg text-sm transition-colors ${
+              className={`w-11 h-11 rounded-lg text-sm transition-colors ${
                 currentPage === p
                   ? 'bg-[#2b496d] text-white font-semibold'
                   : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -371,7 +406,7 @@ function Pagination({
         type="button"
         onClick={() => onChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
-        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="px-4 min-h-11 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         aria-label="Próxima página"
       >
         Siguiente →

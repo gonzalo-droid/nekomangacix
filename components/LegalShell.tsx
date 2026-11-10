@@ -64,9 +64,9 @@ export default function LegalShell({
 
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-10 lg:gap-14">
           {/* TOC sticky — desktop */}
-          <aside className="hidden lg:block">
+          <div className="hidden lg:block">
             <nav className="sticky top-24" aria-label="Tabla de contenidos">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-3">
                 {'// Secciones'}
               </p>
               <ul className="space-y-1">
@@ -86,7 +86,7 @@ export default function LegalShell({
                 ))}
               </ul>
             </nav>
-          </aside>
+          </div>
 
           {/* Contenido */}
           <article className="prose-neko max-w-none">{children}</article>
