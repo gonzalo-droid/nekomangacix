@@ -49,6 +49,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {/* Toast container */}
       <div
         className="fixed bottom-6 right-4 sm:right-6 z-[200] flex flex-col gap-2 items-end pointer-events-none"
+        role="status"
         aria-live="polite"
         aria-label="Notificaciones"
       >
@@ -69,7 +70,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <CheckCircle2 size={13} className={toast.isPreorder ? 'text-blue-500' : 'text-emerald-500'} />
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${toast.isPreorder ? 'text-blue-500' : 'text-emerald-500'}`}>
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${toast.isPreorder ? 'text-blue-500' : 'text-emerald-500'}`}>
                   {toast.isPreorder ? 'Reservado' : 'Agregado'}
                 </span>
               </div>

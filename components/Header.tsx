@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -11,6 +11,7 @@ import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
 import Wordmark from './Wordmark';
 import SearchDropdown from './SearchDropdown';
+import { useDismissable } from '@/hooks/useDismissable';
 
 const NAV = [
   { href: '/', label: 'Inicio', exact: true },
@@ -24,6 +25,16 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  // Panel de revelado, no modal: cierra con Escape y devuelve el foco al botón.
+  // El buscador del panel se autoenfoca, así que hay que nombrar el disparador.
+  const mobileMenuRef = useDismissable({
+    open: mobileMenuOpen,
+    onClose: closeMobileMenu,
+    triggerRef: burgerRef,
+  });
+
   const cartCount = isHydrated ? getTotalItems() : 0;
 
   const isActive = (href: string, exact: boolean) => {
@@ -34,13 +45,13 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#0a0a0f]/90 backdrop-blur-lg border-b border-gray-200/60 dark:border-white/5">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <nav aria-label="Principal" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center gap-3">
 
           {/* Logo + Wordmark */}
           <Link
             href="/"
-            className="group flex-shrink-0 flex items-center gap-2.5"
+            className="group flex-shrink-0 flex items-center justify-center gap-2.5 py-1 min-h-11 min-w-11"
             aria-label="Neko Manga Cix — Ir al inicio"
           >
             <div className="relative">
@@ -57,7 +68,7 @@ export default function Header() {
             </div>
             <div className="hidden sm:flex flex-col leading-[1]">
               <Wordmark size="sm" tone="auto" className="group-hover:scale-[1.02] transition-transform origin-left" />
-              <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
+              <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
                 Manga · Coleccionables
               </span>
             </div>
@@ -73,7 +84,7 @@ export default function Header() {
                   href={item.href}
                   className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
                     active
-                      ? 'bg-[#ec4899]/10 text-[#ec4899] dark:bg-[#ec4899]/15'
+                      ? 'bg-[#ec4899]/10 text-neko-magenta-ink dark:bg-[#ec4899]/15'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
@@ -101,12 +112,12 @@ export default function Header() {
 
             <Link
               href="/cart"
-              className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-all"
+              className="relative w-11 h-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-all"
               aria-label={`Carrito — ${cartCount} artículos`}
             >
               <ShoppingCart size={20} />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-gradient-to-br from-[#ec4899] to-[#f97316] text-white text-[10px] rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold shadow-lg shadow-[#ec4899]/40 ring-2 ring-white dark:ring-[#0a0a0f]">
+                <span className="absolute -top-0.5 -right-0.5 bg-gradient-to-br from-[#ec4899] to-[#f97316] text-white text-[11px] rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold shadow-lg shadow-[#ec4899]/40 ring-2 ring-white dark:ring-[#0a0a0f]">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
@@ -120,22 +131,24 @@ export default function Header() {
           <div className="flex md:hidden items-center gap-1 ml-auto">
             <Link
               href="/cart"
-              className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:text-[#ec4899] transition-colors"
+              className="relative w-11 h-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:text-[#ec4899] transition-colors"
               aria-label={`Carrito — ${cartCount} artículos`}
             >
               <ShoppingCart size={20} />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-gradient-to-br from-[#ec4899] to-[#f97316] text-white text-[10px] rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold shadow-lg ring-2 ring-white dark:ring-[#0a0a0f]">
+                <span className="absolute -top-0.5 -right-0.5 bg-gradient-to-br from-[#ec4899] to-[#f97316] text-white text-[11px] rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold shadow-lg ring-2 ring-white dark:ring-[#0a0a0f]">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
             </Link>
             <ThemeToggle />
             <button
+              ref={burgerRef}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-              aria-label="Abrir menú"
+              className="w-11 h-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
+              aria-controls="menu-movil"
             >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -144,7 +157,11 @@ export default function Header() {
 
         {/* Mobile menu — incluye búsqueda */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-3 pb-3 border-t border-gray-100 dark:border-white/5 pt-3 space-y-1">
+          <div
+            id="menu-movil"
+            ref={mobileMenuRef}
+            className="md:hidden mt-3 pb-3 border-t border-gray-100 dark:border-white/5 pt-3 space-y-1"
+          >
             {/* Búsqueda dentro del menú */}
             <div className="mb-3">
               <SearchDropdown autoFocus onClose={() => setMobileMenuOpen(false)} />
@@ -158,14 +175,14 @@ export default function Header() {
                   href={item.href}
                   className={`flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-sm transition-colors ${
                     active
-                      ? 'bg-[#ec4899]/10 text-[#ec4899]'
+                      ? 'bg-[#ec4899]/10 text-neko-magenta-ink'
                       : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                   {'badge' in item && item.badge && (
-                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#ec4899] bg-[#ec4899]/10 px-2 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#ec4899] bg-[#ec4899]/10 px-2 py-0.5 rounded-full">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#ec4899] animate-pulse" />
                       Activas
                     </span>

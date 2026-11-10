@@ -42,7 +42,7 @@ function LoginForm() {
 
       <div className="flex items-center gap-3 my-5">
         <hr className="flex-1 border-gray-200 dark:border-white/10" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">o con email</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">o con email</span>
         <hr className="flex-1 border-gray-200 dark:border-white/10" />
       </div>
 
@@ -81,7 +81,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60 disabled:scale-100 transition-all"
+          className="w-full py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60 disabled:scale-100 transition-all"
         >
           {loading ? 'Ingresando...' : 'Ingresar'}
         </button>
@@ -89,7 +89,7 @@ function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         ¿No tienes cuenta?{' '}
-        <Link href="/auth/register" className="font-semibold text-[#ec4899] hover:underline">
+        <Link href="/auth/register" className="font-semibold text-neko-magenta-ink hover:underline">
           Regístrate
         </Link>
       </p>
@@ -131,7 +131,7 @@ export function InputField({
           autoComplete={autoComplete}
           required={required}
           minLength={minLength}
-          className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4]"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4]"
         />
       </div>
     </div>

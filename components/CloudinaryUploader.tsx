@@ -150,7 +150,7 @@ export default function CloudinaryUploader() {
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Haz clic para seleccionar una imagen
                 </p>
-                <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
                   JPG, PNG o WebP
                 </p>
               </>

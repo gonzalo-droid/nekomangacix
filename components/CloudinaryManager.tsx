@@ -172,7 +172,7 @@ export default function CloudinaryManager() {
               onClick={() => navigateTo(sf)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
             >
-              <Folder size={14} className="text-[#2b496d] dark:text-[#5a7a9e]" />
+              <Folder size={14} className="text-[#2b496d] dark:text-neko-navy-ink" />
               {sf.split('/').pop()}
             </button>
           ))}
@@ -241,7 +241,7 @@ export default function CloudinaryManager() {
                   <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200 truncate" title={r.public_id}>
                     {r.display_name}
                   </p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatBytes(r.bytes)}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{formatBytes(r.bytes)}</p>
                 </div>
               </div>
             );

@@ -3,8 +3,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, ArrowRight, Sparkles, ShieldCheck, Truck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Sparkles, ShieldCheck, Truck, Pause, Play } from 'lucide-react';
 import Wordmark from './Wordmark';
+
+/** `true` cuando el sistema pide reducir el movimiento. */
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReduce(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  return reduce;
+}
 
 interface Banner {
   id: string;
@@ -15,11 +28,13 @@ interface Banner {
   type: string;
 }
 
+// Fondos sólidos y oscuros: el distintivo se apoya sobre la ilustración del
+// banner, así que con opacidad el texto blanco no llegaba a 4.5:1.
 const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
-  preventa: { label: '🔖 Preventa activa', cls: 'bg-blue-500/80 text-white' },
-  feria:    { label: '🎪 Próxima feria',    cls: 'bg-purple-500/80 text-white' },
-  novedad:  { label: '✨ Novedad',           cls: 'bg-pink-500/80 text-white' },
-  general:  { label: '📢 Anuncio',           cls: 'bg-white/10 text-white border border-white/20' },
+  preventa: { label: '🔖 Preventa activa', cls: 'bg-blue-700 text-white' },
+  feria:    { label: '🎪 Próxima feria',    cls: 'bg-purple-700 text-white' },
+  novedad:  { label: '✨ Novedad',           cls: 'bg-pink-700 text-white' },
+  general:  { label: '📢 Anuncio',           cls: 'bg-black/80 text-white border border-white/20' },
 };
 
 const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'nekomangacix';
@@ -31,7 +46,7 @@ function resolveImg(ref: string) {
 
 const COVERS = [
   { src: '/images/manga/one_piece_02.png', alt: 'One Piece', cls: 'absolute right-[8%] top-[8%] w-[160px] lg:w-[210px] rotate-[8deg] animate-float-slow z-10', delay: '1.5s' },
-  { src: '/images/manga/jujutsu_kaisen_02.png', alt: 'Jujutsu Kaisen', cls: 'absolute right-[18%] bottom-[5%] w-[130px] lg:w-[170px] -rotate-[6deg] animate-float-slow', delay: '3s' },
+  { src: '/images/manga/jujutsu_kaisen_01.png', alt: 'Jujutsu Kaisen', cls: 'absolute right-[18%] bottom-[5%] w-[130px] lg:w-[170px] -rotate-[6deg] animate-float-slow', delay: '3s' },
 ];
 
 function StaticHero() {
@@ -60,7 +75,7 @@ function StaticHero() {
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-5 animate-tilt-in" style={{ animationDelay: '0.1s' }}>
             Inicia tu colección{' '}
-            <span className="text-neko-gradient">aventura manga</span>
+            <span className="text-neko-gradient">aventura manga</span>{' '}
             <br />empieza aquí.
           </h1>
           <p className="text-base sm:text-lg text-white/75 mb-8 max-w-xl leading-relaxed animate-tilt-in" style={{ animationDelay: '0.2s' }}>
@@ -93,34 +108,63 @@ function StaticHero() {
 
 function BannerHero({ banners }: { banners: Banner[] }) {
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reduceMotion = usePrefersReducedMotion();
 
   const prev = useCallback(() => setIdx((i) => (i - 1 + banners.length) % banners.length), [banners.length]);
   const next = useCallback(() => setIdx((i) => (i + 1) % banners.length), [banners.length]);
 
+  // El avance automático se detiene si el usuario lo pausa o pide reducir el movimiento.
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (banners.length <= 1 || paused || reduceMotion) return;
     const t = setInterval(next, 6000);
     return () => clearInterval(t);
-  }, [banners.length, next]);
+  }, [banners.length, next, paused, reduceMotion]);
 
   const b = banners[idx];
   const badge = TYPE_BADGE[b.type] ?? TYPE_BADGE.general;
   const imgSrc = resolveImg(b.image_url);
 
+  const nombreAccesible = `${b.title}. ${b.subtitle ?? ''}`.trim();
+  // Con <img> a pelo el PNG del banner se servía tal cual (2,4 MB) y era el
+  // elemento LCP de la portada. next/image lo reescala y lo entrega en AVIF o
+  // WebP; además va perezoso, porque la franja queda bajo el hero.
+  const imagen = (
+    <Image
+      key={b.id}
+      src={imgSrc}
+      alt={b.title}
+      fill
+      sizes="(max-width: 1280px) 100vw, 1280px"
+      loading="lazy"
+      className="object-cover transition-opacity duration-700"
+    />
+  );
+
   return (
-    <section className="relative overflow-hidden text-white isolate w-full" style={{ aspectRatio: '16/5', minHeight: '300px' }}>
+    <section
+      aria-label="Promociones"
+      aria-roledescription="carrusel"
+      className="relative overflow-hidden text-white isolate w-full rounded-2xl"
+      style={{ aspectRatio: '16/5', minHeight: '180px' }}
+    >
       {/* Imagen de fondo con transición */}
       {imgSrc && (
-        <div className="absolute inset-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            key={b.id}
-            src={imgSrc}
-            alt={b.title}
-            className="w-full h-full object-cover transition-opacity duration-700"
-          />
-        </div>
+        b.link ? (
+          <Link href={b.link} aria-label={nombreAccesible} className="absolute inset-0 block">
+            {imagen}
+          </Link>
+        ) : (
+          <div className="absolute inset-0 block">{imagen}</div>
+        )
       )}
+
+      {/* Distintivo del tipo de promoción, como texto y no dentro del JPG */}
+      <span
+        className={`absolute top-3 left-3 sm:top-4 sm:left-4 inline-block text-[11px] font-bold px-3 py-1.5 rounded-full pointer-events-none ${badge.cls}`}
+      >
+        {badge.label}
+      </span>
 
       {/* Sin imagen: fondo oscuro como el hero original */}
       {!imgSrc && (
@@ -136,22 +180,52 @@ function BannerHero({ banners }: { banners: Banner[] }) {
       {/* Controles de navegación */}
       {banners.length > 1 && (
         <>
-          <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm">
-            <ChevronLeft size={20} />
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="Banner anterior"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+          >
+            <ChevronLeft size={20} aria-hidden="true" />
           </button>
-          <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm">
-            <ChevronRight size={20} />
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Banner siguiente"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+          >
+            <ChevronRight size={20} aria-hidden="true" />
           </button>
 
-          {/* Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          {/* Dots + pausa */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
             {banners.map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => setIdx(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === idx ? 'bg-white w-8' : 'bg-white/40 w-2'}`}
-              />
+                aria-label={`Ir al banner ${i + 1} de ${banners.length}`}
+                aria-current={i === idx ? 'true' : undefined}
+                className="h-11 min-w-11 flex items-center justify-center group"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`block h-1.5 rounded-full transition-all duration-300 ${
+                    i === idx ? 'bg-white w-8' : 'bg-white/40 w-2 group-hover:bg-white/70'
+                  }`}
+                />
+              </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setPaused((p) => !p)}
+              aria-label={paused ? 'Reanudar el cambio automático de banners' : 'Pausar el cambio automático de banners'}
+              className="ml-1 w-11 h-11 rounded-full text-white/80 hover:text-white hover:bg-black/40 flex items-center justify-center transition-colors"
+            >
+              {paused
+                ? <Play size={14} aria-hidden="true" />
+                : <Pause size={14} aria-hidden="true" />}
+            </button>
           </div>
         </>
       )}
@@ -161,15 +235,7 @@ function BannerHero({ banners }: { banners: Banner[] }) {
 }
 
 export default function HeroSlider() {
-  const [banners, setBanners] = useState<Banner[] | null>(null);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   useEffect(() => {
     fetch('/api/banners')
@@ -178,10 +244,18 @@ export default function HeroSlider() {
       .catch(() => setBanners([]));
   }, []);
 
-  // Espera a conocer el tamaño de pantalla y los banners antes de renderizar
-  if (isMobile === null || banners === null) return null;
-
-  if (isMobile || banners.length === 0) return <StaticHero />;
-
-  return <BannerHero banners={banners} />;
+  // El hero de texto se renderiza siempre, en todos los anchos y también en el
+  // HTML que sirve el servidor: antes dependía de `window.innerWidth`, así que
+  // por encima de 768 px el mensaje solo existía dibujado dentro del banner y
+  // la página se servía sin nada sobre el pliegue.
+  return (
+    <>
+      <StaticHero />
+      {banners.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-10">
+          <BannerHero banners={banners} />
+        </div>
+      )}
+    </>
+  );
 }

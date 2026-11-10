@@ -413,7 +413,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
                       <Trash2 size={10} />
                     </button>
                     {idx === 0 && (
-                      <span className="absolute bottom-0 left-0 right-0 text-[9px] text-center bg-black/50 text-white py-0.5">Principal</span>
+                      <span className="absolute bottom-0 left-0 right-0 text-[11px] text-center bg-black/50 text-white py-0.5">Principal</span>
                     )}
                   </div>
                 ))}
@@ -442,7 +442,7 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Props) 
               }}
               className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 isDraggingImage
-                  ? 'border-[#2b496d] dark:border-[#5a7a9e] bg-[#2b496d]/5 dark:bg-[#5a7a9e]/10 text-[#2b496d] dark:text-[#5a7a9e]'
+                  ? 'border-[#2b496d] dark:border-[#5a7a9e] bg-[#2b496d]/5 dark:bg-[#5a7a9e]/10 text-[#2b496d] dark:text-neko-navy-ink'
                   : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-[#2b496d] hover:text-[#2b496d] dark:hover:border-[#5a7a9e] dark:hover:text-[#5a7a9e]'
               }`}
             >

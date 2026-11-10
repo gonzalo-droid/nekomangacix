@@ -40,8 +40,8 @@ function SortIcon({
 }) {
   if (sortField !== field) return <ChevronUp size={13} className="text-gray-300 dark:text-gray-600" />;
   return sortOrder === 'asc'
-    ? <ChevronUp size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />
-    : <ChevronDown size={13} className="text-[#2b496d] dark:text-[#5a7a9e]" />;
+    ? <ChevronUp size={13} className="text-[#2b496d] dark:text-neko-navy-ink" />
+    : <ChevronDown size={13} className="text-[#2b496d] dark:text-neko-navy-ink" />;
 }
 
 const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'nekomangacix';
@@ -146,7 +146,7 @@ export default function ProductsManager() {
               <GitMerge size={15} /> Propagar serie
             </button>
             <button onClick={() => setShowImport(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-[#2b496d] dark:border-[#5a7a9e] text-[#2b496d] dark:text-[#5a7a9e] hover:bg-[#2b496d]/10 transition-colors font-medium">
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-[#2b496d] dark:border-[#5a7a9e] text-[#2b496d] dark:text-neko-navy-ink hover:bg-[#2b496d]/10 transition-colors font-medium">
               <FileSpreadsheet size={15} /> Importar Excel
             </button>
             <button onClick={() => setEditProduct(null)}

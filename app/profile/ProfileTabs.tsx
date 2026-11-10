@@ -97,7 +97,7 @@ export default function ProfileTabs({ user, profile, orders, initialTab }: Props
           />
         </div>
         <div className="min-w-0 flex-1">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-0.5">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-0.5">
             {'// Mi cuenta'}
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white truncate">
@@ -106,7 +106,7 @@ export default function ProfileTabs({ user, profile, orders, initialTab }: Props
           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
         </div>
         {profile.role === 'admin' && (
-          <span className="text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white px-2.5 py-1 rounded-full flex-shrink-0 shadow-md">
+          <span className="text-[11px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white px-2.5 py-1 rounded-full flex-shrink-0 shadow-md">
             Admin
           </span>
         )}
@@ -136,7 +136,7 @@ export default function ProfileTabs({ user, profile, orders, initialTab }: Props
                 <span>{label}</span>
                 {count !== undefined && count > 0 && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                       active
                         ? 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white'
                         : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
@@ -189,7 +189,7 @@ function DataTab({ user, profile }: { user: Props['user']; profile: Profile }) {
               {user.email_confirmed_at ? '✓ Verificado' : '⚠ Sin verificar'}
             </p>
           </div>
-          <span className="text-xs text-gray-400 dark:text-gray-500">No editable</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">No editable</span>
         </div>
       </div>
     </div>
@@ -314,7 +314,7 @@ function OrdersTab({ orders, userId }: { orders: OrderRow[]; userId: string }) {
                     <span className="truncate flex-1">
                       {item.title} × {item.quantity}
                       {item.item_type === 'preorder' && (
-                        <span className="ml-2 inline-block text-[10px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-1.5 py-0.5 rounded">
+                        <span className="ml-2 inline-block text-[11px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-1.5 py-0.5 rounded">
                           Preventa
                         </span>
                       )}
@@ -342,7 +342,7 @@ function OrdersTab({ orders, userId }: { orders: OrderRow[]; userId: string }) {
                 <span>Envío</span>
                 <span>S/ {order.shipping_cost.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between font-bold text-[#2b496d] dark:text-[#5a7a9e] pt-1">
+              <div className="flex justify-between font-bold text-[#2b496d] dark:text-neko-navy-ink pt-1">
                 <span>Total</span>
                 <span>S/ {order.total_pen.toFixed(2)}</span>
               </div>

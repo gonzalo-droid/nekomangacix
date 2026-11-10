@@ -35,7 +35,7 @@ const ATTR_LABELS: Record<string, string> = {
 
 const STOCK_BADGE: Record<string, { label: string; bg: string; text: string }> = {
   in_stock:     { label: 'En stock',  bg: 'bg-emerald-500/15 dark:bg-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
-  preorder:     { label: 'Preventa',  bg: 'bg-blue-500/15 dark:bg-blue-500/20',       text: 'text-blue-600 dark:text-blue-400' },
+  preorder:     { label: 'Preventa',  bg: 'bg-blue-500/15 dark:bg-blue-500/20',       text: 'text-blue-700 dark:text-blue-400' },
   on_demand:    { label: 'A pedido',  bg: 'bg-orange-500/15 dark:bg-orange-500/20',   text: 'text-orange-600 dark:text-orange-400' },
   out_of_stock: { label: 'Agotado',   bg: 'bg-red-500/15 dark:bg-red-500/20',         text: 'text-red-600 dark:text-red-400' },
 };
@@ -117,8 +117,8 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Breadcrumb */}
-        <nav className="mb-8 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <Link href="/products" className="flex items-center gap-1 hover:text-[#ec4899] transition-colors">
+        <nav aria-label="Ruta de navegación" className="mb-8 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <Link href="/products" className="inline-flex items-center gap-1 min-h-11 hover:text-[#ec4899] transition-colors">
             <ChevronLeft size={16} />
             Productos
           </Link>
@@ -206,7 +206,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   Por <span className="font-semibold text-gray-700 dark:text-gray-300">{product.author}</span>
                 </p>
               )}
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {countryName ? `${countryName} · ${product.editorial}` : product.editorial}
               </p>
             </div>
@@ -220,21 +220,21 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
               )}
               {product.seriesStatus && (
                 <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                  product.seriesStatus === 'single'   ? 'bg-[#eab308]/15 text-[#eab308]'
-                  : product.seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-[#ec4899]/15 text-[#ec4899]'
+                  product.seriesStatus === 'single'   ? 'bg-[#eab308]/15 text-neko-gold-ink'
+                  : product.seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                  : 'bg-[#ec4899]/15 text-neko-magenta-ink'
                 }`}>
                   {product.seriesStatus === 'single' ? 'Tomo único' : product.seriesStatus === 'completed' ? 'Serie completada' : 'En curso'}
                 </span>
               )}
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 SKU: {product.sku}
               </span>
             </div>
 
             {/* Precio + stock */}
             <div className="flex items-end gap-4 py-4 border-y border-gray-200 dark:border-gray-700/60">
-              <p className="text-4xl font-extrabold text-[#2b496d] dark:text-[#5a7a9e] leading-none">
+              <p className="text-4xl font-extrabold text-[#2b496d] dark:text-neko-navy-ink leading-none">
                 S/ {product.pricePEN.toFixed(2)}
               </p>
               <div className="flex flex-col gap-1 pb-0.5">
@@ -269,7 +269,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 <button
                   onClick={() => handleQuantityChange(-1)}
                   disabled={quantity <= 1}
-                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   aria-label="Disminuir cantidad"
                 >
                   <Minus size={16} />
@@ -280,7 +280,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 <button
                   onClick={() => handleQuantityChange(1)}
                   disabled={product.stockStatus === 'in_stock' && quantity >= product.stock}
-                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   aria-label="Aumentar cantidad"
                 >
                   <Plus size={16} />
@@ -318,7 +318,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   onClick={() => toggleFavorite(product.id)}
                   className={`p-3 rounded-xl border-2 transition-all active:scale-95 ${
                     isProductFavorite
-                      ? 'border-[#ec4899] bg-[#ec4899]/10 text-[#ec4899]'
+                      ? 'border-[#ec4899] bg-[#ec4899]/10 text-neko-magenta-ink'
                       : 'border-gray-200 dark:border-gray-700 hover:border-[#ec4899] hover:text-[#ec4899]'
                   }`}
                   aria-label={isProductFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
@@ -359,7 +359,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
 
             {/* Métodos de pago */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Métodos de pago</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Métodos de pago</p>
               <div className="grid grid-cols-2 gap-2">
                 {PAYMENT_METHODS.map(({ icon: Icon, label }) => (
                   <div key={label} className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 rounded-lg px-3 py-2">
@@ -375,7 +375,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
               href={`https://wa.me/51924462641?text=Hola%2C%20quisiera%20consultar%20sobre%20${encodeURIComponent(product.title)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-[#25D366]/40 text-[#25D366] hover:bg-[#25D366]/10 transition-colors text-sm font-semibold"
+              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-[#25D366]/40 text-neko-green-ink hover:bg-[#25D366]/10 transition-colors text-sm font-semibold"
             >
               <MessageCircle size={16} />
               Consultar por WhatsApp
@@ -396,7 +396,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   className={`flex-1 py-4 px-6 text-sm font-semibold transition-colors relative ${
                     active
                       ? 'text-gray-900 dark:text-white'
-                      : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}
                 >
                   {labels[tab]}
@@ -420,13 +420,13 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
                   {attrs.map((row) => (
                     <div key={row.label} className="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                      <span className="text-sm text-gray-400 dark:text-gray-500">{row.label}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{row.label}</span>
                       <span className="text-sm font-semibold text-gray-900 dark:text-white text-right">{row.value}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-4">Sin información adicional.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">Sin información adicional.</p>
               )
             )}
           </div>
@@ -436,7 +436,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
         {relatedProducts.length > 0 && (
           <section className="mb-8">
             <div className="mb-6 relative">
-              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[#ec4899] mb-1.5">
+              <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-1.5">
                 {'// También te puede gustar'}
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">

@@ -96,7 +96,7 @@ export default function Home() {
         <div className="mt-10 text-center">
           <Link
             href="/about"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2b496d] dark:text-[#5a7a9e] hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-colors"
+            className="inline-flex items-center gap-2 min-h-11 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-colors"
           >
             Conoce más sobre nosotros →
           </Link>

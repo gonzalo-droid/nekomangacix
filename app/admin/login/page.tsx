@@ -152,7 +152,7 @@ function AdminLoginForm() {
   return (
     <form onSubmit={handleCodeSubmit} className="space-y-4">
       <div className="flex justify-center mb-1">
-        <ShieldCheck size={24} className="text-[#2b496d] dark:text-[#5a7a9e]" />
+        <ShieldCheck size={24} className="text-[#2b496d] dark:text-neko-navy-ink" />
       </div>
       <div>
         <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">

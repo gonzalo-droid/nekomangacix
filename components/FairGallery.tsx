@@ -42,11 +42,14 @@ export default function FairGallery() {
           <button
             key={image.id}
             onClick={() => setSelectedImage(image)}
+            aria-label={`Ampliar foto: ${image.caption}`}
             className="group relative overflow-hidden rounded-lg aspect-[2/3] bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 cursor-pointer text-left"
           >
+            {/* Decorativa: el botón ya se anuncia con el pie de foto, así que
+                repetirlo en el alt haría que el lector lo lea dos veces. */}
             <Image
               src={image.src}
-              alt={image.caption}
+              alt=""
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />

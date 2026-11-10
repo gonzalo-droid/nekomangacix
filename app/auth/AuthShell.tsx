@@ -22,9 +22,10 @@ export default function AuthShell({ title, subtitle, children }: Props) {
   return (
     <div className="relative h-screen grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-[#0a0a0f]">
       {/* Salida rápida — fixed para que aparezca en todos los scrolls y layouts */}
+      <nav aria-label="Salir del registro">
       <Link
         href="/"
-        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50 group inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 hover:border-[#ec4899] hover:text-[#ec4899] hover:shadow-lg hover:shadow-[#ec4899]/20 transition-all"
+        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50 group inline-flex items-center gap-1.5 pl-3 pr-2 min-h-11 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 hover:border-[#ec4899] hover:text-[#ec4899] hover:shadow-lg hover:shadow-[#ec4899]/20 transition-all"
         aria-label="Volver a la tienda sin iniciar sesión"
       >
         <span className="hidden sm:inline">Volver a la tienda</span>
@@ -33,6 +34,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
           <X size={12} />
         </span>
       </Link>
+      </nav>
       {/* ── Columna visual (desktop only) ──────────────────────────────── */}
       <aside className="relative hidden lg:flex flex-col justify-between p-10 overflow-hidden bg-gradient-to-br from-[#0a0a0f] via-[#141424] to-[#0a0a0f] text-white">
         {/* Halftone + glows */}
@@ -73,7 +75,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
 
         {/* Bottom: mensaje + beneficios */}
         <div className="relative max-w-md">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-3">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-3">
             {'// Bienvenido'}
           </span>
           <h2 className="text-3xl xl:text-4xl font-extrabold leading-tight mb-4">
@@ -120,7 +122,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
           {/* Logo + wordmark mobile */}
           <Link
             href="/"
-            className="lg:hidden flex flex-col items-center gap-2 mb-6"
+            className="lg:hidden flex flex-col items-center gap-2 mb-6 py-2"
             aria-label="Neko Manga Cix — Volver al inicio"
           >
     
@@ -138,7 +140,7 @@ export default function AuthShell({ title, subtitle, children }: Props) {
 
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl p-7 sm:p-8">
             <div className="mb-6">
-              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-1.5">
+              <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
                 {'// Bienvenido'}
               </span>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{title}</h1>
@@ -153,14 +155,14 @@ export default function AuthShell({ title, subtitle, children }: Props) {
           <div className="mt-5 flex items-center justify-center">
             <Link
               href="/products"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-[#ec4899] transition-colors group"
+              className="inline-flex items-center gap-1.5 min-h-11 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-[#ec4899] transition-colors group"
             >
               <ArrowLeft size={13} className="transition-transform group-hover:-translate-x-0.5" />
               Seguir viendo productos sin cuenta
             </Link>
           </div>
 
-          <p className="mt-5 text-center text-xs text-gray-500 dark:text-gray-500">
+          <p className="mt-5 text-center text-xs text-gray-500 dark:text-gray-400">
             Al continuar aceptas nuestros{' '}
             <Link href="/terms" className="underline hover:text-[#ec4899]">Términos</Link>
             {' '}y{' '}

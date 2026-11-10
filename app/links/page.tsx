@@ -94,7 +94,7 @@ const LINKS: LinkItem[] = [
 
 export default function LinksPage() {
   return (
-    <div className="h-dvh w-full relative bg-[#050508] overflow-hidden flex">
+    <main className="h-dvh w-full relative bg-[#050508] overflow-hidden flex">
       {/* Portadas de manga moviéndose en diagonal, cubre toda la pantalla */}
       <MangaMarqueeBackground covers={MARQUEE_COVERS} />
 
@@ -131,7 +131,7 @@ export default function LinksPage() {
                 target={s.href.startsWith('http') ? '_blank' : undefined}
                 rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={s.label}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/15 hover:scale-110 transition-all duration-200"
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/15 hover:scale-110 transition-all duration-200"
               >
                 <Icon size={16} />
               </a>
@@ -184,13 +184,13 @@ export default function LinksPage() {
           })}
         </div>
 
-        <p className="text-gray-600 text-xs mt-6">
+        <p className="text-gray-400 text-xs mt-6">
           © {new Date().getFullYear()} Neko Manga Cix · Chiclayo, Perú
         </p>
       </div>
 
       {/* Espacio derecho — deja ver la animación de portadas de fondo */}
       <div className="hidden sm:block sm:w-[60%] h-full pointer-events-none" aria-hidden="true" />
-    </div>
+    </main>
   );
 }

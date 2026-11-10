@@ -72,7 +72,7 @@ export default function SeriesPropagateModal({ series: seriesProp, onClose }: Pr
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <GitMerge size={18} className="text-[#2b496d] dark:text-[#5a7a9e]" />
+            <GitMerge size={18} className="text-[#2b496d] dark:text-neko-navy-ink" />
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Propagar a serie</h3>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">

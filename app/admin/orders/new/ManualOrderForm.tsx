@@ -95,7 +95,7 @@ export default function ManualOrderForm() {
                 <span className="flex-1 text-sm text-gray-900 dark:text-white truncate">
                   {l.title}
                   {l.stock_status === 'preorder' && (
-                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
+                    <span className="ml-2 text-[11px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
                       Preventa
                     </span>
                   )}

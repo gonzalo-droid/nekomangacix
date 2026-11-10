@@ -128,7 +128,7 @@ export default async function AdminOrdersPage({
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <Link href="/admin" className="flex items-center text-[#2b496d] dark:text-[#5a7a9e] hover:underline mb-4 text-sm">
+        <Link href="/admin" className="flex items-center text-[#2b496d] dark:text-neko-navy-ink hover:underline mb-4 text-sm">
           <ChevronLeft size={16} />
           Volver al Admin
         </Link>
@@ -209,7 +209,7 @@ export default async function AdminOrdersPage({
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <OrderStatusBadge state={normalized} />
-                    <span className="font-bold text-[#2b496d] dark:text-[#5a7a9e]">
+                    <span className="font-bold text-[#2b496d] dark:text-neko-navy-ink">
                       S/ {order.total_pen.toFixed(2)}
                     </span>
                   </div>
@@ -218,29 +218,29 @@ export default async function AdminOrdersPage({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600 dark:text-gray-400 mb-3">
                   {order.subtotal_pen != null && (
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Subtotal:</span>{' '}
+                      <span className="text-gray-500 dark:text-gray-400">Subtotal:</span>{' '}
                       <span className="font-medium text-gray-700 dark:text-gray-300">S/ {order.subtotal_pen.toFixed(2)}</span>
                     </div>
                   )}
                   {hasDiscount && (
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Descuento:</span>{' '}
+                      <span className="text-gray-500 dark:text-gray-400">Descuento:</span>{' '}
                       <span className="font-medium text-emerald-700 dark:text-emerald-400">- S/ {(order.discount_pen ?? 0).toFixed(2)}</span>
                     </div>
                   )}
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">Envío:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400">Envío:</span>{' '}
                     <span className="font-medium text-gray-700 dark:text-gray-300">S/ {order.shipping_cost.toFixed(2)}</span>
                   </div>
                   {isPreorder && hasDeposit && (
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Depósito:</span>{' '}
+                      <span className="text-gray-500 dark:text-gray-400">Depósito:</span>{' '}
                       <span className="font-medium text-gray-700 dark:text-gray-300">S/ {(order.deposit_pen ?? 0).toFixed(2)}</span>
                     </div>
                   )}
                   {hasBalance && (
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Saldo:</span>{' '}
+                      <span className="text-gray-500 dark:text-gray-400">Saldo:</span>{' '}
                       <span className="font-medium text-orange-700 dark:text-orange-400">S/ {(order.balance_pen ?? 0).toFixed(2)}</span>
                     </div>
                   )}
@@ -254,12 +254,12 @@ export default async function AdminOrdersPage({
                           {item.title} × {item.quantity} — S/ {(item.unit_price * item.quantity).toFixed(2)}
                         </span>
                         {item.item_type === 'preorder' && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-1.5 py-0.5 rounded">
                             Preventa
                           </span>
                         )}
                         {item.item_type === 'preorder' && (
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-[11px] text-gray-400">
                             {item.campaign_id ? campaignNameById.get(item.campaign_id) ?? 'campaña eliminada' : 'sin campaña'}
                           </span>
                         )}
@@ -277,7 +277,7 @@ export default async function AdminOrdersPage({
                         href={order.payment_proof_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[#2b496d] dark:text-[#5a7a9e] hover:underline font-medium"
+                        className="inline-flex items-center gap-1 text-[#2b496d] dark:text-neko-navy-ink hover:underline font-medium"
                       >
                         Ver comprobante <ExternalLink size={12} />
                       </a>

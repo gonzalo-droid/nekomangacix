@@ -16,10 +16,10 @@ interface CategoryAccent {
 
 // Rotación de acentos por categoría, estilo paleta manga
 const ACCENTS: CategoryAccent[] = [
-  { text: 'text-[#ec4899]', bg: 'bg-[#ec4899]/10', ring: 'ring-[#ec4899]/20' },
-  { text: 'text-[#06b6d4]', bg: 'bg-[#06b6d4]/10', ring: 'ring-[#06b6d4]/20' },
-  { text: 'text-[#eab308]', bg: 'bg-[#eab308]/10', ring: 'ring-[#eab308]/20' },
-  { text: 'text-[#5a7a9e]', bg: 'bg-[#5a7a9e]/10', ring: 'ring-[#5a7a9e]/20' },
+  { text: 'text-neko-magenta-ink', bg: 'bg-[#ec4899]/10', ring: 'ring-[#ec4899]/20' },
+  { text: 'text-neko-cyan-ink', bg: 'bg-[#06b6d4]/10', ring: 'ring-[#06b6d4]/20' },
+  { text: 'text-neko-gold-ink', bg: 'bg-[#eab308]/10', ring: 'ring-[#eab308]/20' },
+  { text: 'text-neko-navy-ink', bg: 'bg-[#5a7a9e]/10', ring: 'ring-[#5a7a9e]/20' },
 ];
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {

@@ -57,9 +57,9 @@ export default function Footer() {
             <div className="relative flex flex-col sm:flex-row items-center justify-between gap-8">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#25D366]/70 mb-2">Atención al cliente</p>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
                   ¿Dudas sobre tu pedido?
-                </h3>
+                </h2>
                 <p className="text-gray-400 text-sm mt-2">
                   Escríbenos y te respondemos en minutos. Productos, envíos, preventas.
                 </p>
@@ -69,7 +69,7 @@ export default function Footer() {
                   href="https://wa.me/51924462641?text=Hola%20Neko%20Manga%20Cix%2C%20quiero%20consultar"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-base shadow-xl shadow-[#25D366]/20 transition-all hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap"
+                  className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-base shadow-xl shadow-[#25D366]/20 transition-all hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap"
                 >
                   <MessageCircle size={20} className="transition-transform group-hover:rotate-12" />
                   Escribir por WhatsApp
@@ -98,10 +98,10 @@ export default function Footer() {
                 <Image src="/images/brand/logo-dark.png" alt="" width={160} height={54} className="h-14 w-auto mb-3" aria-hidden="true" />
                 <Wordmark size="lg" tone="dark" as="div" />
               </div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-600 mb-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 mb-3">
                 Manga · Coleccionables · Perú
               </p>
-              <p className="text-gray-500 text-sm leading-relaxed mb-6">
+              <p className="text-gray-400 text-sm leading-relaxed mb-6">
                 Tu tienda de manga de confianza.<br />Envíos a todo el Perú desde Chiclayo.
               </p>
 
@@ -116,7 +116,7 @@ export default function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={s.label}
-                      className={`w-9 h-9 flex items-center justify-center rounded-xl border border-gray-700 text-gray-400 transition-all duration-200 ${s.hover} hover:text-white hover:scale-110`}
+                      className={`w-11 h-11 flex items-center justify-center rounded-xl border border-gray-700 text-gray-400 transition-all duration-200 ${s.hover} hover:text-white hover:scale-110`}
                     >
                       <Icon size={15} />
                     </a>
@@ -127,15 +127,15 @@ export default function Footer() {
 
             {/* Col 2 — Explorar */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#ec4899] mb-5">
+              <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-[#ec4899] mb-5">
                 Explorar
-              </h3>
+              </h2>
               <ul className="space-y-3">
                 {EXPLORE_LINKS.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="group flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"
+                      className="group flex items-center gap-2 min-h-11 text-sm text-gray-400 hover:text-white transition-colors"
                     >
                       <span className="w-1 h-1 rounded-full bg-gray-700 group-hover:bg-[#ec4899] transition-colors flex-shrink-0" />
                       {l.label}
@@ -147,15 +147,15 @@ export default function Footer() {
 
             {/* Col 3 — Información */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#06b6d4] mb-5">
+              <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-[#06b6d4] mb-5">
                 Información
-              </h3>
+              </h2>
               <ul className="space-y-3">
                 {INFO_LINKS.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="group flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"
+                      className="group flex items-center gap-2 min-h-11 text-sm text-gray-400 hover:text-white transition-colors"
                     >
                       <span className="w-1 h-1 rounded-full bg-gray-700 group-hover:bg-[#06b6d4] transition-colors flex-shrink-0" />
                       {l.label}
@@ -167,33 +167,33 @@ export default function Footer() {
 
             {/* Col 4 — Contacto */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-5">
+              <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-5">
                 Contacto
-              </h3>
+              </h2>
               <ul className="space-y-4 text-sm">
                 <li>
                   <a href="https://wa.me/51924462641" target="_blank" rel="noopener noreferrer"
-                    className="flex items-start gap-3 text-gray-500 hover:text-[#25D366] transition-colors group">
+                    className="flex items-start gap-3 py-2.5 text-gray-400 hover:text-[#25D366] transition-colors group">
                     <MessageCircle size={15} className="text-[#25D366] mt-0.5 flex-shrink-0" />
                     <span>(+51) 924 462 641</span>
                   </a>
                 </li>
                 <li>
                   <a href="https://www.instagram.com/neko.manga.cix/" target="_blank" rel="noopener noreferrer"
-                    className="flex items-start gap-3 text-gray-500 hover:text-[#ec4899] transition-colors">
+                    className="flex items-start gap-3 py-2.5 text-gray-400 hover:text-[#ec4899] transition-colors">
                     <Instagram size={15} className="text-[#ec4899] mt-0.5 flex-shrink-0" />
                     <span>@neko.manga.cix</span>
                   </a>
                 </li>
-                <li className="flex items-start gap-3 text-gray-500">
+                <li className="flex items-start gap-3 text-gray-400">
                   <MapPin size={15} className="text-red-400 mt-0.5 flex-shrink-0" />
                   <span>Chiclayo, Perú</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-500">
+                <li className="flex items-start gap-3 text-gray-400">
                   <Clock size={15} className="text-yellow-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p>Lunes – Sábado</p>
-                    <p className="text-gray-600">9:00 am – 9:00 pm</p>
+                    <p className="text-gray-400">9:00 am – 9:00 pm</p>
                   </div>
                 </li>
               </ul>
@@ -215,16 +215,16 @@ export default function Footer() {
                   <BookOpen size={18} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-red-400 leading-none">INDECOPI</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-red-400 leading-none">INDECOPI</p>
                   <p className="text-sm font-semibold text-red-200 leading-tight mt-0.5">Libro de Reclamaciones</p>
                 </div>
               </a>
 
               <div className="text-center sm:text-right">
-                <p className="text-gray-600 text-xs mb-1">
+                <p className="text-gray-400 text-xs mb-1">
                   © {year} Neko Manga Cix · Todos los derechos reservados.
                 </p>
-                <p className="text-gray-700 text-xs">
+                <p className="text-gray-400 text-xs">
                   Hecho con <span className="text-[#ec4899]">♥</span> para los amantes del manga en Perú
                 </p>
               </div>

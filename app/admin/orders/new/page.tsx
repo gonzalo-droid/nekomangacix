@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function NewManualOrderPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Link href="/admin/orders" className="flex items-center text-[#2b496d] dark:text-[#5a7a9e] hover:underline mb-4 text-sm">
+      <Link href="/admin/orders" className="flex items-center text-[#2b496d] dark:text-neko-navy-ink hover:underline mb-4 text-sm">
         <ChevronLeft size={16} />
         Volver a Pedidos
       </Link>

@@ -66,7 +66,7 @@ export default function PageHero({
           </div>
         )}
         {eyebrow && (
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-[#ec4899] mb-3">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-3">
             {`// ${eyebrow}`}
           </span>
         )}

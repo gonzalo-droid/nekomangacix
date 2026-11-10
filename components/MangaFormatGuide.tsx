@@ -43,8 +43,8 @@ export default function MangaFormatGuide({ variant = 'primary', floating = false
 
   const buttonBase = 'inline-flex items-center gap-2 font-semibold rounded-lg transition-all active:scale-95';
   const variants = {
-    primary: 'px-4 py-2.5 bg-[#2b496d] text-white hover:bg-[#1e3550] shadow-md hover:shadow-lg',
-    ghost:   'px-3 py-2 text-[#2b496d] dark:text-[#5a7a9e] hover:bg-[#2b496d]/10 border border-[#2b496d]/30',
+    primary: 'px-4 min-h-11 justify-center bg-[#2b496d] text-white hover:bg-[#1e3550] shadow-md hover:shadow-lg',
+    ghost:   'px-3 min-h-11 justify-center text-[#2b496d] dark:text-neko-navy-ink hover:bg-[#2b496d]/10 border border-[#2b496d]/30',
   };
   const floatingClass = floating
     ? 'fixed bottom-20 right-6 z-40 px-4 py-3 bg-[#2b496d] text-white hover:bg-[#1e3550] shadow-xl'
@@ -107,7 +107,7 @@ export default function MangaFormatGuide({ variant = 'primary', floating = false
                       {['Tankoubon', 'B6', 'B6 Doble', 'A5', 'Kanzenban/Deluxe'].map((h) => (
                         <th
                           key={h}
-                          className="text-center font-semibold text-[#2b496d] dark:text-[#5a7a9e] px-3 py-3 border-b border-gray-200 dark:border-gray-700 min-w-[120px]"
+                          className="text-center font-semibold text-[#2b496d] dark:text-neko-navy-ink px-3 py-3 border-b border-gray-200 dark:border-gray-700 min-w-[120px]"
                         >
                           {h}
                         </th>
@@ -136,7 +136,7 @@ export default function MangaFormatGuide({ variant = 'primary', floating = false
 
               <div className="mt-5 p-4 rounded-lg bg-[#2b496d]/5 dark:bg-[#5a7a9e]/10 border border-[#2b496d]/20 dark:border-[#5a7a9e]/20">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-[#2b496d] dark:text-[#5a7a9e]">Nota:</span> las medidas son aproximadas y pueden variar según la editorial. Si dudas entre dos formatos, fíjate primero en <strong>alto</strong> y <strong>ancho</strong>.
+                  <span className="font-semibold text-[#2b496d] dark:text-neko-navy-ink">Nota:</span> las medidas son aproximadas y pueden variar según la editorial. Si dudas entre dos formatos, fíjate primero en <strong>alto</strong> y <strong>ancho</strong>.
                 </p>
               </div>
             </div>

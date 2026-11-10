@@ -91,7 +91,7 @@ export default function FaqPage() {
             <div>
               <div className="inline-flex items-center gap-2 mb-2">
                 <HelpCircle size={18} className="text-[#ec4899]" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">
+                <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/70">
                   ¿Algo más?
                 </span>
               </div>
@@ -107,13 +107,13 @@ export default function FaqPage() {
                 href="https://wa.me/51924462641"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/25 hover:scale-[1.02] active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/25 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 <MessageCircle size={16} /> WhatsApp
               </a>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white/10 backdrop-blur-sm text-white border border-white/15 hover:bg-white/20 font-semibold text-sm transition-all"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-white/10 backdrop-blur-sm text-white border border-white/15 hover:bg-white/20 font-semibold text-sm transition-all"
               >
                 <Mail size={16} /> Escribir
               </Link>

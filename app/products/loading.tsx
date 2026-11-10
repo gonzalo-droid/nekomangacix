@@ -10,14 +10,14 @@ export default function LoadingProducts() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
         {/* Filters sidebar */}
-        <aside className="md:col-span-1 space-y-3">
+        <div className="md:col-span-1 space-y-3">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
             <Skeleton className="h-6 w-24" />
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
             ))}
           </div>
-        </aside>
+        </div>
 
         {/* Grid */}
         <main className="md:col-span-3">

@@ -55,7 +55,7 @@ export default function RegisterPage() {
           </p>
           <Link
             href="/auth/login"
-            className="inline-block w-full py-2.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            className="inline-flex items-center justify-center w-full min-h-11 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
           >
             Ir al login
           </Link>
@@ -70,7 +70,7 @@ export default function RegisterPage() {
 
       <div className="flex items-center gap-3 my-5">
         <hr className="flex-1 border-gray-200 dark:border-white/10" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">o con email</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">o con email</span>
         <hr className="flex-1 border-gray-200 dark:border-white/10" />
       </div>
 
@@ -121,7 +121,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60 disabled:scale-100 transition-all"
+          className="w-full py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60 disabled:scale-100 transition-all"
         >
           {loading ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
@@ -129,7 +129,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/auth/login" className="font-semibold text-[#ec4899] hover:underline">
+        <Link href="/auth/login" className="font-semibold text-neko-magenta-ink hover:underline">
           Iniciar sesión
         </Link>
       </p>

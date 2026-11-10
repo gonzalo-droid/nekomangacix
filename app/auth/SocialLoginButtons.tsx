@@ -35,7 +35,7 @@ export default function SocialLoginButtons({ next = '/profile' }: Props) {
         type="button"
         onClick={() => handleOAuth('google')}
         disabled={loading !== null}
-        className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium text-sm transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium text-sm transition-colors disabled:opacity-50"
       >
         {loading === 'google' ? (
           <span className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
@@ -51,7 +51,7 @@ export default function SocialLoginButtons({ next = '/profile' }: Props) {
         type="button"
         onClick={() => handleOAuth('facebook')}
         disabled={loading !== null}
-        className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg bg-[#1877F2] hover:bg-[#1565D8] text-white font-medium text-sm transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-[#1877F2] hover:bg-[#1565D8] text-white font-medium text-sm transition-colors disabled:opacity-50"
       >
         {loading === 'facebook' ? (
           <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />

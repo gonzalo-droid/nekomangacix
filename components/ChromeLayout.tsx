@@ -33,8 +33,14 @@ export default function ChromeLayout({ children }: Props) {
 
   return (
     <>
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-3 focus:rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:text-gray-900 dark:focus:text-white focus:font-semibold focus:shadow-xl focus:ring-2 focus:ring-[#ec4899]"
+      >
+        Saltar al contenido
+      </a>
       <Header />
-      <main className="min-h-screen">{children}</main>
+      <main id="contenido" className="min-h-screen">{children}</main>
       <Footer />
     </>
   );

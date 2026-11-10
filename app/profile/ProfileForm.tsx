@@ -37,7 +37,7 @@ export default function ProfileForm({ profile }: Props) {
   }
 
   const inputClass =
-    'w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] text-sm transition-all';
+    'w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] text-sm transition-all';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
