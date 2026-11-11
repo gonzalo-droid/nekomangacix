@@ -6,6 +6,9 @@ import HomeProductSections from '@/components/HomeProductSections';
 import { ProductCardSkeleton } from '@/components/Skeleton';
 import { formatCountryNames, getAvailableCountries } from '@/lib/domain/products/availability';
 import JsonLd from '@/components/JsonLd';
+import NextEventSection from '@/components/home/NextEventSection';
+import OrderPoliciesSection from '@/components/home/OrderPoliciesSection';
+import StoreSection from '@/components/home/StoreSection';
 import { siteJsonLd } from '@/lib/seo';
 import { SITE_NAME, SITE_TAGLINE } from '@/lib/site';
 import { MessageCircle, Sparkles, BookOpenText, Truck } from 'lucide-react';
@@ -67,7 +70,8 @@ const FEATURES = [
 ];
 
 export default async function Home() {
-  const countryNames = formatCountryNames(await getAvailableCountries());
+  const availableCountries = await getAvailableCountries();
+  const countryNames = formatCountryNames(availableCountries);
 
   return (
     <div className="w-full">
@@ -77,6 +81,10 @@ export default async function Home() {
       <Suspense fallback={<HomeSectionsFallback />}>
         <HomeProductSections />
       </Suspense>
+
+      <NextEventSection />
+      <OrderPoliciesSection countries={availableCountries} />
+      <StoreSection />
 
       {/* Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
