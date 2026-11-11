@@ -1,26 +1,10 @@
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
+import SectionHeader from '@/components/SectionHeader';
 import { getFeaturedProductsByCountry } from '@/lib/productsServer';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
 import type { Product } from '@/lib/products';
-
-function SectionHeader({ badge, title, description }: { badge: string; title: string; description: string }) {
-  return (
-    <div className="relative mb-8">
-      <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-2">
-        {badge}
-      </span>
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
-        {title}
-      </h2>
-      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2 max-w-2xl">
-        {description}
-      </p>
-      <span className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" aria-hidden="true" />
-    </div>
-  );
-}
 
 interface SectionProps {
   products: Product[];
