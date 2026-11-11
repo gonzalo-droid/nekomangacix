@@ -8,6 +8,7 @@ import {
   SITE_NAME,
   SITE_URL,
   SOCIAL_PROFILES,
+  STORE,
   absoluteUrl,
 } from './site';
 
@@ -85,7 +86,7 @@ export function siteJsonLd(): Record<string, unknown>[] {
   return [
     {
       '@context': 'https://schema.org',
-      '@type': 'OnlineStore',
+      '@type': 'Store',
       '@id': organizationId,
       name: SITE_NAME,
       alternateName: ['Neko Manga Cix', 'NekoMangaCix'],
@@ -96,9 +97,16 @@ export function siteJsonLd(): Record<string, unknown>[] {
       telephone: CONTACT_PHONE,
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Chiclayo',
-        addressRegion: 'Lambayeque',
+        streetAddress: STORE.streetAddress,
+        addressLocality: STORE.city,
+        addressRegion: STORE.region,
         addressCountry: 'PE',
+      },
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: STORE.openingHours.days,
+        opens: STORE.openingHours.opens,
+        closes: STORE.openingHours.closes,
       },
       areaServed: { '@type': 'Country', name: 'Perú' },
       contactPoint: {

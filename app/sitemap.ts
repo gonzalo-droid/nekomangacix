@@ -14,6 +14,7 @@ const STATIC_ROUTES: Entry[] = [
   { url: absoluteUrl('/products?stock=in_stock'),  changeFrequency: 'daily',   priority: 0.7 },
   { url: absoluteUrl('/products?type=manga'),      changeFrequency: 'daily',   priority: 0.7 },
   { url: absoluteUrl('/products?type=figure'),     changeFrequency: 'weekly',  priority: 0.6 },
+  { url: absoluteUrl('/events'),                   changeFrequency: 'weekly',  priority: 0.6 },
   { url: absoluteUrl('/about'),                    changeFrequency: 'monthly', priority: 0.5 },
   { url: absoluteUrl('/contact'),                  changeFrequency: 'monthly', priority: 0.5 },
   { url: absoluteUrl('/faq'),                      changeFrequency: 'monthly', priority: 0.4 },

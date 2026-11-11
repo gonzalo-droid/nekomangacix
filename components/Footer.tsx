@@ -28,6 +28,7 @@ const EXPLORE_LINKS = [
 
 const INFO_LINKS = [
   { href: '/about', label: 'Nosotros' },
+  { href: '/events', label: 'Ferias y eventos' },
   { href: '/contact', label: 'Contacto' },
   { href: '/faq', label: 'Preguntas frecuentes' },
   { href: '/shipping', label: 'Políticas de envío' },

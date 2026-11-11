@@ -43,6 +43,23 @@ export const SOCIAL_PROFILES: readonly string[] = [
 
 export const LOGO_PATH = '/images/brand/logo-dark-trimmed.png';
 
+export const INSTAGRAM_URL = 'https://www.instagram.com/neko.manga.cix/';
+export const INSTAGRAM_HANDLE = '@neko.manga.cix';
+export const WHATSAPP_URL = 'https://wa.me/51924462641';
+
+/** Tienda física. Si cambia la dirección o el horario, se cambia solo acá. */
+export const STORE = {
+  streetAddress: 'Av. Antenor Orrego 520',
+  city: 'Chiclayo',
+  region: 'Lambayeque',
+  daysLabel: 'Sábados y domingos',
+  hoursLabel: '10:00 a. m. – 6:00 p. m.',
+  hoursShortLabel: '10 a. m. – 6 p. m.',
+  /** Para datos estructurados (schema.org `openingHoursSpecification`). */
+  openingHours: { days: ['Saturday', 'Sunday'], opens: '10:00', closes: '18:00' },
+  mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Av.%20Antenor%20Orrego%20520%2C%20Chiclayo%2C%20Per%C3%BA',
+} as const;
+
 /** Imagen social por defecto (1200×630). Vive en `public/`. */
 export const DEFAULT_OG_IMAGE = {
   url: '/og-default.jpg',
