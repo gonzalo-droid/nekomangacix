@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import LegalShell, { LegalSection } from '@/components/LegalShell';
 
-export const metadata: Metadata = {
-  title: 'Política de Privacidad',
-  description: 'Política de privacidad y tratamiento de datos personales de NekoMangaCix.',
-};
+export const metadata: Metadata = pageMetadata({
+  title: 'Política de privacidad',
+  description:
+    'Política de privacidad y tratamiento de datos personales de Neko Manga Cix.',
+  path: '/privacy',
+});
 
 const SECTIONS = [
   { id: 'responsable',    title: 'Responsable del tratamiento' },

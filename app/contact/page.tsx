@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: '¿Qué métodos de pago aceptan?',
-    a: 'Yape, Plin y transferencia bancaria (BCP). También efectivo al recoger. Siempre confirmamos antes del envío.',
+    a: 'Yape, Plin y transferencia bancaria (BCP). Siempre confirmamos antes del envío.',
   },
   {
     q: '¿Tienen promociones?',

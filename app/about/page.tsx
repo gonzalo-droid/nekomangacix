@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import FairGallery from '@/components/FairGallery';
 import PageHero from '@/components/PageHero';
@@ -16,11 +18,12 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-export const metadata = {
-  title: 'Nosotros — Neko Manga Cix',
+export const metadata: Metadata = pageMetadata({
+  title: 'Nosotros',
   description:
     'Conoce la historia y los valores detrás de Neko Manga Cix, tu tienda de manga y coleccionables en Perú.',
-};
+  path: '/about',
+});
 
 const VALUES = [
   {

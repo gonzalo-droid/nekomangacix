@@ -1,14 +1,22 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HomeProductSections from '@/components/HomeProductSections';
 import { ProductCardSkeleton } from '@/components/Skeleton';
+import { formatCountryNames, getAvailableCountries } from '@/lib/domain/products/availability';
+import JsonLd from '@/components/JsonLd';
+import { siteJsonLd } from '@/lib/seo';
+import { SITE_NAME, SITE_TAGLINE } from '@/lib/site';
 import { MessageCircle, Sparkles, BookOpenText, Truck } from 'lucide-react';
 
-export const metadata = {
-  title: 'Neko Manga Cix — Tu tienda de manga y coleccionables en Perú',
+export const metadata: Metadata = {
+  // `absolute`: el título del home ya lleva la marca; sin esto la plantilla del
+  // layout la agregaba otra vez al final.
+  title: { absolute: `${SITE_NAME} — ${SITE_TAGLINE}` },
   description:
-    'Catálogo de manga de editoriales Argentina, México y España, además de figuras coleccionables. Envíos a todo el Perú.',
+    'Catálogo de manga en español y figuras coleccionables originales. Compra en stock o reserva en preventa. Envíos a todo el Perú.',
+  alternates: { canonical: '/' },
 };
 
 function HomeSectionsFallback() {
@@ -58,10 +66,13 @@ const FEATURES = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const countryNames = formatCountryNames(await getAvailableCountries());
+
   return (
     <div className="w-full">
-      <HeroSlider />
+      <JsonLd data={siteJsonLd()} />
+      <HeroSlider countryNames={countryNames} />
 
       <Suspense fallback={<HomeSectionsFallback />}>
         <HomeProductSections />

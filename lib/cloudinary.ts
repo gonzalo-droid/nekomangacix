@@ -94,9 +94,20 @@ export function isCloudinaryUrl(url: string): boolean {
  * URL absoluta y acotada para Open Graph / metadata social.
  * Las redes no ejecutan srcset, así que fijamos un ancho razonable.
  */
-export function getSocialImageUrl(imageRef: string, width = 1200): string {
+export const SOCIAL_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+
+/**
+ * Imagen para compartir (Open Graph), siempre de 1200×630.
+ *
+ * Las portadas son verticales. Sin el relleno, WhatsApp y Facebook las
+ * recortan a un cuadrado pequeño y el `og:image:width/height` declarado no
+ * coincide con la imagen real. Con `c_pad` la portada entra completa sobre un
+ * fondo oscuro. `f_jpg` porque varios lectores de vista previa no aceptan WebP.
+ */
+export function getSocialImageUrl(imageRef: string): string {
   const url = getCloudinaryUrl(imageRef);
-  return withCloudinaryTransform(url, `f_auto,q_auto,w_${width},c_limit`);
+  const { width, height } = SOCIAL_IMAGE_SIZE;
+  return withCloudinaryTransform(url, `f_jpg,q_auto,c_pad,w_${width},h_${height},b_rgb:0a0a0f`);
 }
 
 export { CLOUD_NAME };

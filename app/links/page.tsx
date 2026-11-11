@@ -20,7 +20,7 @@ const MARQUEE_COVERS = Array.from(
 );
 
 export const metadata: Metadata = {
-  title: 'Neko Manga Cix — Enlaces',
+  title: 'Enlaces',
   description: 'Todos nuestros enlaces: catálogo, preventas, ofertas y redes sociales de Neko Manga Cix.',
   robots: { index: false, follow: false },
 };

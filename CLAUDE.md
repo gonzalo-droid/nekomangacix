@@ -23,6 +23,25 @@ CLOUDINARY_API_KEY=<api-key>
 CLOUDINARY_API_SECRET=<api-secret>
 ```
 
+Optional, for measurement (see `lib/analytics.ts`):
+
+```
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX            # GA4; without it no Google script loads
+NEXT_PUBLIC_GSC_VERIFICATION=<token>      # Search Console meta-tag verification
+```
+
+`NEXT_PUBLIC_SITE_URL` is optional. The canonical domain is
+`https://www.nekomangacix.com` and [lib/site.ts](lib/site.ts) is its single source:
+import `SITE_URL` / `absoluteUrl()` from there instead of reading the variable.
+
+### SEO
+
+Page metadata goes through `pageMetadata()` in [lib/seo.ts](lib/seo.ts) (title,
+description, canonical and Open Graph together — Next replaces `openGraph` as a
+whole, so a page that only sets `title` inherits the home's `og:title`). Client
+pages get their metadata from a sibling `layout.tsx`. Which catalogue views are
+indexable is decided in [lib/domain/products/catalogSeo.ts](lib/domain/products/catalogSeo.ts).
+
 ## Architecture
 
 This is a Next.js 15 App Router manga e-commerce store for the Peruvian market ("Neko Manga Cix"). It uses React 19, TypeScript, and Tailwind CSS 4.

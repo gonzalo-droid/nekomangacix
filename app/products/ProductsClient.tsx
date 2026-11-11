@@ -25,6 +25,8 @@ interface Props {
   totalPages: number;
   facets: FacetCounts;
   query: CatalogQuery;
+  /** Encabezado de una vista con página propia ("Preventas de manga"). */
+  heading?: string | null;
 }
 
 const SORT_LABELS: Record<SortOption, string> = {
@@ -38,7 +40,7 @@ const SORT_LABELS: Record<SortOption, string> = {
 const TEXT_DEBOUNCE_MS = 350;
 const PRICE_DEBOUNCE_MS = 400;
 
-export default function ProductsClient({ products, total, totalPages, facets, query }: Props) {
+export default function ProductsClient({ products, total, totalPages, facets, query, heading }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -177,10 +179,12 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-10 relative">
         <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-neko-magenta-ink mb-2">
-          {'// Catálogo completo'}
+          {heading ? '// Catálogo' : '// Catálogo completo'}
         </span>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-          Explora todos los <span className="text-neko-gradient">productos</span>
+          {heading ?? (
+            <>Explora todos los <span className="text-neko-gradient">productos</span></>
+          )}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3">
           {total} título{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''} · filtra por editorial, género o precio.
