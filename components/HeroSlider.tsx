@@ -49,14 +49,19 @@ const COVERS = [
   { src: '/images/manga/jujutsu_kaisen_01.png', alt: 'Jujutsu Kaisen', cls: 'absolute right-[18%] bottom-[5%] w-[130px] lg:w-[170px] -rotate-[6deg] animate-float-slow', delay: '3s' },
 ];
 
-function StaticHero() {
+function StaticHero({ countryNames }: { countryNames: string[] }) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0f] via-[#141424] to-[#0a0a0f] text-white isolate">
+    // El hero sigue al tema: claro sobre claro, oscuro sobre oscuro. Antes era
+    // siempre oscuro, y en tema claro quedaba como un bloque negro al abrir.
+    <section className="relative overflow-hidden isolate border-b border-gray-200/70 dark:border-transparent bg-gradient-to-br from-white via-[#fdf2f8] to-[#ecfeff] text-gray-900 dark:from-[#0a0a0f] dark:via-[#141424] dark:to-[#0a0a0f] dark:text-white">
+      {/* Manchas de color de marca: dan cuerpo al fondo claro sin oscurecerlo. */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#ec4899] opacity-[0.12] dark:opacity-[0.07] blur-3xl pointer-events-none -z-10" aria-hidden="true" />
+      <div className="absolute -bottom-32 right-[10%] w-[28rem] h-[28rem] rounded-full bg-[#06b6d4] opacity-[0.14] dark:opacity-[0.07] blur-3xl pointer-events-none -z-10" aria-hidden="true" />
 
       <div className="hidden md:block absolute inset-0 pointer-events-none" aria-hidden="true">
         {COVERS.map((c) => (
           <div key={c.src} className={c.cls} style={{ animationDelay: c.delay } as React.CSSProperties}>
-            <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-white/10">
+            <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-2xl shadow-gray-900/25 dark:shadow-black/50 ring-1 ring-black/5 dark:ring-white/10">
               <Image src={c.src} alt={c.alt} fill sizes="220px" className="object-cover" priority />
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
             </div>
@@ -67,22 +72,32 @@ function StaticHero() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="max-w-2xl">
           <div className="mb-5 animate-tilt-in">
-            <Wordmark size="lg" tone="dark" className="opacity-90" as="div" />
+            <Wordmark size="lg" tone="auto" className="opacity-90" as="div" />
           </div>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-6 animate-tilt-in" style={{ animationDelay: '0.05s' }}>
-            <Sparkles size={14} className="text-[#eab308]" />
-            <span className="text-xs font-semibold tracking-wider uppercase text-white/80">Envíos a todo el Perú</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-gray-200 dark:bg-white/5 dark:border-white/10 backdrop-blur-sm mb-6 animate-tilt-in" style={{ animationDelay: '0.05s' }}>
+            <Sparkles size={14} className="text-[#eab308]" aria-hidden="true" />
+            <span className="text-xs font-semibold tracking-wider uppercase text-gray-700 dark:text-white/80">Envíos a todo el Perú</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-5 animate-tilt-in" style={{ animationDelay: '0.1s' }}>
             Inicia tu colección{' '}
             <span className="text-neko-gradient">aventura manga</span>{' '}
             <br />empieza aquí.
           </h1>
-          <p className="text-base sm:text-lg text-white/75 mb-8 max-w-xl leading-relaxed animate-tilt-in" style={{ animationDelay: '0.2s' }}>
-            Catálogo de editoriales <strong className="text-white">Argentina</strong>,{' '}
-            <strong className="text-white">México</strong>,{' '}
-            <strong className="text-white">España</strong> y{' '}
-            <strong className="text-white">Japón</strong>. Sumérgete en miles de historias.
+          <p className="text-base sm:text-lg text-gray-600 dark:text-white/75 mb-8 max-w-xl leading-relaxed animate-tilt-in" style={{ animationDelay: '0.2s' }}>
+            {countryNames.length > 0 ? (
+              <>
+                Manga y coleccionables de{' '}
+                {countryNames.map((name, i) => (
+                  <span key={name}>
+                    {i > 0 && (i === countryNames.length - 1 ? ' y ' : ', ')}
+                    <strong className="text-gray-900 dark:text-white">{name}</strong>
+                  </span>
+                ))}
+                . Sumérgete en miles de historias.
+              </>
+            ) : (
+              'Manga en español y coleccionables originales. Sumérgete en miles de historias.'
+            )}
           </p>
           <div className="flex flex-wrap gap-3 mb-10 animate-tilt-in" style={{ animationDelay: '0.3s' }}>
             <Link href="/products" className="group relative inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm sm:text-base shadow-xl shadow-[#ec4899]/30 hover:shadow-[#ec4899]/50 hover:scale-[1.03] active:scale-[0.98] transition-all overflow-hidden">
@@ -90,18 +105,17 @@ function StaticHero() {
               <span className="relative">Explorar catálogo</span>
               <ArrowRight size={18} className="relative transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link href="/products?countryGroup=Coleccionables" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/5 backdrop-blur-sm text-white border border-white/15 hover:border-[#06b6d4] hover:bg-white/10 font-semibold text-sm sm:text-base transition-all">
+            <Link href="/products?type=figure" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white text-gray-900 border border-gray-300 hover:border-[#06b6d4] dark:bg-white/5 dark:backdrop-blur-sm dark:text-white dark:border-white/15 dark:hover:bg-white/10 font-semibold text-sm sm:text-base transition-all">
               Ver coleccionables
             </Link>
           </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-white/70 animate-tilt-in" style={{ animationDelay: '0.4s' }}>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600 dark:text-white/70 animate-tilt-in" style={{ animationDelay: '0.4s' }}>
             <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#06b6d4]" /><span>100% originales</span></span>
             <span className="flex items-center gap-2"><Truck size={16} className="text-[#ec4899]" /><span>Envíos a todo el Perú</span></span>
             <span className="flex items-center gap-2"><Sparkles size={16} className="text-[#eab308]" /><span>Obsequios en cada compra</span></span>
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-[#0a0a0f] to-transparent pointer-events-none" aria-hidden="true" />
     </section>
   );
 }
@@ -234,7 +248,12 @@ function BannerHero({ banners }: { banners: Banner[] }) {
   );
 }
 
-export default function HeroSlider() {
+interface HeroSliderProps {
+  /** Países con productos activos; el servidor los calcula del catálogo. */
+  countryNames?: string[];
+}
+
+export default function HeroSlider({ countryNames = [] }: HeroSliderProps) {
   const [banners, setBanners] = useState<Banner[]>([]);
 
   useEffect(() => {
@@ -250,7 +269,7 @@ export default function HeroSlider() {
   // la página se servía sin nada sobre el pliegue.
   return (
     <>
-      <StaticHero />
+      <StaticHero countryNames={countryNames} />
       {banners.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-10">
           <BannerHero banners={banners} />
