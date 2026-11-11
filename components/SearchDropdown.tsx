@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Search, X, ArrowRight } from 'lucide-react';
 import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { trackSearch } from '@/lib/analytics';
 
 interface SearchResult {
   id: string;
@@ -49,7 +50,12 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
     setLoading(true);
     fetch(`/api/products/search?q=${encodeURIComponent(debouncedQuery)}`)
       .then((r) => r.json())
-      .then((data) => { setResults(data); setOpen(true); setActiveIdx(-1); })
+      .then((data) => {
+        setResults(data); setOpen(true); setActiveIdx(-1);
+        // Solo las búsquedas sin resultado: son la lista de lo que la gente
+        // pide y no encuentra. Las demás se registran al enviar.
+        if (Array.isArray(data) && data.length === 0) trackSearch(debouncedQuery, 0);
+      })
       .catch(() => setResults([]))
       .finally(() => setLoading(false));
   }, [debouncedQuery]);
@@ -67,6 +73,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
 
   const goToSearch = useCallback(() => {
     if (!query.trim()) return;
+    trackSearch(query.trim());
     router.push(`/products?search=${encodeURIComponent(query.trim())}`);
     setQuery(''); setOpen(false); onClose?.();
   }, [query, router, onClose]);
