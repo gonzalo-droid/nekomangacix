@@ -1,11 +1,19 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCart, getItemPaymentSplit } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { usePromotions } from '@/context/PromotionsContext';
 import { createSupabaseClient } from '@/core/supabase/client';
-import { calculateCartTotals } from '@/lib/domain/cart/calculate';
+import { calculateCartTotals, FREE_SHIPPING_THRESHOLD_PEN } from '@/lib/domain/cart/calculate';
+import { SHIPPING_ZONES, getShippingZone } from '@/lib/domain/shipping/zones';
+import {
+  trackBeginCheckout,
+  trackPurchase,
+  trackViewCart,
+  trackWhatsAppOpen,
+  type AnalyticsItem,
+} from '@/lib/analytics';
 import { cloudinaryLoader } from '@/lib/cloudinary';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -26,9 +34,30 @@ import {
   Clock,
   Info,
   Tag,
+  AlertCircle,
 } from 'lucide-react';
 
 type PaymentMethod = 'yape' | 'plin' | 'transferencia' | null;
+
+interface FormErrors {
+  phone?: string;
+  zone?: string;
+  payment?: string;
+}
+
+interface PlacedOrder {
+  /** Código corto del pedido; null si no se pudo registrar y se envía igual. */
+  code: string | null;
+  whatsappUrl: string;
+  payment: Exclude<PaymentMethod, null>;
+  totalToPayNow: number;
+  balanceDue: number;
+}
+
+/** Un teléfono peruano tiene 9 dígitos; se aceptan prefijos y separadores. */
+function isValidPhone(value: string): boolean {
+  return value.replace(/\D/g, '').length >= 9;
+}
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '51924462641';
 
@@ -65,8 +94,20 @@ export default function CartPage() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
-  const [orderSent, setOrderSent] = useState(false);
+  const [shippingZoneId, setShippingZoneId] = useState('');
   const [placing, setPlacing] = useState(false);
+  // Lo que se muestra tras guardar el pedido. Se congela aquí porque el
+  // carrito se vacía en ese mismo momento.
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const zoneRef = useRef<HTMLSelectElement>(null);
+  const paymentRef = useRef<HTMLDivElement>(null);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (placedOrder) successHeadingRef.current?.focus();
+  }, [placedOrder]);
   const [hasUsedFirstPurchase, setHasUsedFirstPurchase] = useState<boolean | null>(null);
 
   // Cargar profile.has_used_first_purchase_discount cuando hay usuario
@@ -106,9 +147,13 @@ export default function CartPage() {
     [items]
   );
 
+  const shippingZone = getShippingZone(shippingZoneId);
+  // Sin destino elegido todavía no hay tarifa: el total se muestra sin envío.
+  const shippingRate = shippingZone?.cost ?? 0;
+
   const preliminaryTotals = useMemo(
-    () => calculateCartTotals({ items, isFirstPurchase }),
-    [items, isFirstPurchase]
+    () => calculateCartTotals({ items, isFirstPurchase, shippingRate }),
+    [items, isFirstPurchase, shippingRate]
   );
 
   const couponDiscount = useMemo(
@@ -119,42 +164,50 @@ export default function CartPage() {
   // El cupón se prorratea igual que el descuento de bienvenida: en preventa solo
   // afecta el depósito de hoy, el resto reduce el saldo al llegar.
   const totals = useMemo(
-    () => calculateCartTotals({ items, isFirstPurchase, couponDiscount }),
-    [items, isFirstPurchase, couponDiscount]
+    () => calculateCartTotals({ items, isFirstPurchase, couponDiscount, shippingRate }),
+    [items, isFirstPurchase, couponDiscount, shippingRate]
+  );
+  // Misma regla que `calculateCartTotals`: el umbral se mide contra el
+  // subtotal menos el descuento de bienvenida, sin contar el cupón.
+  const freeShipping =
+    preliminaryTotals.subtotal - preliminaryTotals.welcomeDiscount >= FREE_SHIPPING_THRESHOLD_PEN;
+  const missingForFreeShipping = Math.max(
+    0,
+    FREE_SHIPPING_THRESHOLD_PEN - (preliminaryTotals.subtotal - preliminaryTotals.welcomeDiscount)
   );
 
   const hasPreorder = lines.some((l) => l.split.isPreorder);
   const hasInStock = lines.some((l) => !l.split.isPreorder);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
-  async function handleWhatsAppOrder() {
-    if (items.length === 0 || !selectedPayment || placing) return;
-    setPlacing(true);
+  const analyticsItems = (): AnalyticsItem[] =>
+    items.map((i) => ({
+      item_id: i.productId,
+      item_name: i.title,
+      item_brand: i.editorial,
+      price: i.price,
+      quantity: i.quantity,
+    }));
 
-    try {
-      await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            productId: i.productId,
-            title: i.title,
-            quantity: i.quantity,
-            price: i.price,
-            stockStatus: i.stockStatus,
-          })),
-          paymentMethod: selectedPayment,
-          customerName: customerName || undefined,
-          customerPhone: customerPhone || undefined,
-          customerAddress: customerAddress || undefined,
-          couponCode: coupon ? couponCode : undefined,
-          shippingCost: totals.shipping,
-        }),
-      });
-    } catch {
-      /* WhatsApp es el flujo principal; silencio si falla */
-    }
+  // Una vez por visita al carrito con productos, no en cada cambio de cantidad.
+  const cartViewTracked = useRef(false);
+  useEffect(() => {
+    if (cartViewTracked.current || items.length === 0) return;
+    cartViewTracked.current = true;
+    trackViewCart(
+      items.map((i) => ({
+        item_id: i.productId,
+        item_name: i.title,
+        item_brand: i.editorial,
+        price: i.price,
+        quantity: i.quantity,
+      })),
+    );
+  }, [items]);
 
+  /** Mensaje prellenado para WhatsApp. `code` es el número de pedido guardado. */
+  function buildWhatsAppUrl(code: string | null): string {
+    if (!selectedPayment) return `https://wa.me/${WHATSAPP_NUMBER}`;
     const paymentLabel = PAYMENT_INFO[selectedPayment].label;
 
     const stockLines = lines
@@ -169,7 +222,7 @@ export default function CartPage() {
       );
 
     const msgParts: (string | false)[] = [
-      `Hola, quiero realizar este pedido 🛒`,
+      code ? `Hola, hice el pedido #${code} 🛒` : `Hola, quiero realizar este pedido 🛒`,
       ``,
       hasInStock && `📦 EN STOCK`,
       hasInStock && stockLines.join('\n'),
@@ -180,7 +233,9 @@ export default function CartPage() {
       `Subtotal: S/ ${totals.subtotal.toFixed(2)}`,
       totals.welcomeDiscount > 0 && `Descuento bienvenida (10%): -S/ ${totals.welcomeDiscount.toFixed(2)}`,
       couponDiscount > 0 && `Cupón ${couponCode}: -S/ ${couponDiscount.toFixed(2)}`,
-      totals.shipping === 0 ? `Envío: GRATIS 🎁` : `Envío: S/ ${totals.shipping.toFixed(2)}`,
+      totals.shipping === 0
+        ? `Envío${shippingZone ? ` a ${shippingZone.label}` : ''}: GRATIS 🎁`
+        : `Envío${shippingZone ? ` a ${shippingZone.label}` : ''}: S/ ${totals.shipping.toFixed(2)}`,
       ``,
       `💰 Total a pagar ahora: S/ ${Math.max(0, totals.totalToPayNow).toFixed(2)}`,
       hasPreorder && `💳 Saldo al llegar: S/ ${totals.balanceDue.toFixed(2)}`,
@@ -191,19 +246,104 @@ export default function CartPage() {
       customerAddress && `Dirección: ${customerAddress}`,
     ];
 
-    const finalMessage = msgParts.filter((l): l is string => l !== false).join('\n');
-
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(finalMessage)}`,
-      '_blank'
-    );
-    clearCart();
-    setPlacing(false);
-    setOrderSent(true);
+    const message = msgParts.filter((l): l is string => l !== false).join('\n');
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
   }
 
-  // ── Estado: pedido enviado ────────────────────────────────────────────
-  if (orderSent) {
+  /** Cierra el pedido en pantalla: congela el resumen y vacía el carrito. */
+  function finishOrder(code: string | null) {
+    if (!selectedPayment) return;
+    const whatsappUrl = buildWhatsAppUrl(code);
+    trackPurchase({
+      orderCode: code,
+      items: analyticsItems(),
+      value: Math.round((totals.subtotal - totals.discount + totals.shipping) * 100) / 100,
+      shipping: totals.shipping,
+      coupon: coupon ? couponCode : undefined,
+      paymentMethod: selectedPayment,
+      shippingZone: shippingZoneId,
+    });
+    setPlacedOrder({
+      code,
+      whatsappUrl,
+      payment: selectedPayment,
+      totalToPayNow: Math.max(0, totals.totalToPayNow),
+      balanceDue: totals.balanceDue,
+    });
+    clearCart();
+    // Comodidad, no el camino principal: tras un `await` el navegador puede
+    // bloquear la ventana (Safari en iPhone lo hace). Por eso la pantalla de
+    // confirmación siempre trae el enlace de WhatsApp a la vista.
+    window.open(whatsappUrl, '_blank', 'noopener');
+  }
+
+  async function handleConfirmOrder() {
+    if (items.length === 0 || placing) return;
+
+    const nextErrors: FormErrors = {};
+    if (!isValidPhone(customerPhone)) nextErrors.phone = 'Escribe un teléfono de 9 dígitos para coordinar tu pedido.';
+    if (!shippingZone) nextErrors.zone = 'Elige a dónde enviamos tu pedido.';
+    if (!selectedPayment) nextErrors.payment = 'Elige un método de pago.';
+    setErrors(nextErrors);
+    setSubmitError(null);
+
+    // El foco va al primer dato que falta, en el orden en que aparecen.
+    if (nextErrors.phone) {
+      phoneRef.current?.focus();
+      return;
+    }
+    if (nextErrors.zone) {
+      zoneRef.current?.focus();
+      return;
+    }
+    if (nextErrors.payment) {
+      paymentRef.current?.querySelector('button')?.focus();
+      return;
+    }
+
+    setPlacing(true);
+    trackBeginCheckout(analyticsItems(), {
+      paymentMethod: selectedPayment ?? '',
+      shippingZone: shippingZoneId,
+    });
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.productId,
+            title: i.title,
+            quantity: i.quantity,
+            price: i.price,
+            stockStatus: i.stockStatus,
+          })),
+          paymentMethod: selectedPayment,
+          customerName: customerName || undefined,
+          customerPhone,
+          customerAddress: customerAddress || undefined,
+          couponCode: coupon ? couponCode : undefined,
+          shippingZone: shippingZoneId,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as { orderCode?: string; error?: string } | null;
+
+      if (!res.ok) {
+        // El carrito se conserva: el pedido NO quedó registrado.
+        setSubmitError(data?.error ?? 'No pudimos registrar tu pedido. Inténtalo de nuevo.');
+        return;
+      }
+      finishOrder(data?.orderCode ?? null);
+    } catch {
+      setSubmitError('No pudimos conectar para registrar tu pedido. Revisa tu conexión e inténtalo de nuevo.');
+    } finally {
+      setPlacing(false);
+    }
+  }
+
+  // ── Estado: pedido registrado ─────────────────────────────────────────
+  if (placedOrder) {
+    const pay = PAYMENT_INFO[placedOrder.payment];
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
         <div className="relative w-full max-w-lg">
@@ -215,23 +355,61 @@ export default function CartPage() {
             className="absolute -bottom-16 -right-10 w-48 h-48 rounded-full bg-[#ec4899] opacity-20 blur-3xl"
             aria-hidden="true"
           />
-          <div className="relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl p-10 text-center">
+          <div className="relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl p-6 sm:p-10 text-center">
             <Wordmark size="xs" as="div" className="mb-4 opacity-70 justify-center" />
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-[#25D366] text-white mb-5 shadow-lg shadow-emerald-500/30">
-              <CheckCircle2 size={32} />
+            <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-emerald-400 to-[#25D366] text-white mb-5 shadow-lg shadow-emerald-500/30">
+              <CheckCircle2 size={32} aria-hidden="true" />
             </div>
-            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">
-              ¡Pedido enviado!
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
-              Te redirigimos a WhatsApp para coordinar la entrega y confirmar el pago. Gracias por elegir{' '}
-              <Wordmark size="xs" as="span" gradientAccent={false} className="!text-gray-700 dark:!text-gray-200" />.
+            {/* Recibe el foco al aparecer: así un lector de pantalla anuncia el
+                resultado sin quitarle al título su rol de encabezado. */}
+            <h1
+              ref={successHeadingRef}
+              tabIndex={-1}
+              className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 focus:outline-none"
+            >
+              {placedOrder.code ? `Pedido #${placedOrder.code} registrado` : 'Tu pedido está listo para enviar'}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-5 text-sm">
+              Falta un paso: envíanos el mensaje por WhatsApp para confirmar el pago y coordinar la entrega.
             </p>
+
+            <a
+              href={placedOrder.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackWhatsAppOpen('order', placedOrder.code)}
+              className="w-full bg-[#0b8043] hover:bg-[#09703a] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-[#25D366]/25 transition-all flex items-center justify-center gap-2 text-base"
+            >
+              <MessageCircle size={18} aria-hidden="true" />
+              Enviar pedido por WhatsApp
+            </a>
+
+            <dl className="mt-6 text-left text-sm rounded-xl border border-gray-100 dark:border-white/10 divide-y divide-gray-100 dark:divide-white/10">
+              <div className="flex justify-between gap-4 px-4 py-3">
+                <dt className="text-gray-600 dark:text-gray-400">A pagar hoy</dt>
+                <dd className="font-extrabold text-gray-900 dark:text-white">S/ {placedOrder.totalToPayNow.toFixed(2)}</dd>
+              </div>
+              {placedOrder.balanceDue > 0 && (
+                <div className="flex justify-between gap-4 px-4 py-3">
+                  <dt className="text-gray-600 dark:text-gray-400">Saldo al llegar</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-white">S/ {placedOrder.balanceDue.toFixed(2)}</dd>
+                </div>
+              )}
+              <div className="flex justify-between gap-4 px-4 py-3">
+                <dt className="text-gray-600 dark:text-gray-400">{pay.label}</dt>
+                <dd className="font-semibold text-gray-900 dark:text-white text-right break-all">
+                  {pay.number}
+                  <span className="block text-xs font-normal text-gray-500 dark:text-gray-400">{pay.holder}</span>
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-left leading-relaxed">{pay.hint}</p>
+
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.02] transition-all"
+              className="mt-6 inline-flex items-center gap-1.5 min-h-11 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] transition-colors"
             >
-              Seguir comprando <ChevronRight size={16} />
+              Seguir comprando <ChevronRight size={16} aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -340,7 +518,7 @@ export default function CartPage() {
                       <h3 className="font-semibold text-gray-900 dark:text-white truncate">{item.title}</h3>
                     )}
                     {split.isPreorder && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-neko-cyan-ink bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
                         <Clock size={10} /> Preventa
                       </span>
                     )}
@@ -351,7 +529,7 @@ export default function CartPage() {
                   </p>
 
                   {split.isPreorder && (
-                    <p className="text-[11px] text-[#06b6d4] mt-1 font-medium">
+                    <p className="text-[11px] text-neko-cyan-ink mt-1 font-medium">
                       Adelanto S/ {split.unitDeposit.toFixed(2)} (50%) · Saldo S/ {(item.price - split.unitDeposit).toFixed(2)} al llegar
                     </p>
                   )}
@@ -380,11 +558,11 @@ export default function CartPage() {
                 <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
                   {split.isPreorder ? (
                     <div className="text-right">
-                      <p className="text-[11px] uppercase tracking-wider text-gray-400">Hoy</p>
-                      <p className="font-extrabold text-[#06b6d4]">
+                      <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-400">Hoy</p>
+                      <p className="font-extrabold text-neko-cyan-ink">
                         S/ {split.now.toFixed(2)}
                       </p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
+                      <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
                     </div>
                   ) : (
                     <p className="font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
@@ -504,11 +682,26 @@ export default function CartPage() {
               )}
 
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Envío</span>
-                <span className={totals.shipping === 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
-                  {totals.shipping === 0 ? 'GRATIS 🎁' : `S/ ${totals.shipping.toFixed(2)}`}
+                <span>Envío{shippingZone ? ` a ${shippingZone.label}` : ''}</span>
+                <span className={freeShipping ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
+                  {freeShipping
+                    ? 'GRATIS 🎁'
+                    : shippingZone
+                      ? `S/ ${totals.shipping.toFixed(2)}`
+                      : 'Elige tu destino'}
                 </span>
               </div>
+              {!freeShipping && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Te faltan <strong className="text-gray-700 dark:text-gray-200">S/ {missingForFreeShipping.toFixed(2)}</strong> para
+                  el envío gratis (desde S/ {FREE_SHIPPING_THRESHOLD_PEN}).
+                </p>
+              )}
+              {shippingZone?.estimated && !freeShipping && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  En zonas alejadas la tarifa puede subir hasta S/ 25; te la confirmamos por WhatsApp.
+                </p>
+              )}
 
               {hasPreorder && (
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
@@ -521,7 +714,12 @@ export default function CartPage() {
             {/* Total a pagar hoy */}
             <div className="pt-3 border-t border-gray-100 dark:border-white/5">
               <div className="flex justify-between items-baseline">
-                <span className="font-bold text-gray-900 dark:text-white text-sm">Total a pagar hoy</span>
+                <span className="font-bold text-gray-900 dark:text-white text-sm">
+                  Total a pagar hoy
+                  {!shippingZone && !freeShipping && (
+                    <span className="block text-xs font-normal text-gray-500 dark:text-gray-400">sin envío todavía</span>
+                  )}
+                </span>
                 <span className="text-2xl font-extrabold text-neko-gradient">
                   S/ {Math.max(0, totals.totalToPayNow).toFixed(2)}
                 </span>
@@ -566,19 +764,64 @@ export default function CartPage() {
             </div>
             <div>
               <label htmlFor="cliente-telefono" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Teléfono <span className="font-normal text-gray-500 dark:text-gray-400">(opcional)</span>
+                Teléfono o WhatsApp
               </label>
               <input
+                ref={phoneRef}
                 id="cliente-telefono"
                 type="tel"
                 name="tel"
                 autoComplete="tel"
                 inputMode="tel"
+                required
+                aria-required="true"
+                aria-invalid={errors.phone ? true : undefined}
+                aria-describedby={errors.phone ? 'cliente-telefono-error' : 'cliente-telefono-ayuda'}
                 value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
+                onChange={(e) => {
+                  setCustomerPhone(e.target.value);
+                  if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+                }}
                 placeholder="924 462 641"
                 className="w-full px-3 py-3 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
               />
+              {errors.phone ? (
+                <p id="cliente-telefono-error" role="alert" className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.phone}</p>
+              ) : (
+                <p id="cliente-telefono-ayuda" className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Lo usamos solo para coordinar este pedido.
+                </p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="cliente-destino" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                ¿A dónde lo enviamos?
+              </label>
+              <select
+                ref={zoneRef}
+                id="cliente-destino"
+                name="shipping-zone"
+                required
+                aria-required="true"
+                aria-invalid={errors.zone ? true : undefined}
+                aria-describedby={errors.zone ? 'cliente-destino-error' : undefined}
+                value={shippingZoneId}
+                onChange={(e) => {
+                  setShippingZoneId(e.target.value);
+                  if (errors.zone) setErrors((prev) => ({ ...prev, zone: undefined }));
+                }}
+                className="w-full px-3 min-h-11 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+              >
+                <option value="">Elige tu destino</option>
+                {SHIPPING_ZONES.map((zone) => (
+                  <option key={zone.id} value={zone.id}>
+                    {zone.label} — {zone.costLabel} · {zone.time}
+                  </option>
+                ))}
+              </select>
+              {errors.zone && (
+                <p id="cliente-destino-error" role="alert" className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.zone}</p>
+              )}
             </div>
             <div>
               <label htmlFor="cliente-direccion" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
@@ -600,7 +843,10 @@ export default function CartPage() {
           {/* Método de pago */}
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6">
             <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3">Método de pago</h2>
-            <div className="space-y-2">
+            {errors.payment && (
+              <p role="alert" className="text-xs text-red-600 dark:text-red-400 mb-2">{errors.payment}</p>
+            )}
+            <div ref={paymentRef} className="space-y-2">
               {(Object.keys(PAYMENT_INFO) as Array<keyof typeof PAYMENT_INFO>).map((method) => {
                 const info = PAYMENT_INFO[method];
                 const isSelected = selectedPayment === method;
@@ -608,7 +854,11 @@ export default function CartPage() {
                   <button
                     key={method}
                     type="button"
-                    onClick={() => setSelectedPayment(method)}
+                    onClick={() => {
+                      setSelectedPayment(method);
+                      if (errors.payment) setErrors((prev) => ({ ...prev, payment: undefined }));
+                    }}
+                    aria-pressed={isSelected}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
                       isSelected
                         ? 'border-[#ec4899] bg-gradient-to-r from-[#ec4899]/10 to-transparent shadow-sm'
@@ -638,27 +888,46 @@ export default function CartPage() {
                 <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
                   {PAYMENT_INFO[selectedPayment].hint}
                 </p>
-                <p className="text-xs font-bold text-[#06b6d4] mt-1.5">
+                <p className="text-xs font-bold text-neko-cyan-ink mt-1.5">
                   Monto a transferir hoy: S/ {Math.max(0, totals.totalToPayNow).toFixed(2)}
                 </p>
               </div>
             )}
           </div>
 
-          {/* CTA WhatsApp */}
+          {/* Confirmar pedido */}
+          {submitError && (
+            <div role="alert" className="rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-200">
+              <p className="flex gap-2 font-semibold">
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" aria-hidden="true" />
+                {submitError}
+              </p>
+              <p className="mt-2 text-xs">
+                Tu carrito sigue intacto. Si el problema continúa, puedes{' '}
+                <button
+                  type="button"
+                  onClick={() => finishOrder(null)}
+                  disabled={!selectedPayment}
+                  className="underline font-semibold disabled:opacity-60"
+                >
+                  enviarnos el pedido directo por WhatsApp
+                </button>
+                .
+              </p>
+            </div>
+          )}
           <button
-            onClick={handleWhatsAppOrder}
-            disabled={!selectedPayment || placing}
+            type="button"
+            onClick={handleConfirmOrder}
+            disabled={placing}
             className="w-full bg-[#0b8043] hover:bg-[#09703a] disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-white disabled:text-gray-500 font-bold py-3.5 rounded-xl shadow-lg shadow-[#25D366]/25 hover:shadow-[#25D366]/45 disabled:shadow-none hover:scale-[1.01] active:scale-[0.98] disabled:scale-100 transition-all flex items-center justify-center gap-2 text-base"
           >
-            <MessageCircle size={18} />
-            {placing ? 'Procesando...' : hasPreorder ? 'Reservar por WhatsApp' : 'Confirmar por WhatsApp'}
+            <MessageCircle size={18} aria-hidden="true" />
+            {placing ? 'Registrando tu pedido…' : hasPreorder ? 'Confirmar reserva' : 'Confirmar pedido'}
           </button>
-          {!selectedPayment && (
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              Selecciona un método de pago para continuar
-            </p>
-          )}
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+            Guardamos tu pedido y te llevamos a WhatsApp para coordinar el pago.
+          </p>
         </div>
       </div>
 

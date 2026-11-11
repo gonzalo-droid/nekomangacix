@@ -28,8 +28,18 @@ export function calculateCartTotals(args: {
   isFirstPurchase: boolean;
   /** Descuento de cupón ya validado, como monto plano sobre el subtotal (antes de prorratear). */
   couponDiscount?: number;
+  /**
+   * Tarifa del destino elegido (ver `lib/domain/shipping/zones.ts`). Si no se
+   * pasa, se usa la tarifa estándar. El envío gratis por monto se aplica igual.
+   */
+  shippingRate?: number;
 }): CartTotals {
-  const { items, isFirstPurchase, couponDiscount: rawCouponDiscount = 0 } = args;
+  const {
+    items,
+    isFirstPurchase,
+    couponDiscount: rawCouponDiscount = 0,
+    shippingRate = STANDARD_SHIPPING_PEN,
+  } = args;
 
   let stockSubtotal = 0;
   let preorderSubtotal = 0;
@@ -73,7 +83,7 @@ export function calculateCartTotals(args: {
     subtotal > 0 && afterDiscount >= FREE_SHIPPING_THRESHOLD_PEN
       ? 0
       : subtotal > 0
-        ? STANDARD_SHIPPING_PEN
+        ? Math.max(0, shippingRate)
         : 0;
 
   const totalToPayNow = round2(
