@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { StockStatus } from '@/lib/products';
 import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
+import { trackAddToCart } from '@/lib/analytics';
 
 /** Depósito por defecto (S/) por unidad de preventa si el producto no define preorderDeposit propio */
 export const DEFAULT_PREORDER_DEPOSIT = 10;
@@ -78,6 +79,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     editorial: string,
     options?: AddToCartOptions
   ) => {
+    trackAddToCart(
+      { item_id: productId, item_name: title, item_brand: editorial, price, quantity: 1 },
+      options?.stockStatus,
+    );
     setItems((prevItems) => {
       const existing = prevItems.find((item) => item.productId === productId);
       if (existing) {

@@ -8,6 +8,7 @@ import { getActiveCampaignForCountry } from '@/lib/campaigns';
 import type { StockStatus } from '@/lib/products';
 import type { CartItem } from '@/context/CartContext';
 import type { CountryCode } from '@/lib/constants/countries';
+import { getShippingZone } from '@/lib/domain/shipping/zones';
 
 interface OrderItemInput {
   productId: string;
@@ -24,7 +25,13 @@ interface CreateOrderBody {
   customerPhone?: string;
   customerAddress?: string;
   couponCode?: string;
-  shippingCost?: number;
+  /** Id de la zona de envío (ver `lib/domain/shipping/zones.ts`). */
+  shippingZone?: string;
+}
+
+/** Un teléfono peruano tiene 9 dígitos; se aceptan prefijos y separadores. */
+function hasEnoughDigits(phone: string | undefined): boolean {
+  return (phone ?? '').replace(/\D/g, '').length >= 9;
 }
 
 export async function POST(req: NextRequest) {
@@ -33,6 +40,21 @@ export async function POST(req: NextRequest) {
 
   if (!items?.length || !paymentMethod) {
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
+  }
+
+  // Sin teléfono, un pedido cuyo mensaje de WhatsApp nunca llegó no se puede
+  // recuperar: no habría a quién escribirle.
+  if (!hasEnoughDigits(customerPhone)) {
+    return NextResponse.json(
+      { error: 'Necesitamos un teléfono de 9 dígitos para coordinar tu pedido.' },
+      { status: 400 }
+    );
+  }
+
+  // La tarifa sale de la zona, nunca de un monto que mande el navegador.
+  const shippingZone = getShippingZone(body.shippingZone);
+  if (!shippingZone) {
+    return NextResponse.json({ error: 'Elige un destino de envío.' }, { status: 400 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -89,26 +111,31 @@ export async function POST(req: NextRequest) {
     };
   });
 
-  // Resolver campaña vigente para cada ítem de preventa. Si un país no tiene
-  // ninguna campaña abierta ahora mismo, se rechaza el pedido completo con un
-  // mensaje claro en vez de crear un ítem de preventa "huérfano".
+  // Campaña vigente de cada ítem de preventa. Si el país no tiene ninguna
+  // abierta, el ítem se guarda igual con `campaign_id` nulo y el admin lo
+  // asigna después (aparece como "sin campaña" en /admin/orders).
+  //
+  // Antes el pedido completo se rechazaba con un 400. Con la única campaña
+  // vencida desde julio, eso descartaba en silencio todo pedido de preventa.
   const campaignIdByProductId = new Map<string, string | null>();
+  const campaignByCountry = new Map<CountryCode, string | null>();
   for (const item of cartItems) {
     if (item.stockStatus !== 'preorder') continue;
     const db = priceMap.get(item.productId);
     if (!db) continue;
-    const campaign = await getActiveCampaignForCountry(db.countryCode, supabase);
-    if (!campaign) {
-      return NextResponse.json(
-        { error: `No hay preventa abierta para ${db.countryCode} en este momento (producto: ${item.title})` },
-        { status: 400 }
-      );
+    if (!campaignByCountry.has(db.countryCode)) {
+      const campaign = await getActiveCampaignForCountry(db.countryCode, supabase);
+      campaignByCountry.set(db.countryCode, campaign?.id ?? null);
     }
-    campaignIdByProductId.set(item.productId, campaign.id);
+    campaignIdByProductId.set(item.productId, campaignByCountry.get(db.countryCode) ?? null);
   }
 
   // Pasada preliminar solo para tener el subtotal y poder validar/calcular el cupón sobre él.
-  const preliminaryTotals = calculateCartTotals({ items: cartItems, isFirstPurchase });
+  const preliminaryTotals = calculateCartTotals({
+    items: cartItems,
+    isFirstPurchase,
+    shippingRate: shippingZone.cost,
+  });
 
   // Validar cupón en servidor y calcular su descuento sobre el subtotal
   let couponDiscount = 0;
@@ -131,7 +158,12 @@ export async function POST(req: NextRequest) {
 
   // Pasada final: el cupón se prorratea igual que el descuento de bienvenida (solo
   // afecta el depósito de hoy en items de preventa, el resto reduce el saldo al llegar).
-  const totals = calculateCartTotals({ items: cartItems, isFirstPurchase, couponDiscount });
+  const totals = calculateCartTotals({
+    items: cartItems,
+    isFirstPurchase,
+    couponDiscount,
+    shippingRate: shippingZone.cost,
+  });
 
   const paymentType = totals.preorderSubtotal > 0 ? 'split_preorder' : 'full';
 
@@ -157,7 +189,11 @@ export async function POST(req: NextRequest) {
       payment_method: paymentMethod,
       customer_name: customerName || user?.user_metadata?.full_name || null,
       customer_phone: customerPhone || null,
-      shipping_address: customerAddress ? { address: customerAddress } : null,
+      shipping_address: {
+        zone: shippingZone.id,
+        zoneLabel: shippingZone.label,
+        ...(customerAddress ? { address: customerAddress } : {}),
+      },
       notes: couponPromoId ? `Cupón: ${couponCode?.toUpperCase()} (-S/ ${couponDiscount.toFixed(2)})` : null,
     })
     .select('id')
@@ -165,7 +201,12 @@ export async function POST(req: NextRequest) {
 
   if (orderError || !order) {
     console.error('[orders] Error creating order:', orderError);
-    return NextResponse.json({ success: true, orderId: null, fallback: true });
+    // Antes se respondía `success: true` aunque el pedido no se hubiera
+    // guardado, así que el carrito no tenía cómo saberlo.
+    return NextResponse.json(
+      { error: 'No pudimos registrar tu pedido. Inténtalo de nuevo.' },
+      { status: 500 }
+    );
   }
 
   const orderItems = cartItems.map((item) => ({
@@ -178,7 +219,17 @@ export async function POST(req: NextRequest) {
     campaign_id: campaignIdByProductId.get(item.productId) ?? null,
   }));
 
-  await supabase.from('order_items').insert(orderItems);
+  // Con service role, igual que la cabecera: un pedido sin sus líneas no sirve,
+  // así que si fallan se deshace el pedido y se avisa.
+  const { error: itemsError } = await admin.from('order_items').insert(orderItems);
+  if (itemsError) {
+    console.error('[orders] Error creating order items:', itemsError);
+    await admin.from('orders').delete().eq('id', order.id);
+    return NextResponse.json(
+      { error: 'No pudimos registrar tu pedido. Inténtalo de nuevo.' },
+      { status: 500 }
+    );
+  }
 
   if (totals.appliedFirstPurchaseDiscount && user) {
     await supabase
@@ -203,5 +254,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ success: true, orderId: order.id });
+  return NextResponse.json({
+    success: true,
+    orderId: order.id,
+    // Mismo formato que muestra /admin/orders, para que cliente y tienda
+    // hablen del mismo número.
+    orderCode: String(order.id).slice(0, 8).toUpperCase(),
+    shipping: totals.shipping,
+    totalToPayNow: Math.max(0, totals.totalToPayNow),
+    balanceDue: totals.balanceDue,
+  });
 }

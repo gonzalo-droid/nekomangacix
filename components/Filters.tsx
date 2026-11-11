@@ -180,7 +180,22 @@ export default function Filters({
     }));
   }, [selectedCountry, editorialCounts]);
 
-  const showDemographic = selectedType.length === 0 || selectedType.includes('manga');
+  // Una opción en cero no lleva a ningún resultado, así que no se ofrece
+  // (salvo que ya esté marcada, para poder desmarcarla). Si los contadores no
+  // llegaron, se muestran todas en vez de dejar el panel vacío.
+  const hasCounts =
+    Object.keys(stockCounts).length + Object.keys(typeCounts).length + Object.keys(countryCounts).length > 0;
+  const withResults = <T extends { value: string; count: number }>(options: T[], selected: readonly string[]) =>
+    hasCounts ? options.filter((o) => o.count > 0 || selected.includes(o.value)) : options;
+
+  const visibleStock = withResults(stockOptions, selectedStock);
+  const visibleTypes = withResults(typeOptions, selectedType);
+  const visibleDemographics = withResults(demographicOptions, selectedDemographic);
+  const visibleCountries = withResults(countryOptions, selectedCountry);
+  const visibleEditorials = withResults(editorialOptions, selectedEditorial);
+
+  const showDemographic =
+    (selectedType.length === 0 || selectedType.includes('manga')) && visibleDemographics.length > 0;
 
   return (
     <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
@@ -197,7 +212,7 @@ export default function Filters({
         {activeCount > 0 && (
           <button
             onClick={clearAll}
-            className="flex items-center gap-1 text-xs font-semibold text-[#ec4899] hover:text-[#db2777] transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-neko-magenta-ink hover:underline transition-colors"
           >
             <X size={12} /> Limpiar todo
           </button>
@@ -223,7 +238,7 @@ export default function Filters({
         {/* 2. Disponibilidad */}
         <Section id="stock" title="Disponibilidad" badge={selectedStock.length}>
           <MultiSelectFilterGroup
-            options={stockOptions}
+            options={visibleStock}
             selected={selectedStock}
             onChange={onStockChange}
             searchable={false}
@@ -233,7 +248,7 @@ export default function Filters({
         {/* 3. Tipo */}
         <Section id="type" title="Tipo" badge={selectedType.length}>
           <MultiSelectFilterGroup
-            options={typeOptions}
+            options={visibleTypes}
             selected={selectedType}
             onChange={(next) => onTypeChange(next as ProductType[])}
             searchPlaceholder="Buscar tipo..."
@@ -244,7 +259,7 @@ export default function Filters({
         {showDemographic && (
           <Section id="demographic" title="Demografía" badge={selectedDemographic.length}>
             <MultiSelectFilterGroup
-              options={demographicOptions}
+              options={visibleDemographics}
               selected={selectedDemographic}
               onChange={(next) => onDemographicChange(next as Demographic[])}
               searchPlaceholder="Buscar demografía..."
@@ -252,20 +267,22 @@ export default function Filters({
           </Section>
         )}
 
-        {/* 5. País */}
-        <Section id="country" title="País" badge={selectedCountry.length} defaultOpen={false}>
-          <MultiSelectFilterGroup
-            options={countryOptions}
-            selected={selectedCountry}
-            onChange={(next) => onCountryChange(next as CountryCode[])}
-            searchable={false}
-          />
-        </Section>
+        {/* 5. País — solo si hay más de uno con productos */}
+        {visibleCountries.length > 1 && (
+          <Section id="country" title="País" badge={selectedCountry.length} defaultOpen={false}>
+            <MultiSelectFilterGroup
+              options={visibleCountries}
+              selected={selectedCountry}
+              onChange={(next) => onCountryChange(next as CountryCode[])}
+              searchable={false}
+            />
+          </Section>
+        )}
 
         {/* 6. Editorial */}
         <Section id="editorial" title="Editorial" badge={selectedEditorial.length} defaultOpen={false}>
           <MultiSelectFilterGroup
-            options={editorialOptions}
+            options={visibleEditorials}
             selected={selectedEditorial}
             onChange={onEditorialChange}
             searchPlaceholder="Buscar editorial..."

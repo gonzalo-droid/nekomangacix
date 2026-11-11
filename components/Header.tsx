@@ -38,6 +38,9 @@ export default function Header() {
   const cartCount = isHydrated ? getTotalItems() : 0;
 
   const isActive = (href: string, exact: boolean) => {
+    // Un atajo con filtro (Preventas) comparte ruta con Catálogo: marcarlo por
+    // la ruta encendía los dos a la vez.
+    if (href.includes('?')) return false;
     const base = href.split('?')[0];
     if (exact) return pathname === base;
     return pathname === base || pathname.startsWith(`${base}/`);

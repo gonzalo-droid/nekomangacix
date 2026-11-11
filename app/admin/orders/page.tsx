@@ -38,6 +38,7 @@ type OrderRow = {
   payment_method: string | null;
   customer_name: string | null;
   customer_phone: string | null;
+  shipping_address: { zone?: string; zoneLabel?: string; address?: string } | null;
   notes: string | null;
   created_at: string;
   order_items: OrderItem[];
@@ -109,7 +110,7 @@ export default async function AdminOrdersPage({
   const { data: allOrders } = await supabase
     .from('orders')
     .select(
-      'id, status, payment_type, total_pen, subtotal_pen, discount_pen, deposit_pen, balance_pen, shipping_cost, estimated_arrival, payment_proof_url, payment_proof_confirmed_at, payment_method, customer_name, customer_phone, notes, created_at, order_items(id, title, quantity, unit_price, item_type, estimated_arrival, campaign_id)',
+      'id, status, payment_type, total_pen, subtotal_pen, discount_pen, deposit_pen, balance_pen, shipping_cost, estimated_arrival, payment_proof_url, payment_proof_confirmed_at, payment_method, customer_name, customer_phone, shipping_address, notes, created_at, order_items(id, title, quantity, unit_price, item_type, estimated_arrival, campaign_id)',
     )
     .order('created_at', { ascending: false })
     .limit(100)
@@ -200,10 +201,17 @@ export default async function AdminOrdersPage({
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(order.created_at).toLocaleString('es-PE')}
                     </p>
-                    {order.customer_name && (
+                    {(order.customer_name || order.customer_phone) && (
                       <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 break-words">
-                        {order.customer_name}
-                        {order.customer_phone && ` · ${order.customer_phone}`}
+                        {[order.customer_name, order.customer_phone].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
+                    {(order.shipping_address?.zoneLabel || order.shipping_address?.address) && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">
+                        Envío:{' '}
+                        {[order.shipping_address.zoneLabel, order.shipping_address.address]
+                          .filter(Boolean)
+                          .join(' — ')}
                       </p>
                     )}
                   </div>

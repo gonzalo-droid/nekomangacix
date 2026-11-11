@@ -55,10 +55,20 @@ function getTagAccent(tag: string, idx: number): string {
   return TAG_ACCENTS[idx % TAG_ACCENTS.length];
 }
 
+/*
+ * Controles que se revelan al pasar el ratón. En una pantalla táctil no hay
+ * hover: con solo `opacity-0 group-hover:opacity-100` el botón quedaba
+ * invisible pero tocable, y un toque sobre la portada agregaba el producto al
+ * carrito en vez de abrir la ficha. Fuera de `(hover: hover)` estos controles
+ * no se pintan, y la tarjeta muestra su botón normal bajo el precio.
+ */
+const HOVER_ONLY = 'hidden [@media(hover:hover)]:flex';
+const TOUCH_ONLY = '[@media(hover:hover)]:hidden';
+
 const STOCK_BADGE: Record<string, { label: string; cls: string }> = {
   preorder:     { label: 'Preventa',  cls: 'bg-blue-600 text-white' },
   out_of_stock: { label: 'Agotado',   cls: 'bg-red-600 text-white' },
-  in_stock:     { label: 'En stock',  cls: 'bg-emerald-500 text-white' },
+  in_stock:     { label: 'En stock',  cls: 'bg-emerald-700 text-white' },
 };
 
 function EditorialLine({ countryCode, editorial }: { countryCode?: CountryCode; editorial: string }) {
@@ -139,7 +149,7 @@ export default function ProductCard({
 
         </div>
         <div className="p-2.5 flex flex-col flex-grow">
-          <h3 className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white mb-0.5 line-clamp-2 group-hover:text-[#ec4899] transition-colors min-h-[2.25rem]">
+          <h3 className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white mb-0.5 line-clamp-2 group-hover:text-neko-magenta-ink transition-colors min-h-[2.25rem]">
             {title}
           </h3>
           <EditorialLine countryCode={countryCode} editorial={editorial} />
@@ -156,7 +166,7 @@ export default function ProductCard({
                 onClick={isPreorder ? handleReserve : handleAdd}
                 className={`flex-shrink-0 flex items-center justify-center gap-1 px-2.5 min-h-11 rounded-lg text-[11px] font-bold transition-all ${
                   added
-                    ? 'bg-emerald-500 text-white'
+                    ? 'bg-emerald-700 text-white'
                     : isPreorder
                     ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white'
                     : 'bg-[#ec4899]/10 text-neko-magenta-ink hover:bg-[#ec4899] hover:text-white'
@@ -179,7 +189,7 @@ export default function ProductCard({
       <div className="group card-manga relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/5 rounded-lg overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
         {onRemove && (
           <button type="button" onClick={handleRemove}
-            className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-md opacity-0 group-hover:opacity-100 hover:scale-110"
+            className="absolute top-2 right-2 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-md [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 hover:scale-110"
             aria-label={`Eliminar ${title}`}
           >
             <Trash2 size={14} />
@@ -241,12 +251,10 @@ export default function ProductCard({
         {/* Favorito — aparece en hover */}
         {showFavoriteToggle && (
           <button type="button" onClick={handleFavorite}
-            className={`absolute top-2 z-20 w-11 h-11 flex items-center justify-center rounded-full shadow-md transition-all duration-200 ${
-              stockBadge ? 'right-2' : 'right-2'
-            } ${
+            className={`absolute top-2 right-2 z-20 w-11 h-11 flex items-center justify-center rounded-full shadow-md transition-all duration-200 ${
               fav
                 ? 'bg-[#ec4899] text-white opacity-100'
-                : 'bg-white/90 dark:bg-gray-900/90 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-[#ec4899]'
+                : 'bg-white/90 dark:bg-gray-900/90 text-gray-500 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 hover:text-[#ec4899]'
             } backdrop-blur-sm hover:scale-110`}
             aria-label={fav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
           >
@@ -254,14 +262,15 @@ export default function ProductCard({
           </button>
         )}
 
-        {/* Botón carrito flotante sobre imagen — aparece en hover */}
-        <div className="absolute inset-x-0 bottom-0 p-3 flex justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200 z-10">
+        {/* Botón flotante sobre la portada: solo con ratón (al pasar) o al
+            llegar con el teclado. En táctil se usa el botón bajo el precio. */}
+        <div className={`absolute inset-x-0 bottom-0 p-3 ${HOVER_ONLY} justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 translate-y-2 group-hover:translate-y-0 group-focus-within:translate-y-0 transition-all duration-200 z-10`}>
           <button
             type="button"
             onClick={isOutOfStock ? handleReserve : handleAdd}
             className={`inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold shadow-xl transition-all active:scale-95 ${
               added
-                ? 'bg-emerald-500 text-white shadow-emerald-500/40'
+                ? 'bg-emerald-700 text-white shadow-emerald-700/40'
                 : isOutOfStock || isPreorder
                   ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white shadow-[#ec4899]/40'
                   : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white shadow-[#ec4899]/40'
@@ -276,7 +285,7 @@ export default function ProductCard({
 
       {/* Info */}
       <div className="p-3.5 flex flex-col flex-grow">
-        <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-0.5 line-clamp-2 min-h-[2.5rem] group-hover:text-[#ec4899] dark:group-hover:text-[#ec4899] transition-colors leading-snug">
+        <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-0.5 line-clamp-2 min-h-[2.5rem] group-hover:text-neko-magenta-ink transition-colors leading-snug">
           {title}
         </h3>
         <EditorialLine countryCode={countryCode} editorial={editorial} />
@@ -285,7 +294,7 @@ export default function ProductCard({
           {seriesStatus && (
             <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-2 ${
               seriesStatus === 'single' ? 'bg-[#eab308]/15 text-neko-gold-ink'
-              : seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+              : seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400'
               : 'bg-[#ec4899]/15 text-neko-magenta-ink'
             }`}>
               {seriesStatus === 'single' ? 'Tomo único' : seriesStatus === 'completed' ? 'Completado' : 'En curso'}
@@ -294,13 +303,15 @@ export default function ProductCard({
 
           <div className="flex items-baseline justify-between gap-2">
             <div>
-              <p className="text-xl font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
+              <p className="text-xl font-extrabold whitespace-nowrap text-[#2b496d] dark:text-neko-navy-ink">
                 S/ {finalPrice.toFixed(2)}
               </p>
               {hasDiscount && <p className="text-xs line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
             </div>
             {!isOutOfStock && !isPreorder && stock > 0 && stock < 5 && (
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#eab308]">¡últimas {stock}!</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-right text-neko-gold-ink">
+                {stock === 1 ? '¡Última unidad!' : `¡Últimas ${stock}!`}
+              </span>
             )}
             {hasDiscount && promotionName && (
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#ec4899]">{promotionName}</span>
@@ -312,6 +323,22 @@ export default function ProductCard({
               Reserva con S/ {(finalPrice * PREORDER_DEPOSIT_RATE).toFixed(2)} — paga el resto al llegar.
             </p>
           )}
+
+          <button
+            type="button"
+            onClick={isOutOfStock ? handleReserve : handleAdd}
+            className={`${TOUCH_ONLY} mt-3 w-full min-h-11 inline-flex items-center justify-center gap-1.5 rounded-lg text-sm font-bold transition-colors active:scale-[0.98] ${
+              added
+                ? 'bg-emerald-700 text-white'
+                : isOutOfStock || isPreorder
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-[#be185d] text-white'
+            }`}
+            aria-label={isOutOfStock || isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
+          >
+            <ShoppingCart size={15} aria-hidden="true" />
+            {added ? '¡Agregado!' : isOutOfStock || isPreorder ? 'Reservar' : 'Agregar'}
+          </button>
         </div>
       </div>
     </Link>

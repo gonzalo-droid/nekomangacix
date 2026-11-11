@@ -3,7 +3,7 @@
     "title": "Preventa de mangas: asegura tus títulos favoritos",
     "subtitle": "Resérvalos ahora y recíbelos antes que nadie. Cantidades limitadas.",
     "type": "preventa",
-    "link": "/products?stockStatus=preorder"
+    "link": "/products?stock=preorder"
   },
   "banner-02.png": {
     "title": "Feria de mangas: tres días de mangas, anime, figuras y cosplay",

@@ -7,6 +7,8 @@ import { PromotionsProvider } from "@/context/PromotionsContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ChromeLayout from "@/components/ChromeLayout";
+import SiteAnalytics from "@/components/SiteAnalytics";
+import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 // El sistema de diseño declara `--font-geist-sans` / `--font-geist-mono` en
@@ -24,44 +26,50 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nekomangacix.com';
+const HOME_TITLE = `${SITE_NAME} — ${SITE_TAGLINE}`;
+const SOCIAL_DESCRIPTION = "Manga en español y coleccionables originales. Envíos a todo el Perú.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "NEKO MANGA CIX — Tu tienda de manga y coleccionables en Perú",
-    template: "%s · NEKO MANGA CIX",
+    default: HOME_TITLE,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "NEKO MANGA CIX — la tienda online peruana de manga y coleccionables. Editoriales Argentina, México y España. Envíos a todo el país desde Chiclayo.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "neko manga cix", "nekomangacix", "manga", "tienda manga", "manga perú",
     "manga chiclayo", "comprar manga", "coleccionables anime", "anime perú",
   ],
-  authors: [{ name: "NEKO MANGA CIX" }],
-  creator: "NEKO MANGA CIX",
-  applicationName: "NEKO MANGA CIX",
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  applicationName: SITE_NAME,
+  // `./` se resuelve contra la ruta de cada página: una página que no declara
+  // su propia canónica recibe la suya, no la del home.
+  alternates: { canonical: "./" },
   openGraph: {
     type: "website",
     locale: "es_PE",
-    url: SITE_URL,
-    siteName: "NEKO MANGA CIX",
-    title: "NEKO MANGA CIX — Tu tienda de manga y coleccionables en Perú",
-    description:
-      "Editoriales Argentina, México y España + coleccionables originales. Envíos a todo el Perú.",
-    images: [{ url: "/og-default.jpg", width: 1200, height: 630, alt: "NEKO MANGA CIX" }],
+    url: "./",
+    siteName: SITE_NAME,
+    title: HOME_TITLE,
+    description: SOCIAL_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NEKO MANGA CIX — Tu tienda de manga y coleccionables en Perú",
-    description: "Manga de Argentina, México y España + coleccionables originales. Envíos a todo el Perú.",
-    images: ["/og-default.jpg"],
+    title: HOME_TITLE,
+    description: SOCIAL_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
   robots: {
     index: true,
     follow: true,
     googleBot: { index: true, follow: true },
   },
+  // Verificación de Search Console por etiqueta. Sin la variable no se emite.
+  verification: process.env.NEXT_PUBLIC_GSC_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({
@@ -85,6 +93,7 @@ export default function RootLayout({
             </PromotionsProvider>
           </AuthProvider>
         </ThemeProvider>
+        <SiteAnalytics />
       </body>
     </html>
   );

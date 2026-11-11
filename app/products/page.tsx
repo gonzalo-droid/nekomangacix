@@ -10,14 +10,18 @@ import {
   queryCatalogPage,
   type CatalogQuery,
 } from '@/lib/domain/products/catalog';
-
-export const metadata: Metadata = {
-  title: 'Productos',
-  description: 'Explora nuestro catálogo de manga y coleccionables con filtros por editorial, género y precio.',
-};
+import { describeCatalogView } from '@/lib/domain/products/catalogSeo';
+import { getAvailableCountries } from '@/lib/domain/products/availability';
+import { pageMetadata } from '@/lib/seo';
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const query = parseCatalogQuery(await searchParams);
+  const view = describeCatalogView(query, await getAvailableCountries());
+  return pageMetadata(view);
 }
 
 async function loadCatalog(query: CatalogQuery) {
@@ -50,6 +54,7 @@ export default async function ProductsPage({ searchParams }: Props) {
     : await loadCatalog(query);
 
   const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const { heading } = describeCatalogView(query, await getAvailableCountries());
 
   return (
     <Suspense fallback={null}>
@@ -59,6 +64,7 @@ export default async function ProductsPage({ searchParams }: Props) {
         totalPages={totalPages}
         facets={facets}
         query={query}
+        heading={heading}
       />
     </Suspense>
   );

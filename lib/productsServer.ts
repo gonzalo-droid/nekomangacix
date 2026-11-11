@@ -178,30 +178,48 @@ export async function getRelatedProductsServer(slug: string, limit = 6): Promise
   return pickRelated(staticProducts, product, limit);
 }
 
-export async function getAllProductSlugs(): Promise<string[]> {
+export interface ProductSitemapEntry {
+  slug: string;
+  /** Fecha real de la última modificación del producto, si la base la da. */
+  updatedAt: string | null;
+}
+
+/**
+ * Slugs de todos los productos activos con su fecha de modificación.
+ *
+ * PostgREST devuelve como máximo 1.000 filas por consulta, así que hay que
+ * pedir el catálogo por tramos: sin esto solo se prerenderizaba la primera
+ * página de productos y el resto quedaba renderizándose a pedido.
+ */
+export async function getProductSitemapEntries(): Promise<ProductSitemapEntry[]> {
+  const fallback = () => staticProducts.map((p) => ({ slug: p.slug, updatedAt: null }));
   const supabase = getClient();
-  if (supabase) {
-    try {
-      // PostgREST devuelve como máximo 1.000 filas por consulta, así que hay
-      // que pedir el catálogo por tramos: sin esto solo se prerenderizaba la
-      // primera página de productos y el resto quedaba renderizándose a pedido.
-      const PAGE = 1000;
-      const slugs: string[] = [];
-      for (let from = 0; ; from += PAGE) {
-        const { data, error } = await supabase
-          .from('products')
-          .select('slug')
-          .eq('is_active', true)
-          .order('slug')
-          .range(from, from + PAGE - 1);
-        if (error || data === null) {
-          // Si falla un tramo, es mejor devolver lo que ya se juntó que nada.
-          return slugs.length > 0 ? slugs : staticProducts.map((p) => p.slug);
-        }
-        slugs.push(...(data as { slug: string }[]).map((r) => r.slug));
-        if (data.length < PAGE) return slugs;
+  if (!supabase) return fallback();
+
+  try {
+    const PAGE = 1000;
+    const entries: ProductSitemapEntry[] = [];
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await supabase
+        .from('products')
+        .select('slug, updated_at')
+        .eq('is_active', true)
+        .order('slug')
+        .range(from, from + PAGE - 1);
+      if (error || data === null) {
+        // Si falla un tramo, es mejor devolver lo que ya se juntó que nada.
+        return entries.length > 0 ? entries : fallback();
       }
-    } catch { /* fall through */ }
+      for (const row of data as { slug: string; updated_at: string | null }[]) {
+        entries.push({ slug: row.slug, updatedAt: row.updated_at });
+      }
+      if (data.length < PAGE) return entries;
+    }
+  } catch {
+    return fallback();
   }
-  return staticProducts.map((p) => p.slug);
+}
+
+export async function getAllProductSlugs(): Promise<string[]> {
+  return (await getProductSitemapEntries()).map((entry) => entry.slug);
 }

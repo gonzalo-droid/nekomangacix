@@ -5,8 +5,8 @@ import ProfileTabs from './ProfileTabs';
 import type { UserRole } from '@/types/database.types';
 
 export const metadata: Metadata = {
-  title: 'Mi Perfil',
-  robots: { index: false },
+  title: 'Mi perfil',
+  robots: { index: false, follow: false },
 };
 
 import type { OrderItemType, PaymentType } from '@/types/database.types';

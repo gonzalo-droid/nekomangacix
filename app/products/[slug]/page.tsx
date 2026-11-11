@@ -1,6 +1,16 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getSocialImageUrl } from '@/lib/cloudinary';
+import { SOCIAL_IMAGE_SIZE, getSocialImageUrl } from '@/lib/cloudinary';
+import {
+  productBreadcrumbJsonLd,
+  productJsonLd,
+  productPath,
+  productSeoDescription,
+  productSeoTitle,
+} from '@/lib/domain/products/seo';
+import { pageMetadata } from '@/lib/seo';
+import { DEFAULT_OG_IMAGE } from '@/lib/site';
+import JsonLd from '@/components/JsonLd';
 import {
   getAllProductSlugs,
   getProductBySlugServer,
@@ -9,8 +19,6 @@ import {
 import ProductDetailClient from './ProductDetailClient';
 
 type Props = { params: Promise<{ slug: string }> };
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nekomangacix.com';
 
 // ISR: revalida cada 60 segundos para reflejar cambios del admin sin rebuild.
 // Esto sigue valiendo para los productos ya publicados: precio, stock, imágenes
@@ -44,36 +52,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${product.title} — NekoMangaCix`;
-  const description = `${product.description} | ${product.editorial} | S/ ${product.pricePEN.toFixed(2)} | Envíos a todo Perú.`;
-
   const firstImage = product.images[0];
-  const ogImageRaw = firstImage ? getSocialImageUrl(firstImage) : null;
-  const ogImage =
-    ogImageRaw && ogImageRaw.startsWith('http')
-      ? ogImageRaw
-      : `${SITE_URL}/og-default.jpg`;
+  const socialImage = firstImage ? getSocialImageUrl(firstImage) : null;
 
-  return {
-    title,
-    description,
-    alternates: { canonical: `${SITE_URL}/products/${slug}` },
-    openGraph: {
-      title,
-      description,
-      url: `${SITE_URL}/products/${slug}`,
-      siteName: 'NekoMangaCix',
-      locale: 'es_PE',
-      type: 'website',
-      images: [{ url: ogImage, width: 1200, height: 630, alt: product.title }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage],
-    },
-  };
+  return pageMetadata({
+    title: productSeoTitle(product),
+    description: productSeoDescription(product),
+    path: productPath(slug),
+    // Solo las imágenes de Cloudinary se pueden llevar a 1200×630; cualquier
+    // otra referencia cae en la imagen de marca.
+    image:
+      socialImage && socialImage.startsWith('http')
+        ? { url: socialImage, ...SOCIAL_IMAGE_SIZE, alt: product.title }
+        : DEFAULT_OG_IMAGE,
+  });
 }
 
 export default async function ProductDetailPage({ params }: Props) {
@@ -83,36 +75,9 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const relatedProducts = await getRelatedProductsServer(slug, 6);
 
-  const availability =
-    product.stockStatus === 'in_stock'
-      ? 'https://schema.org/InStock'
-      : product.stockStatus === 'out_of_stock'
-        ? 'https://schema.org/OutOfStock'
-        : 'https://schema.org/PreOrder';
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.title,
-    description: product.description,
-    sku: product.sku,
-    brand: { '@type': 'Brand', name: product.editorial },
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'PEN',
-      price: product.pricePEN,
-      availability,
-      url: `${SITE_URL}/products/${slug}`,
-      seller: { '@type': 'Organization', name: 'NekoMangaCix' },
-    },
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={[productJsonLd(product), productBreadcrumbJsonLd(product)]} />
       <ProductDetailClient product={product} relatedProducts={relatedProducts} />
     </>
   );

@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import LegalShell, { LegalSection } from '@/components/LegalShell';
 
-export const metadata: Metadata = {
-  title: 'Términos y Condiciones',
-  description: 'Términos y condiciones de uso de NekoMangaCix, tu tienda de manga online en Perú.',
-};
+export const metadata: Metadata = pageMetadata({
+  title: 'Términos y condiciones',
+  description:
+    'Términos y condiciones de uso de Neko Manga Cix, tu tienda de manga online en Perú.',
+  path: '/terms',
+});
 
 const SECTIONS = [
   { id: 'aceptacion',     title: 'Aceptación de términos' },
@@ -42,7 +45,7 @@ export default function TermsPage() {
       <LegalSection id="servicio" number="02" title="Descripción del servicio">
         <p>
           NekoMangaCix es una tienda de manga online con sede en Chiclayo, Perú. Ofrecemos mangas de
-          editoriales de Argentina, México y España, con envíos a nivel nacional. Las ventas se coordinan
+          editoriales oficiales en español y coleccionables originales, con envíos a nivel nacional. Las ventas se coordinan
           por WhatsApp y el pago se realiza por transferencia bancaria, Yape o Plin.
         </p>
       </LegalSection>

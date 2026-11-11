@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { MessageCircle, Mail, HelpCircle } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import { FaqAccordion } from './FaqAccordion';
 
-export const metadata: Metadata = {
-  title: 'Preguntas Frecuentes',
+export const metadata: Metadata = pageMetadata({
+  title: 'Preguntas frecuentes',
   description:
-    'Resolvemos todas tus dudas sobre pedidos, pagos, envíos y productos de NekoMangaCix.',
-};
+    'Resolvemos tus dudas sobre pedidos, preventas, pagos y envíos de manga a todo el Perú.',
+  path: '/faq',
+});
 
 const faqs = [
   {
@@ -42,7 +44,7 @@ const faqs = [
     category: 'Productos',
     items: [
       { q: '¿Los mangas son originales?', a: 'Sí, trabajamos exclusivamente con editoriales oficiales como Ivrea, Ovni Press, Panini y Viz Media.' },
-      { q: '¿En qué idioma están los mangas?', a: 'Todos los mangas son en español latino, provenientes de editoriales de Argentina, México y España.' },
+      { q: '¿En qué idioma están los mangas?', a: 'Todos los mangas están en español y provienen de editoriales oficiales.' },
       { q: '¿Puedo solicitar un manga que no está en el catálogo?', a: 'Sí. Escríbenos por WhatsApp y buscamos conseguirlo para ti. Manejamos pedidos personalizados.' },
       { q: '¿Qué es una preventa?', a: 'Son productos que aún no han llegado. Puedes reservarlos pagando un adelanto y el resto cuando llegue.' },
     ],

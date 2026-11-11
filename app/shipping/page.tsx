@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+import { SHIPPING_ZONES } from '@/lib/domain/shipping/zones';
 import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import {
@@ -14,10 +16,12 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Políticas de Envío',
-  description: 'Información sobre envíos, tiempos de entrega y costos de NekoMangaCix.',
-};
+export const metadata: Metadata = pageMetadata({
+  title: 'Envíos a todo el Perú',
+  description:
+    'Costos y tiempos de envío de manga y coleccionables por destino: Chiclayo, Lima, norte, sur y selva.',
+  path: '/shipping',
+});
 
 const HIGHLIGHTS = [
   {
@@ -52,14 +56,6 @@ const HIGHLIGHTS = [
     bg: 'bg-[#5a7a9e]/10',
     ring: 'ring-[#5a7a9e]/20',
   },
-];
-
-const RATES = [
-  { dest: 'Chiclayo (local)',        cost: 'S/ 5.00',         time: '1–2 días hábiles' },
-  { dest: 'Lima y Callao',            cost: 'S/ 15.00',        time: '2–3 días hábiles' },
-  { dest: 'Norte del Perú',           cost: 'S/ 15.00',        time: '3–4 días hábiles' },
-  { dest: 'Sur del Perú',             cost: 'S/ 15.00',        time: '3–5 días hábiles' },
-  { dest: 'Selva / zonas alejadas',   cost: 'S/ 18.00 – 25.00', time: '5–7 días hábiles' },
 ];
 
 const STEPS = [
@@ -128,10 +124,10 @@ export default function ShippingPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                  {RATES.map((row) => (
-                    <tr key={row.dest} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-                      <td className="py-3.5 px-5 text-gray-900 dark:text-white font-medium">{row.dest}</td>
-                      <td className="py-3.5 px-5 font-bold text-neko-magenta-ink">{row.cost}</td>
+                  {SHIPPING_ZONES.map((row) => (
+                    <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3.5 px-5 text-gray-900 dark:text-white font-medium">{row.label}</td>
+                      <td className="py-3.5 px-5 font-bold text-neko-magenta-ink">{row.costLabel}</td>
                       <td className="py-3.5 px-5 text-gray-600 dark:text-gray-400">{row.time}</td>
                     </tr>
                   ))}

@@ -5,6 +5,8 @@ export const metadata = {
   title: 'Página no encontrada',
   description: 'La página que buscas no existe o cambió de dirección.',
   robots: { index: false, follow: true },
+  // Una URL que no existe no tiene canónica que declarar.
+  alternates: {},
 };
 
 const SALIDAS = [
@@ -12,7 +14,7 @@ const SALIDAS = [
     href: '/products',
     icon: BookOpenText,
     title: 'Ver el catálogo',
-    desc: 'Más de 6.000 títulos de Argentina, México, España y Japón.',
+    desc: 'Más de 6.000 títulos de manga y coleccionables originales.',
     accent: 'text-neko-magenta-ink',
     bg: 'bg-[#ec4899]/10',
   },
