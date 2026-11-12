@@ -155,18 +155,20 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile menu — incluye búsqueda */}
+        {/* Buscador siempre visible en el celular. Antes estaba dentro del menú
+            hamburguesa: con 6.000 títulos, buscar es la forma principal de
+            llegar a un tomo y no puede estar a dos toques. */}
+        <div className="md:hidden pb-3">
+          <SearchDropdown />
+        </div>
+
+        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div
             id="menu-movil"
             ref={mobileMenuRef}
             className="md:hidden mt-3 pb-3 border-t border-gray-100 dark:border-white/5 pt-3 space-y-1"
           >
-            {/* Búsqueda dentro del menú */}
-            <div className="mb-3">
-              <SearchDropdown autoFocus onClose={() => setMobileMenuOpen(false)} />
-            </div>
-
             {NAV.map((item) => {
               const active = isActive(item.href, item.exact);
               return (

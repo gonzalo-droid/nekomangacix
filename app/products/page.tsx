@@ -8,6 +8,7 @@ import {
   parseCatalogQuery,
   queryCatalogFacets,
   queryCatalogPage,
+  querySimilarProducts,
   type CatalogQuery,
 } from '@/lib/domain/products/catalog';
 import { describeCatalogView } from '@/lib/domain/products/catalogSeo';
@@ -54,6 +55,9 @@ export default async function ProductsPage({ searchParams }: Props) {
     : await loadCatalog(query);
 
   const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  // Búsqueda sin coincidencias exactas: se ofrecen los más parecidos en vez
+  // de una página vacía (errores de tipeo, nombres alternativos).
+  const similar = query.search && total === 0 ? await querySimilarProducts(query.search) : [];
   const { heading } = describeCatalogView(query, await getAvailableCountries());
 
   return (
@@ -65,6 +69,7 @@ export default async function ProductsPage({ searchParams }: Props) {
         facets={facets}
         query={query}
         heading={heading}
+        similar={similar}
       />
     </Suspense>
   );

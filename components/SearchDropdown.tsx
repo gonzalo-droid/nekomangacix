@@ -21,9 +21,9 @@ interface SearchResult {
 }
 
 const STOCK_LABEL: Record<string, { label: string; cls: string }> = {
-  in_stock:     { label: 'En stock',  cls: 'text-emerald-500' },
-  preorder:     { label: 'Preventa',  cls: 'text-blue-500' },
-  out_of_stock: { label: 'Agotado',   cls: 'text-red-500' },
+  in_stock:     { label: 'En stock',  cls: 'text-emerald-700' },
+  preorder:     { label: 'Preventa',  cls: 'text-blue-700' },
+  out_of_stock: { label: 'Agotado',   cls: 'text-red-700' },
 };
 
 interface Props {
@@ -107,7 +107,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
           placeholder="Buscar manga, autor..."
           autoFocus={autoFocus}
           autoComplete="off"
-          className="w-full pl-8 pr-8 py-2 bg-gray-100/80 dark:bg-white/5 border border-transparent rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-white/10 focus:border-[#06b6d4] focus:ring-2 focus:ring-[#06b6d4]/20 transition-all"
+          className="w-full pl-8 pr-8 py-2 min-h-11 md:min-h-0 bg-gray-100/80 dark:bg-white/5 border border-transparent rounded-full text-base md:text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-white/10 focus:border-[#06b6d4] focus:ring-2 focus:ring-[#06b6d4]/20 transition-all"
           aria-label="Buscar manga"
           role="combobox"
           aria-expanded={open}
@@ -129,7 +129,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
       {open && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 border border-gray-100 dark:border-white/10 overflow-hidden z-50">
           {loading && results.length === 0 && (
-            <div className="px-4 py-3 text-sm text-gray-400 text-center">Buscando...</div>
+            <div className="px-4 py-3 text-sm text-gray-600 text-center">Buscando…</div>
           )}
 
           {!loading && results.length === 0 && debouncedQuery.length >= 3 && (
@@ -164,7 +164,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{item.title}</p>
-                        <p className="text-xs text-gray-400 truncate">{item.editorial}</p>
+                        <p className="text-xs text-gray-600 truncate">{item.editorial}</p>
                       </div>
                       <div className="flex-shrink-0 text-right">
                         <p className="text-sm font-bold text-[#2b496d] dark:text-neko-navy-ink">S/ {item.price_pen.toFixed(2)}</p>
@@ -180,7 +180,7 @@ export default function SearchDropdown({ onClose, autoFocus, className = '' }: P
                 <button
                   type="button"
                   onClick={goToSearch}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-[#ec4899] hover:bg-[#ec4899]/5 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-neko-magenta-ink hover:bg-[#ec4899]/5 transition-colors"
                 >
                   Ver todos los resultados de &ldquo;{query}&rdquo;
                   <ArrowRight size={14} />

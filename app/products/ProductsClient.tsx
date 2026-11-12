@@ -27,11 +27,13 @@ interface Props {
   query: CatalogQuery;
   /** Encabezado de una vista con página propia ("Preventas de manga"). */
   heading?: string | null;
+  /** Productos parecidos cuando la búsqueda no tuvo coincidencias exactas. */
+  similar?: Product[];
 }
 
 const SORT_LABELS: Record<SortOption, string> = {
+  recommended: 'Recomendados',
   name_asc: 'Nombre A–Z',
-  newest: 'Más recientes',
   price_asc: 'Precio: menor a mayor',
   price_desc: 'Precio: mayor a menor',
 };
@@ -40,7 +42,7 @@ const SORT_LABELS: Record<SortOption, string> = {
 const TEXT_DEBOUNCE_MS = 350;
 const PRICE_DEBOUNCE_MS = 400;
 
-export default function ProductsClient({ products, total, totalPages, facets, query, heading }: Props) {
+export default function ProductsClient({ products, total, totalPages, facets, query, heading, similar = [] }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -187,7 +189,9 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
           )}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3">
-          {total} título{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''} · filtra por editorial, género o precio.
+          {total === 0 && similar.length > 0
+            ? `Sin coincidencias exactas para “${query.search}”`
+            : `${total} título${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''} · filtra por editorial, género o precio.`}
         </p>
         <span className="absolute -bottom-3 left-0 w-20 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" aria-hidden="true" />
       </div>
@@ -264,9 +268,15 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
           <div className="mb-6 flex flex-wrap justify-between items-center gap-3">
             <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
               {isPending && <Loader2 size={14} className="animate-spin text-[#ec4899]" />}
-              Mostrando <span className="font-semibold">{firstShown}</span> a{' '}
-              <span className="font-semibold">{lastShown}</span> de{' '}
-              <span className="font-semibold">{total}</span> productos
+              {total === 0 && similar.length > 0 ? (
+                <>{similar.length} resultado{similar.length !== 1 ? 's' : ''} parecido{similar.length !== 1 ? 's' : ''}</>
+              ) : (
+                <>
+                  Mostrando <span className="font-semibold">{firstShown}</span> a{' '}
+                  <span className="font-semibold">{lastShown}</span> de{' '}
+                  <span className="font-semibold">{total}</span> productos
+                </>
+              )}
             </p>
             <div className="flex items-center gap-2">
               {query.series && (
@@ -316,6 +326,20 @@ export default function ProductsClient({ products, total, totalPages, facets, qu
                 />
               )}
             </>
+          ) : similar.length > 0 ? (
+            <section aria-labelledby="busqueda-parecidos">
+              <div role="status" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <h2 id="busqueda-parecidos" className="text-sm font-bold text-amber-900">
+                  No encontramos “{query.search}” tal cual
+                </h2>
+                <p className="text-sm text-amber-900/90 mt-0.5">Te mostramos lo más parecido:</p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-5 mb-8">
+                {similar.map((product, idx) => (
+                  <ProductCard key={product.id} {...product} priority={idx < 4} showFavoriteToggle />
+                ))}
+              </div>
+            </section>
           ) : (
             <EmptyState />
           )}

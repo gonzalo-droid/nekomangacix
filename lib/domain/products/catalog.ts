@@ -11,11 +11,75 @@ export const ITEMS_PER_PAGE = 18;
 /** Mínimo de caracteres para que una búsqueda llegue a la base. */
 export const MIN_SEARCH_LENGTH = 3;
 
-export const SORT_OPTIONS = ['name_asc', 'newest', 'price_asc', 'price_desc'] as const;
+/**
+ * `recommended`: primero lo que está en stock (se entrega ya), después las
+ * preventas y al final los agotados; dentro de cada grupo, por título.
+ * Antes el orden por defecto era alfabético y el catálogo abría con 18
+ * preventas y una imagen rota, mientras los 155 productos en stock solo
+ * aparecían si alguien filtraba. "Más recientes" se quitó: el catálogo se
+ * importó en bloque y la fecha de alta no dice nada.
+ */
+export const SORT_OPTIONS = ['recommended', 'name_asc', 'price_asc', 'price_desc'] as const;
 export type SortOption = (typeof SORT_OPTIONS)[number];
-export const DEFAULT_SORT: SortOption = 'name_asc';
+export const DEFAULT_SORT: SortOption = 'recommended';
 
+/** Orden de los grupos en `recommended`. */
 const STOCK_STATUSES = ['in_stock', 'preorder', 'out_of_stock'];
+
+/** Palabras que no ayudan a buscar y, solas, coinciden con casi todo. */
+const STOPWORDS = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'the', 'of', 'vol', 'tomo']);
+
+/**
+ * Parte la búsqueda en palabras. Cada palabra se busca por separado (en
+ * título, editorial, autor o serie) y todas tienen que aparecer, en cualquier
+ * orden. Así "one piece 16" encuentra "ONE PIECE 016" y "spy x family"
+ * encuentra "SPY×FAMILY 01": antes se buscaba la frase exacta y ambas daban 0.
+ *
+ * Los números se aceptan aunque tengan un dígito; las letras sueltas y las
+ * palabras vacías se descartan. Se quitan las tildes, igual que en la columna
+ * `search_text` de la base (migración 014), así "pokemon" encuentra
+ * "POKÉMON". Solo quedan letras y números, así que nada de lo que llega rompe
+ * la sintaxis de los filtros de PostgREST.
+ */
+export function searchTokens(text: string): string[] {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .split(' ')
+    .filter((t) => t && !STOPWORDS.has(t) && (t.length >= 2 || /^\d+$/.test(t)))
+    .slice(0, 6);
+}
+
+/**
+ * Cada palabra tiene que aparecer en `search_text` (título, serie, autor y
+ * editorial en minúsculas y sin tildes; migración 014, con índice trigram).
+ */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export function applySearch(query: any, text: string) {
+  for (const token of searchTokens(text)) {
+    query = query.ilike('search_text', `%${token}%`);
+  }
+  return query;
+}
+
+/**
+ * Productos parecidos a lo buscado, para cuando la búsqueda exacta da 0:
+ * tolera errores de tipeo ("atack on titan") y usa la tabla de sinónimos
+ * ("shingeki" → Attack on Titan). Función `search_products_fuzzy` (migración
+ * 014); en stock primero.
+ */
+export async function querySimilarProducts(text: string, limit = 18): Promise<Product[]> {
+  const supabase = getClient();
+  if (!supabase || searchTokens(text).length === 0) return [];
+  const { data, error } = await supabase.rpc('search_products_fuzzy', {
+    p_query: text,
+    p_limit: limit,
+  });
+  if (error || !data) return [];
+  return (data as Record<string, unknown>[]).map(dbRowToProduct);
+}
 
 export interface CatalogQuery {
   search: string;
@@ -113,19 +177,15 @@ function getClient(): SupabaseClient | null {
 }
 
 const SORT_COLUMNS: Record<SortOption, { column: string; ascending: boolean }> = {
+  recommended: { column: 'title', ascending: true },
   name_asc: { column: 'title', ascending: true },
-  newest: { column: 'created_at', ascending: false },
   price_asc: { column: 'price_pen', ascending: true },
   price_desc: { column: 'price_pen', ascending: false },
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function applyFilters(query: any, q: CatalogQuery) {
-  if (q.search) {
-    query = query.or(
-      `title.ilike.%${q.search}%,editorial.ilike.%${q.search}%,author.ilike.%${q.search}%`,
-    );
-  }
+  if (q.search) query = applySearch(query, q.search);
   if (q.author) query = query.ilike('author', `%${q.author}%`);
   if (q.minPrice !== null) query = query.gte('price_pen', q.minPrice);
   if (q.maxPrice !== null) query = query.lte('price_pen', q.maxPrice);
@@ -146,6 +206,7 @@ export async function queryCatalogPage(
 ): Promise<{ products: Product[]; total: number | null }> {
   const supabase = getClient();
   if (!supabase) return { products: [], total: 0 };
+  if (q.sort === 'recommended') return queryRecommendedPage(supabase, q);
 
   const sort = SORT_COLUMNS[q.sort];
   const from = (q.page - 1) * ITEMS_PER_PAGE;
@@ -171,6 +232,57 @@ export async function queryCatalogPage(
 }
 
 /**
+ * Orden recomendado sin tocar la base: PostgREST no ordena por una expresión,
+ * así que el catálogo se trata como grupos consecutivos (en stock, preventa,
+ * agotado), cada uno por título. Se cuenta cada grupo y se pide solo el tramo
+ * que cae en la página; una página puede juntar el final de un grupo con el
+ * principio del siguiente.
+ */
+async function queryRecommendedPage(
+  supabase: SupabaseClient,
+  q: CatalogQuery,
+): Promise<{ products: Product[]; total: number | null }> {
+  const groups = q.stock.length ? STOCK_STATUSES.filter((st) => q.stock.includes(st)) : STOCK_STATUSES;
+  // Los filtros se aplican después de `select`: es el constructor que los tiene.
+  const base = (columns: string, options?: { count: 'exact'; head: true }) =>
+    applyFilters((supabase as any).from('products').select(columns, options), { ...q, stock: [] });
+
+  const counts = await Promise.all(
+    groups.map(async (status) => {
+      const { count, error } = await base('id', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .eq('stock_status', status);
+      return error ? 0 : (count ?? 0);
+    }),
+  );
+  const total = counts.reduce((sum, c) => sum + c, 0);
+
+  let from = (q.page - 1) * ITEMS_PER_PAGE;
+  let remaining = ITEMS_PER_PAGE;
+  const products: Product[] = [];
+
+  for (let i = 0; i < groups.length && remaining > 0; i++) {
+    if (from >= counts[i]) {
+      from -= counts[i];
+      continue;
+    }
+    const to = Math.min(counts[i], from + remaining) - 1;
+    const { data, error } = await base(CARD_COLUMNS)
+      .eq('is_active', true)
+      .eq('stock_status', groups[i])
+      .order('title', { ascending: true })
+      .order('id', { ascending: true })
+      .range(from, to);
+    if (error || !data) break;
+    products.push(...(data as Record<string, unknown>[]).map(dbRowToProduct));
+    remaining -= data.length;
+    from = 0;
+  }
+
+  return { products, total };
+}
+
+/**
  * Contadores de cada filtro. Usa la función `catalog_facets` (migración 013).
  *
  * Si la función todavía no está aplicada en la base, cae a un conteo en el
@@ -180,6 +292,11 @@ export async function queryCatalogPage(
 export async function queryCatalogFacets(q: CatalogQuery): Promise<FacetCounts> {
   const supabase = getClient();
   if (!supabase) return EMPTY_FACETS;
+
+  // La RPC `catalog_facets` busca la frase completa y la página busca palabra
+  // por palabra: con búsqueda, los contadores se calculan con los mismos
+  // filtros que la página para que no digan 0 donde hay resultados.
+  if (q.search) return facetsFallback(supabase, q);
 
   const { data, error } = await (supabase as any).rpc('catalog_facets', {
     p_search: q.search || null,
