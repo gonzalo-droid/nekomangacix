@@ -1,83 +1,104 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Sparkles } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
 import type { CartItem } from '@/context/CartContext';
-import ProductCard from '@/components/ProductCard';
+import type { Product } from '@/lib/products';
+import ProductCarousel from '@/components/ProductCarousel';
+import { createSupabaseClient } from '@/core/supabase/client';
+import { dbRowToProduct } from '@/lib/productMappers';
+import { CARD_COLUMNS } from '@/lib/domain/products/featured';
 
 interface Props {
   items: CartItem[];
 }
 
+const MAX_SUGGESTIONS = 12;
+
 /**
- * Sugerencias basadas en los items del carrito:
- *   1. Prioriza otras unidades de la misma serie
- *   2. Luego misma demografía/categoría
- *   3. Luego misma editorial
- * Excluye los productos que ya están en el carrito. Máx. 6.
+ * "Completa tu pedido": primero otros tomos de las series que ya están en el
+ * carrito, después de las mismas editoriales. Sin agotados ni lo que ya está
+ * en el carrito.
+ *
+ * Antes descargaba los 1.000 productos más recientes con todas sus columnas y
+ * buscaba ahí los del carrito: con 6.000 en el catálogo, la mayoría de las
+ * veces no los encontraba y no sugería nada. Ahora son dos consultas chicas.
  */
 export default function CartSuggestions({ items }: Props) {
-  const { products, isLoading } = useProducts();
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
 
-  const suggestions = useMemo(() => {
-    if (items.length === 0 || products.length === 0) return [];
+  // Clave estable: solo se vuelve a consultar si cambia qué hay en el carrito,
+  // no la cantidad de cada producto.
+  const key = useMemo(
+    () => items.map((i) => i.productId).sort().join(',') + '|' + [...new Set(items.map((i) => i.editorial))].sort().join(','),
+    [items],
+  );
 
-    const inCartIds = new Set(items.map((i) => i.productId));
-    const cartProducts = products.filter((p) => inCartIds.has(p.id));
+  useEffect(() => {
+    const [idList, editorialList] = key.split('|');
+    const ids = idList ? idList.split(',') : [];
+    const editorials = editorialList ? editorialList.split(',') : [];
+    if (ids.length === 0) return;
 
-    const seriesSet = new Set(
-      cartProducts.map((p) => p.series).filter((s): s is string => Boolean(s))
-    );
-    const categorySet = new Set(cartProducts.map((p) => String(p.attributes?.category ?? '')));
-    const editorialSet = new Set(cartProducts.map((p) => p.editorial));
+    let cancelled = false;
+    const supabase = createSupabaseClient();
+    const exclude = `(${ids.join(',')})`;
 
-    const candidates = products.filter(
-      (p) => !inCartIds.has(p.id) && p.stockStatus !== 'out_of_stock'
-    );
+    (async () => {
+      const { data: inCart } = await supabase.from('products').select('series').in('id', ids);
+      // Los tipos generados de la base no incluyen `series`: se lee como fila genérica.
+      const inCartRows = (inCart ?? []) as unknown as { series: string | null }[];
+      const series = [...new Set(inCartRows.map((r) => r.series).filter((s): s is string => Boolean(s)))];
 
-    const sameSeries = candidates.filter((p) => p.series && seriesSet.has(p.series));
-    const sameCategory = candidates.filter(
-      (p) => categorySet.has(String(p.attributes?.category ?? '')) && !sameSeries.some((s) => s.id === p.id)
-    );
-    const sameEditorial = candidates.filter(
-      (p) =>
-        editorialSet.has(p.editorial) &&
-        !sameSeries.some((s) => s.id === p.id) &&
-        !sameCategory.some((c) => c.id === p.id)
-    );
+      const query = (column: 'series' | 'editorial', values: string[]) =>
+        values.length === 0
+          ? Promise.resolve({ data: [] as Record<string, unknown>[] })
+          : supabase
+              .from('products')
+              .select(CARD_COLUMNS)
+              .eq('is_active', true)
+              .neq('stock_status', 'out_of_stock')
+              .in(column, values)
+              .not('id', 'in', exclude)
+              .order('title')
+              .limit(MAX_SUGGESTIONS);
 
-    return [...sameSeries, ...sameCategory, ...sameEditorial].slice(0, 6);
-  }, [items, products]);
+      const [bySeries, byEditorial] = await Promise.all([query('series', series), query('editorial', editorials)]);
+      if (cancelled) return;
 
-  if (isLoading || suggestions.length === 0) return null;
+      const seen = new Set<string>();
+      const rows = [...(bySeries.data ?? []), ...(byEditorial.data ?? [])] as unknown as Record<string, unknown>[];
+      const products = rows
+        .filter((r) => {
+          const id = r.id as string;
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        })
+        .slice(0, MAX_SUGGESTIONS)
+        .map(dbRowToProduct);
+      setSuggestions(products);
+    })().catch(() => {
+      if (!cancelled) setSuggestions([]);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [key]);
+
+  if (suggestions.length === 0) return null;
 
   return (
-    <section className="mt-12">
-      <div className="mb-6 relative">
-        <div className="inline-flex items-center gap-2 mb-1.5">
-          <Sparkles size={14} className="text-[#eab308]" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink">
-            {'// Tal vez te interese'}
-          </span>
-        </div>
-        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">
-          Suma más a tu pedido
+    <section aria-labelledby="carrito-sugerencias" className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Sparkles size={16} className="text-[#a16207]" aria-hidden="true" />
+        <h2 id="carrito-sugerencias" className="text-base font-bold text-gray-900 dark:text-white">
+          Completa tu pedido
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          De la misma serie o categoría que ya elegiste.
-        </p>
-        <span
-          className="absolute -bottom-3 left-0 w-14 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
-          aria-hidden="true"
-        />
+        <span className="text-xs text-gray-600 dark:text-gray-400">· de la misma serie o editorial</span>
       </div>
-
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-        {suggestions.map((p) => (
-          <ProductCard key={p.id} {...p} variant="compact" showQuickAdd />
-        ))}
-      </div>
+      <ProductCarousel products={suggestions} label="Productos sugeridos" />
     </section>
   );
 }

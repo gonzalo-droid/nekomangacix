@@ -28,7 +28,6 @@ import {
   CheckCircle2,
   ChevronRight,
   ShoppingBag,
-  ShieldCheck,
   Truck,
   MessageCircle,
   ArrowLeft,
@@ -172,10 +171,6 @@ export default function CartPage() {
   // subtotal menos el descuento de bienvenida, sin contar el cupón.
   const freeShipping =
     preliminaryTotals.subtotal - preliminaryTotals.welcomeDiscount >= FREE_SHIPPING_THRESHOLD_PEN;
-  const missingForFreeShipping = Math.max(
-    0,
-    FREE_SHIPPING_THRESHOLD_PEN - (preliminaryTotals.subtotal - preliminaryTotals.welcomeDiscount)
-  );
 
   const hasPreorder = lines.some((l) => l.split.isPreorder);
   const hasInStock = lines.some((l) => !l.split.isPreorder);
@@ -488,270 +483,129 @@ export default function CartPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Items */}
-        <div className="lg:col-span-2 space-y-4">
+      {/* Checkout por pasos: los pasos a la izquierda y el resumen fijo a la
+          derecha. Antes los datos y el pago iban en la columna derecha y, con
+          un solo producto, la izquierda quedaba casi vacía. */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Paso 1: productos */}
+          <section aria-labelledby="paso-productos" className="space-y-3">
+            <h2 id="paso-productos" className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <StepNumber n={1} />Tus productos
+            </h2>
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm divide-y divide-gray-100 dark:divide-white/5 overflow-hidden">
-            {lines.map(({ item, split }) => (
-              <div key={item.productId} className="p-5 flex gap-4 items-start group">
-                <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-lg flex-shrink-0 overflow-hidden border border-gray-100 dark:border-white/5 bg-gray-100 dark:bg-gray-800 relative">
-                  {item.imageUrl ? (
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      fill
-                      loader={cloudinaryLoader}
-                      className="object-contain p-1"
-                      sizes="80px"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#ec4899]/10 via-[#06b6d4]/5 to-[#eab308]/10 flex items-center justify-center text-2xl">📚</div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 flex-wrap">
-                    {item.slug ? (
-                      <Link
-                        href={`/products/${item.slug}`}
-                        className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ec4899] transition-colors"
-                      >
-                        {item.title}
-                      </Link>
+              {lines.map(({ item, split }) => (
+                <div key={item.productId} className="p-5 flex gap-4 items-start group">
+                  <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-lg flex-shrink-0 overflow-hidden border border-gray-100 dark:border-white/5 bg-gray-100 dark:bg-gray-800 relative">
+                    {item.imageUrl ? (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title}
+                        fill
+                        loader={cloudinaryLoader}
+                        className="object-contain p-1"
+                        sizes="80px"
+                      />
                     ) : (
-                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">{item.title}</h3>
-                    )}
-                    {split.isPreorder && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-neko-cyan-ink bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
-                        <Clock size={10} /> Preventa
-                      </span>
+                      <div className="w-full h-full bg-gradient-to-br from-[#ec4899]/10 via-[#06b6d4]/5 to-[#eab308]/10 flex items-center justify-center text-2xl">📚</div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.editorial}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    S/ {item.price.toFixed(2)} c/u
-                  </p>
-
-                  {split.isPreorder && (
-                    <p className="text-[11px] text-neko-cyan-ink mt-1 font-medium">
-                      Adelanto S/ {split.unitDeposit.toFixed(2)} (50%) · Saldo S/ {(item.price - split.unitDeposit).toFixed(2)} al llegar
-                    </p>
-                  )}
-
-                  <div className="inline-flex items-center border border-gray-200 dark:border-white/10 rounded-lg mt-3 overflow-hidden">
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      className="w-11 h-11 flex items-center justify-center hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors disabled:opacity-40"
-                      disabled={item.quantity <= 1}
-                      aria-label="Menos"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="w-9 text-center font-bold text-gray-900 dark:text-white text-sm border-x border-gray-200 dark:border-white/10 py-1.5">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="w-11 h-11 flex items-center justify-center hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors"
-                      aria-label="Más"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
-                </div>
-                <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
-                  {split.isPreorder ? (
-                    <div className="text-right">
-                      <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-400">Hoy</p>
-                      <p className="font-extrabold text-neko-cyan-ink">
-                        S/ {split.now.toFixed(2)}
-                      </p>
-                      <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2 flex-wrap">
+                      {item.slug ? (
+                        <Link
+                          href={`/products/${item.slug}`}
+                          className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ec4899] transition-colors"
+                        >
+                          {item.title}
+                        </Link>
+                      ) : (
+                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{item.title}</h3>
+                      )}
+                      {split.isPreorder && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-neko-cyan-ink bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-1.5 py-0.5 rounded">
+                          <Clock size={10} /> Preventa
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <p className="font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
-                      S/ {split.full.toFixed(2)}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.editorial}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      S/ {item.price.toFixed(2)} c/u
                     </p>
-                  )}
-                  <button
-                    onClick={() => removeFromCart(item.productId)}
-                    className="w-11 h-11 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    aria-label={`Eliminar ${item.title}`}
-                  >
-                    <Trash2 size={15} />
-                  </button>
+
+                    {split.isPreorder && (
+                      <p className="text-[11px] text-neko-cyan-ink mt-1 font-medium">
+                        Adelanto S/ {split.unitDeposit.toFixed(2)} (50%) · Saldo S/ {(item.price - split.unitDeposit).toFixed(2)} al llegar
+                      </p>
+                    )}
+
+                    <div className="inline-flex items-center border border-gray-200 dark:border-white/10 rounded-lg mt-3 overflow-hidden">
+                      <button
+                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                        className="w-11 h-11 flex items-center justify-center hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors disabled:opacity-40"
+                        disabled={item.quantity <= 1}
+                        aria-label="Menos"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="w-9 text-center font-bold text-gray-900 dark:text-white text-sm border-x border-gray-200 dark:border-white/10 py-1.5">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        className="w-11 h-11 flex items-center justify-center hover:bg-[#ec4899]/10 hover:text-[#ec4899] transition-colors"
+                        aria-label="Más"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
+                    {split.isPreorder ? (
+                      <div className="text-right">
+                        <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-400">Hoy</p>
+                        <p className="font-extrabold text-neko-cyan-ink">
+                          S/ {split.now.toFixed(2)}
+                        </p>
+                        <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">de S/ {split.full.toFixed(2)}</p>
+                      </div>
+                    ) : (
+                      <p className="font-extrabold text-[#2b496d] dark:text-neko-navy-ink">
+                        S/ {split.full.toFixed(2)}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => removeFromCart(item.productId)}
+                      className="w-11 h-11 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      aria-label={`Eliminar ${item.title}`}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            <FreeShippingProgress
+              subtotal={preliminaryTotals.subtotal - preliminaryTotals.welcomeDiscount}
+              pickup={Boolean(shippingZone?.pickup)}
+            />
 
           <Link
-            href="/products"
-            className="inline-flex items-center gap-1.5 min-h-11 text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] text-sm font-semibold transition-colors"
-          >
-            <ArrowLeft size={14} /> Continuar comprando
-          </Link>
+              href="/products"
+              className="inline-flex items-center gap-1.5 min-h-11 text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] text-sm font-semibold transition-colors"
+            >
+              <ArrowLeft size={14} /> Continuar comprando
+            </Link>
+          </section>
 
-          <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100 dark:border-white/5">
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-              <ShieldCheck size={14} className="text-[#06b6d4]" />
-              <span>Originales garantizados</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-              <Truck size={14} className="text-[#ec4899]" />
-              <span>Envío a todo el Perú o recojo gratis</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Checkout panel */}
-        <div className="lg:col-span-1 space-y-4">
-          {/* Resumen */}
-          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
-              Resumen
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                {itemCount} {itemCount === 1 ? 'ítem' : 'ítems'}
-              </span>
-            </h2>
-
-            {/* Cupón de descuento */}
-            {!coupon && (
-              <div className="mb-3">
-                <form
-                  onSubmit={(e) => { e.preventDefault(); applyCoupon(couponInput); }}
-                  className="flex gap-2"
-                >
-                  <label htmlFor="cupon" className="sr-only">Código de cupón</label>
-                  <input
-                    id="cupon"
-                    type="text"
-                    value={couponInput}
-                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                    placeholder="Código de cupón"
-                    autoComplete="off"
-                    autoCapitalize="characters"
-                    aria-describedby={couponError ? 'cupon-error' : undefined}
-                    aria-invalid={couponError ? true : undefined}
-                    className="flex-1 px-3 py-3 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isValidatingCoupon || !couponInput.trim()}
-                    className="px-4 min-h-11 text-sm font-semibold bg-[#2b496d] text-white rounded-lg hover:bg-[#1e3550] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isValidatingCoupon ? '...' : 'Aplicar'}
-                  </button>
-                </form>
-                {couponError && (
-                  <p id="cupon-error" role="alert" className="text-xs text-red-600 dark:text-red-400 mt-1">{couponError}</p>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-2 text-sm mb-3">
-              {hasInStock && (
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span>Subtotal en stock</span>
-                  <span>S/ {totals.stockSubtotal.toFixed(2)}</span>
-                </div>
-              )}
-
-              {hasPreorder && (
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1">
-                    Subtotal preventa <Clock size={11} className="text-[#06b6d4]" />
-                  </span>
-                  <span>S/ {totals.preorderSubtotal.toFixed(2)}</span>
-                </div>
-              )}
-
-              {totals.welcomeDiscount > 0 && (
-                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <span className="flex items-center gap-1">
-                    <Tag size={11} /> Descuento bienvenida (10%)
-                  </span>
-                  <span>-S/ {totals.welcomeDiscount.toFixed(2)}</span>
-                </div>
-              )}
-
-              {couponDiscount > 0 && (
-                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <span className="flex items-center gap-1">
-                    <Tag size={11} /> Cupón {couponCode}
-                    <button type="button" onClick={removeCoupon} className="text-gray-400 hover:text-red-500 ml-1 text-xs">×</button>
-                  </span>
-                  <span>-S/ {couponDiscount.toFixed(2)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>{deliveryLabel(shippingZone)}</span>
-                <span className={freeShipping || shippingZone?.pickup ? 'text-emerald-700 dark:text-emerald-400 font-bold' : ''}>
-                  {shippingZone?.pickup
-                    ? 'Gratis'
-                    : freeShipping
-                    ? 'GRATIS 🎁'
-                    : shippingZone
-                      ? `S/ ${totals.shipping.toFixed(2)}`
-                      : 'Elige tu destino'}
-                </span>
-              </div>
-              {!freeShipping && !shippingZone?.pickup && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Te faltan <strong className="text-gray-700 dark:text-gray-200">S/ {missingForFreeShipping.toFixed(2)}</strong> para
-                  el envío gratis (desde S/ {FREE_SHIPPING_THRESHOLD_PEN}).
-                </p>
-              )}
-              {shippingZone?.estimated && !freeShipping && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  En zonas alejadas la tarifa puede subir hasta S/ 25; te la confirmamos por WhatsApp.
-                </p>
-              )}
-
-              {hasPreorder && (
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span>Adelanto preventa (50%)</span>
-                  <span>S/ {totals.preorderDeposit.toFixed(2)}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Total a pagar hoy */}
-            <div className="pt-3 border-t border-gray-100 dark:border-white/5">
-              <div className="flex justify-between items-baseline">
-                <span className="font-bold text-gray-900 dark:text-white text-sm">
-                  Total a pagar hoy
-                  {!shippingZone && !freeShipping && (
-                    <span className="block text-xs font-normal text-gray-500 dark:text-gray-400">sin envío todavía</span>
-                  )}
-                </span>
-                <span className="text-2xl font-extrabold text-neko-gradient">
-                  S/ {Math.max(0, totals.totalToPayNow).toFixed(2)}
-                </span>
-              </div>
-
-              {hasPreorder && (
-                <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-white/10">
-                  <div className="flex justify-between items-baseline text-xs text-gray-500 dark:text-gray-400">
-                    <span className="flex items-center gap-1.5 font-semibold">
-                      <Clock size={12} /> Saldo al llegar
-                    </span>
-                    <span className="font-bold">
-                      S/ {totals.balanceDue.toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2 leading-relaxed flex gap-1.5">
-                    <Info size={11} className="flex-shrink-0 mt-0.5" />
-                    Coordinamos el pago del saldo y envío por WhatsApp cuando llegue el preorder.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Sugerencias arriba, junto a la barra de envío gratis: es donde
+              ayudan a sumar un segundo tomo. Al final de la página no las veía nadie. */}
+          <CartSuggestions items={items} />
 
           {/* Datos de contacto */}
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6 space-y-3">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white">Tus datos</h2>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2"><StepNumber n={2} />Tus datos y entrega</h2>
             <div>
               <label htmlFor="cliente-nombre" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                 Nombre <span className="font-normal text-gray-500 dark:text-gray-400">(opcional)</span>
@@ -854,7 +708,7 @@ export default function CartPage() {
 
           {/* Método de pago */}
           <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3">Método de pago</h2>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><StepNumber n={3} />Método de pago</h2>
             {errors.payment && (
               <p role="alert" className="text-xs text-red-600 dark:text-red-400 mb-2">{errors.payment}</p>
             )}
@@ -906,6 +760,147 @@ export default function CartPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Resumen fijo al bajar (escritorio) con el botón de confirmar */}
+        <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24">
+          {/* Resumen */}
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-6">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+              Resumen
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                {itemCount} {itemCount === 1 ? 'ítem' : 'ítems'}
+              </span>
+            </h2>
+
+            {/* Cupón de descuento */}
+            {!coupon && (
+              <div className="mb-3">
+                <form
+                  onSubmit={(e) => { e.preventDefault(); applyCoupon(couponInput); }}
+                  className="flex gap-2"
+                >
+                  <label htmlFor="cupon" className="sr-only">Código de cupón</label>
+                  <input
+                    id="cupon"
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="Código de cupón"
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    aria-describedby={couponError ? 'cupon-error' : undefined}
+                    aria-invalid={couponError ? true : undefined}
+                    className="flex-1 px-3 py-3 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isValidatingCoupon || !couponInput.trim()}
+                    className="px-4 min-h-11 text-sm font-semibold bg-[#2b496d] text-white rounded-lg hover:bg-[#1e3550] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isValidatingCoupon ? '...' : 'Aplicar'}
+                  </button>
+                </form>
+                {couponError && (
+                  <p id="cupon-error" role="alert" className="text-xs text-red-600 dark:text-red-400 mt-1">{couponError}</p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2 text-sm mb-3">
+              {hasInStock && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Subtotal en stock</span>
+                  <span>S/ {totals.stockSubtotal.toFixed(2)}</span>
+                </div>
+              )}
+
+              {hasPreorder && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    Subtotal preventa <Clock size={11} className="text-[#06b6d4]" />
+                  </span>
+                  <span>S/ {totals.preorderSubtotal.toFixed(2)}</span>
+                </div>
+              )}
+
+              {totals.welcomeDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="flex items-center gap-1">
+                    <Tag size={11} /> Descuento bienvenida (10%)
+                  </span>
+                  <span>-S/ {totals.welcomeDiscount.toFixed(2)}</span>
+                </div>
+              )}
+
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="flex items-center gap-1">
+                    <Tag size={11} /> Cupón {couponCode}
+                    <button type="button" onClick={removeCoupon} className="text-gray-400 hover:text-red-500 ml-1 text-xs">×</button>
+                  </span>
+                  <span>-S/ {couponDiscount.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>{deliveryLabel(shippingZone)}</span>
+                <span className={freeShipping || shippingZone?.pickup ? 'text-emerald-700 dark:text-emerald-400 font-bold' : ''}>
+                  {shippingZone?.pickup
+                    ? 'Gratis'
+                    : freeShipping
+                    ? 'GRATIS 🎁'
+                    : shippingZone
+                      ? `S/ ${totals.shipping.toFixed(2)}`
+                      : 'Elige tu destino'}
+                </span>
+              </div>
+              {shippingZone?.estimated && !freeShipping && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  En zonas alejadas la tarifa puede subir hasta S/ 25; te la confirmamos por WhatsApp.
+                </p>
+              )}
+
+              {hasPreorder && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Adelanto preventa (50%)</span>
+                  <span>S/ {totals.preorderDeposit.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Total a pagar hoy */}
+            <div className="pt-3 border-t border-gray-100 dark:border-white/5">
+              <div className="flex justify-between items-baseline">
+                <span className="font-bold text-gray-900 dark:text-white text-sm">
+                  Total a pagar hoy
+                  {!shippingZone && !freeShipping && (
+                    <span className="block text-xs font-normal text-gray-500 dark:text-gray-400">sin envío todavía</span>
+                  )}
+                </span>
+                <span className="text-2xl font-extrabold text-neko-gradient">
+                  S/ {Math.max(0, totals.totalToPayNow).toFixed(2)}
+                </span>
+              </div>
+
+              {hasPreorder && (
+                <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-white/10">
+                  <div className="flex justify-between items-baseline text-xs text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <Clock size={12} /> Saldo al llegar
+                    </span>
+                    <span className="font-bold">
+                      S/ {totals.balanceDue.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2 leading-relaxed flex gap-1.5">
+                    <Info size={11} className="flex-shrink-0 mt-0.5" />
+                    Coordinamos el pago del saldo y envío por WhatsApp cuando llegue el preorder.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Confirmar pedido */}
           {submitError && (
@@ -942,9 +937,46 @@ export default function CartPage() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Sugerencias — productos de misma serie/categoría que los del carrito */}
-      <CartSuggestions items={items} />
+/** Número de paso del checkout. */
+function StepNumber({ n }: { n: number }) {
+  return (
+    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#be185d] text-white text-xs font-bold" aria-hidden="true">
+      {n}
+    </span>
+  );
+}
+
+/** Barra de avance hacia el envío gratis. Con recojo en tienda no aplica. */
+function FreeShippingProgress({ subtotal, pickup }: { subtotal: number; pickup: boolean }) {
+  if (pickup || subtotal <= 0) return null;
+  const reached = subtotal >= FREE_SHIPPING_THRESHOLD_PEN;
+  const pct = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD_PEN) * 100));
+  return (
+    <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 p-4">
+      <p className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <Truck size={16} className="text-neko-cyan-ink flex-shrink-0" aria-hidden="true" />
+        {reached ? (
+          <strong className="text-neko-green-ink">Ya tienes envío gratis</strong>
+        ) : (
+          <span>
+            Te faltan <strong className="text-gray-900 dark:text-white">S/ {(FREE_SHIPPING_THRESHOLD_PEN - subtotal).toFixed(2)}</strong> para el envío gratis
+          </span>
+        )}
+      </p>
+      <div
+        className="mt-2.5 h-2 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden"
+        role="progressbar"
+        aria-label="Avance hacia el envío gratis"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+      >
+        <div className={`h-full rounded-full ${reached ? 'bg-emerald-600' : 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4]'}`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
