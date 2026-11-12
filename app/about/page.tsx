@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
-import FairGallery from '@/components/FairGallery';
 import PageHero from '@/components/PageHero';
-import TrustBadges from '@/components/TrustBadges';
+import { FIRST_PURCHASE_DISCOUNT_RATE } from '@/lib/domain/cart/calculate';
+import { formatCountryNames, getAvailableCountries } from '@/lib/domain/products/availability';
+import { STORE } from '@/lib/site';
 import Wordmark from '@/components/Wordmark';
 import {
   Gem,
@@ -52,21 +53,19 @@ const VALUES = [
   },
 ];
 
-const SERVICES = [
-  { icon: Truck,        title: 'Envío a todo el Perú',     desc: 'Olva Courier y Shalom. Empaque resistente que cuida cada tomo.' },
-  { icon: Ticket,       title: 'Precios competitivos',      desc: 'Ofertas regulares y preventas con descuentos para miembros.' },
-  { icon: MessageCircle, title: 'Atención por WhatsApp',    desc: 'Preguntas, recomendaciones y preventas — respondemos rápido.' },
-  { icon: BookOpenText,  title: 'Catálogo curado',          desc: 'Editoriales argentina, mexicana y española + coleccionables originales.' },
-];
+function getServices(countryNames: string[]) {
+  const origins = countryNames.length > 0 ? `Ediciones de ${countryNames.join(' y ')}` : 'Ediciones oficiales';
+  return [
+    { icon: Truck,         title: 'Envío a todo el Perú',  desc: 'Olva Courier y Shalom, o recojo gratis en nuestra tienda de Chiclayo.' },
+    { icon: Ticket,        title: 'Precios competitivos',  desc: `Ofertas regulares y ${Math.round(FIRST_PURCHASE_DISCOUNT_RATE * 100)} % en tu primera compra con cuenta.` },
+    { icon: MessageCircle, title: 'Atención por WhatsApp', desc: 'Preguntas, recomendaciones y preventas — respondemos rápido.' },
+    { icon: BookOpenText,  title: 'Catálogo curado',       desc: `${origins} y coleccionables originales.` },
+  ];
+}
 
-const STATS = [
-  { n: '1000+', label: 'Títulos en catálogo' },
-  { n: '24',    label: 'Provincias con envío' },
-  { n: '4',     label: 'Ediciones regionales' },
-  { n: '★ 4.9', label: 'Rating promedio' },
-];
+export default async function AboutPage() {
+  const SERVICES = getServices(formatCountryNames(await getAvailableCountries()));
 
-export default function AboutPage() {
   return (
     <div className="w-full">
       <PageHero
@@ -200,14 +199,22 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Galería de ferias */}
+      {/* Ferias: la galería completa vive en /events; acá solo el acceso. */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <FairGallery />
-      </section>
-
-      {/* Trust Badges */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <TrustBadges variant="full" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 p-6 sm:p-8">
+          <div>
+            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">Nos vemos en las ferias</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Llevamos manga y coleccionables a las ferias de la región. Mira la próxima y revive las anteriores.
+            </p>
+          </div>
+          <Link
+            href="/events"
+            className="inline-flex items-center justify-center gap-2 min-h-11 px-5 rounded-xl bg-[#be185d] hover:bg-[#9d174d] text-white font-bold text-sm transition-colors self-start sm:self-auto"
+          >
+            Ver ferias y eventos <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </section>
 
       {/* Contacto rápido + CTA */}
@@ -240,9 +247,16 @@ export default function AboutPage() {
                   <span>@neko.manga.cix</span>
                 </a>
               </li>
-              <li className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                <MapPin size={18} className="text-[#06b6d4]" />
-                <span>Chiclayo, Perú</span>
+              <li>
+                <a
+                  href={STORE.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-neko-cyan-ink transition-colors"
+                >
+                  <MapPin size={18} className="text-[#06b6d4]" />
+                  <span>{STORE.streetAddress}, {STORE.city} · {STORE.daysLabel.toLowerCase()}</span>
+                </a>
               </li>
             </ul>
             <Link

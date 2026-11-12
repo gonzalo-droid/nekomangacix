@@ -175,10 +175,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   <p className="text-sm text-gray-400">{product.title}</p>
                 </div>
               )}
-              {/* Badge stock */}
-              <span className={`absolute top-3 left-3 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${stockBadge.bg} ${stockBadge.text}`}>
-                {stockBadge.label}
-              </span>
+              {/* La disponibilidad se muestra junto al precio; repetirla sobre la portada era ruido. */}
             </div>
 
             {/* Thumbnails en fila inferior */}
