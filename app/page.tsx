@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import HeroSlider from '@/components/HeroSlider';
+import CampaignHero from '@/components/home/CampaignHero';
+import { getHeroSlides } from '@/lib/content/campaigns';
 import HomeProductSections from '@/components/HomeProductSections';
 import { ProductCardSkeleton } from '@/components/Skeleton';
-import { formatCountryNames, getAvailableCountries } from '@/lib/domain/products/availability';
+import { getAvailableCountries } from '@/lib/domain/products/availability';
 import JsonLd from '@/components/JsonLd';
 import NextEventSection from '@/components/home/NextEventSection';
 import OrderPoliciesSection from '@/components/home/OrderPoliciesSection';
@@ -42,12 +43,16 @@ function HomeSectionsFallback() {
 
 export default async function Home() {
   const availableCountries = await getAvailableCountries();
-  const countryNames = formatCountryNames(availableCountries);
 
   return (
-    <div className="w-full">
+    // `@container`: el carrusel de coleccionables mide sus tarjetas contra este
+    // ancho para que coincidan con las de la rejilla de mangas.
+    <div className="w-full @container">
       <JsonLd data={siteJsonLd()} />
-      <HeroSlider countryNames={countryNames} />
+      {/* El h1 no rota con las campañas: nombra la tienda para buscadores y
+          lectores de pantalla; cada campaña lleva su propio h2 visible. */}
+      <h1 className="sr-only">{SITE_NAME}: manga en español y coleccionables en Perú</h1>
+      <CampaignHero slides={getHeroSlides()} />
 
       <Suspense fallback={<HomeSectionsFallback />}>
         <HomeProductSections />

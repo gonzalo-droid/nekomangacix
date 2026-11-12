@@ -1,13 +1,15 @@
 {
   "banner-01.png": {
-    "title": "Preventa de mangas: asegura tus títulos favoritos",
-    "subtitle": "Resérvalos ahora y recíbelos antes que nadie. Cantidades limitadas.",
     "type": "preventa",
-    "link": "/products?stock=preorder"
-  },
-  "banner-02.png": {
-    "title": "Feria de mangas: tres días de mangas, anime, figuras y cosplay",
-    "subtitle": "24, 25 y 26 de mayo · Centro de Convenciones, Sala Principal · 10:00 am a 8:00 pm",
-    "type": "feria"
+    "kicker": "Preventa Argentina",
+    "title": "Asegura tus próximos tomos",
+    "subtitle": "Separa tus tomos de editoriales argentinas con el 50 % y recíbelos antes que nadie. Cantidades limitadas.",
+    "endsAt": "2026-11-19T23:59:59-05:00",
+    "cta": "Ver preventas",
+    "link": "/products?stock=preorder&country=AR",
+    "secondaryCta": "Cómo funciona",
+    "secondaryLink": "#home-politicas",
+    "imagePosition": "100% 50%",
+    "alt": "Tomos 1 de Jujutsu Kaisen, Chainsaw Man, Spy x Family y Demon Slayer"
   }
 }

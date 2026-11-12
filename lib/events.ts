@@ -71,16 +71,29 @@ export function eventDateParts(event: SiteEvent): { day: string; month: string }
  * Texto de cuenta regresiva: "Hoy", "Mañana", "Faltan 11 días" o "En curso".
  * Se calcula al renderizar; el home se regenera cada pocos minutos.
  */
+/** Días de calendario (en Lima) entre hoy y una fecha. 0 = hoy. */
+export function daysUntilInLima(iso: string, now: Date = new Date()): number {
+  const dayKey = (d: Date) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: LIMA_TZ }).format(d); // AAAA-MM-DD
+  return Math.round((Date.parse(dayKey(new Date(iso))) - Date.parse(dayKey(now))) / 86_400_000);
+}
+
+/** "miércoles 19 de noviembre" en hora de Lima. */
+export function formatLimaDay(iso: string): string {
+  // Se arma a mano: Intl pone una coma después del día de la semana ("jueves, 19…").
+  const parts = new Intl.DateTimeFormat('es-PE', {
+    weekday: 'long', day: 'numeric', month: 'long', timeZone: LIMA_TZ,
+  }).formatToParts(new Date(iso));
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('weekday')} ${get('day')} de ${get('month')}`;
+}
+
 export function eventCountdown(event: SiteEvent, now: Date = new Date()): string {
   const start = new Date(event.startsAt);
   const end = new Date(event.endsAt);
   if (now >= start && now < end) return 'En curso';
 
-  const dayKey = (d: Date) =>
-    new Intl.DateTimeFormat('en-CA', { timeZone: LIMA_TZ }).format(d); // AAAA-MM-DD
-  const days = Math.round(
-    (Date.parse(dayKey(start)) - Date.parse(dayKey(now))) / 86_400_000,
-  );
+  const days = daysUntilInLima(event.startsAt, now);
   if (days <= 0) return 'Hoy';
   if (days === 1) return 'Mañana';
   return `Faltan ${days} días`;
