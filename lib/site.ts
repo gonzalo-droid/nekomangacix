@@ -47,6 +47,9 @@ export const INSTAGRAM_URL = 'https://www.instagram.com/neko.manga.cix/';
 export const INSTAGRAM_HANDLE = '@neko.manga.cix';
 export const WHATSAPP_URL = 'https://wa.me/51924462641';
 
+/** Número de Yape y Plin. Distinto del de WhatsApp. */
+export const YAPE_PLIN_NUMBER = '901 148 382';
+
 /** Tienda física. Si cambia la dirección o el horario, se cambia solo acá. */
 export const STORE = {
   streetAddress: 'Av. Antenor Orrego 520',

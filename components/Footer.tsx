@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MessageCircle, Instagram, Facebook, MapPin, BookOpen, Clock, ArrowRight } from 'lucide-react';
 import Wordmark from './Wordmark';
+import { STORE } from '@/lib/site';
 
 function TikTokIcon({ size = 18 }: { size?: number }) {
   return (
@@ -76,7 +77,6 @@ export default function Footer() {
                   Escribir por WhatsApp
                   <ArrowRight size={16} className="opacity-70 transition-transform group-hover:translate-x-1" />
                 </a>
-                <p className="text-white/30 text-xs">Lun – Sáb · 9 am a 9 pm</p>
               </div>
             </div>
           </div>
@@ -186,15 +186,18 @@ export default function Footer() {
                     <span>@neko.manga.cix</span>
                   </a>
                 </li>
-                <li className="flex items-start gap-3 text-gray-400">
-                  <MapPin size={15} className="text-red-400 mt-0.5 flex-shrink-0" />
-                  <span>Chiclayo, Perú</span>
+                <li>
+                  <a href={STORE.mapsUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-start gap-3 py-2.5 text-gray-400 hover:text-white transition-colors">
+                    <MapPin size={15} className="text-red-400 mt-0.5 flex-shrink-0" />
+                    <span>{STORE.streetAddress}, {STORE.city}</span>
+                  </a>
                 </li>
                 <li className="flex items-start gap-3 text-gray-400">
                   <Clock size={15} className="text-yellow-400 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p>Lunes – Sábado</p>
-                    <p className="text-gray-400">9:00 am – 9:00 pm</p>
+                    <p>Tienda: {STORE.daysLabel.toLowerCase()}</p>
+                    <p className="text-gray-400">{STORE.hoursLabel}</p>
                   </div>
                 </li>
               </ul>

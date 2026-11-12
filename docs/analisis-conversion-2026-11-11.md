@@ -518,3 +518,66 @@ en singular, verdes de "En stock", "Agregado" y "Serie completada" y el enlace
 - Un iPhone real (la zona segura inferior de la barra usa
   `env(safe-area-inset-bottom)`).
 - Lectores de pantalla reales sobre el aviso, que es una región `role=status`.
+
+## Flujos y contenido duplicado (2026-11-11)
+
+Pedido del usuario: revisar los flujos, la información duplicada y ordenarlos.
+Decisiones del usuario: el recojo en la tienda de Chiclayo existe y es
+**gratis**; el horario "Lun–Vie 9–20, Sáb 10–18, Dom 11–16" de Contacto
+**estaba mal** y se quita.
+
+### Contradicciones encontradas
+
+| Tema | Dónde decía qué |
+|---|---|
+| Recojo en tienda | FAQ: "operamos solo con envíos"; home y políticas: "recoge tu pedido"; carrito: sin opción |
+| Costo de envío | Términos: "S/ 15.00 a nivel nacional"; tabla y carrito: S/ 5 a S/ 25 por destino |
+| Tiempo de envío | FAQ, Contacto, Términos y Envíos: "2–5 días hábiles"; tabla: 1 a 7 |
+| Horario | Contacto: lun–dom con tres horarios; pie de página: lun–sáb 9–21; tienda: sáb y dom 10–18 |
+| "A pedido" | FAQ y Términos explicaban un estado de stock que ya no existe (se convirtió en preventa) |
+| Cómo pedir | FAQ y Envíos: "confirma por WhatsApp"; el flujo real registra el pedido y da un número |
+| Editoriales | Nosotros: "argentina, mexicana y española"; FAQ: "Viz Media" (no se vende) |
+| Descuentos | Nosotros: "descuentos para miembros"; el único descuento real es 10 % en la primera compra con cuenta |
+| Tienda | Contacto, Nosotros y pie: "Chiclayo, Perú", sin dirección |
+
+### Duplicados quitados
+
+- Home: la franja "Envíos a todo Perú / Obsequios / Catálogo curado" repetía la
+  fila de confianza del hero y además colgaba sus `h3` del `h2` de la tienda.
+- Nosotros: las insignias de confianza repetían "Qué ofrecemos" justo arriba;
+  la galería de ferias completa repetía `/events` (queda un acceso).
+- Contacto: la tienda aparecía dos veces (tarjeta y bloque lateral).
+- Ficha: el distintivo de disponibilidad salía sobre la portada y junto al precio.
+
+### Cómo quedó ordenado
+
+- **Una sola fuente** para políticas (`lib/content/policies.ts`: separación,
+  tiempos de llegada, plazo de recojo, opciones si se agota, devoluciones) y
+  para preguntas frecuentes (`lib/content/faq.ts`). Los tiempos y costos de
+  envío se calculan de la tabla de zonas. Home, FAQ, Contacto, Envíos y
+  Términos leen de ahí: ya no pueden contradecirse.
+- **Recojo en tienda gratis** como primera opción del carrito ("¿Cómo lo
+  recibes?"): oculta la dirección, no muestra "te faltan S/ X para el envío
+  gratis", y el pedido y el mensaje de WhatsApp dicen "Recojo en tienda".
+- **Home:** productos → cómo funciona tu pedido → próxima feria → tienda. Las
+  dudas de compra aparecen justo después de ver productos.
+- **FAQ:** nueva categoría Preventas (50 %, tiempos, si se agota, plazo de
+  recojo); "Envíos y recojo".
+- **Términos:** nueva sección Preventas; Envíos y recojo con la tabla;
+  actualizados a noviembre 2026.
+- **Horario:** el de la tienda en Contacto, Nosotros y pie de página.
+
+### Verificado
+
+- Recorrido ficha → carrito → recojo en tienda → pedido con la API simulada:
+  zona `recojo`, sin dirección, mensaje de WhatsApp con "Recojo en tienda".
+- Búsqueda de las frases contradictorias en el texto renderizado de todas las
+  páginas: ninguna.
+- axe 0 en home, Nosotros, Contacto, FAQ, Envíos, Términos, Eventos y ficha,
+  claro y oscuro, 375 y 1280 px; sin desborde.
+- `tsc` limpio; lint 10 errores y 12 avisos (dos menos).
+
+### No verificado
+
+- Un pedido real con recojo contra la base de producción (la API acepta la
+  zona `recojo`; se probó con la llamada simulada).

@@ -6,7 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { usePromotions } from '@/context/PromotionsContext';
 import { createSupabaseClient } from '@/core/supabase/client';
 import { calculateCartTotals, FREE_SHIPPING_THRESHOLD_PEN } from '@/lib/domain/cart/calculate';
-import { SHIPPING_ZONES, getShippingZone } from '@/lib/domain/shipping/zones';
+import { SHIPPING_ZONES, deliveryLabel, getShippingZone } from '@/lib/domain/shipping/zones';
+import { STORE, YAPE_PLIN_NUMBER } from '@/lib/site';
 import {
   trackBeginCheckout,
   trackPurchase,
@@ -64,14 +65,14 @@ const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '51924462641'
 const PAYMENT_INFO = {
   yape: {
     label: 'Yape',
-    number: '924 462 641',
+    number: YAPE_PLIN_NUMBER,
     holder: 'NekoMangaCix',
     brand: 'bg-[#742774]',
     hint: 'Abre Yape, busca el número y envía el monto exacto.',
   },
   plin: {
     label: 'Plin',
-    number: '924 462 641',
+    number: YAPE_PLIN_NUMBER,
     holder: 'NekoMangaCix',
     brand: 'bg-[#00BF6F]',
     hint: 'Abre Plin, ingresa el número y transfiere el monto total.',
@@ -233,9 +234,11 @@ export default function CartPage() {
       `Subtotal: S/ ${totals.subtotal.toFixed(2)}`,
       totals.welcomeDiscount > 0 && `Descuento bienvenida (10%): -S/ ${totals.welcomeDiscount.toFixed(2)}`,
       couponDiscount > 0 && `Cupón ${couponCode}: -S/ ${couponDiscount.toFixed(2)}`,
-      totals.shipping === 0
-        ? `Envío${shippingZone ? ` a ${shippingZone.label}` : ''}: GRATIS 🎁`
-        : `Envío${shippingZone ? ` a ${shippingZone.label}` : ''}: S/ ${totals.shipping.toFixed(2)}`,
+      shippingZone?.pickup
+        ? `Recojo en tienda (${STORE.streetAddress}, ${STORE.city}): gratis`
+        : totals.shipping === 0
+          ? `${deliveryLabel(shippingZone)}: GRATIS 🎁`
+          : `${deliveryLabel(shippingZone)}: S/ ${totals.shipping.toFixed(2)}`,
       ``,
       `💰 Total a pagar ahora: S/ ${Math.max(0, totals.totalToPayNow).toFixed(2)}`,
       hasPreorder && `💳 Saldo al llegar: S/ ${totals.balanceDue.toFixed(2)}`,
@@ -243,7 +246,7 @@ export default function CartPage() {
       `Método de pago: ${paymentLabel}`,
       customerName && `Nombre: ${customerName}`,
       customerPhone && `Teléfono: ${customerPhone}`,
-      customerAddress && `Dirección: ${customerAddress}`,
+      !shippingZone?.pickup && customerAddress && `Dirección: ${customerAddress}`,
     ];
 
     const message = msgParts.filter((l): l is string => l !== false).join('\n');
@@ -282,7 +285,7 @@ export default function CartPage() {
 
     const nextErrors: FormErrors = {};
     if (!isValidPhone(customerPhone)) nextErrors.phone = 'Escribe un teléfono de 9 dígitos para coordinar tu pedido.';
-    if (!shippingZone) nextErrors.zone = 'Elige a dónde enviamos tu pedido.';
+    if (!shippingZone) nextErrors.zone = 'Elige cómo recibes tu pedido.';
     if (!selectedPayment) nextErrors.payment = 'Elige un método de pago.';
     setErrors(nextErrors);
     setSubmitError(null);
@@ -321,7 +324,7 @@ export default function CartPage() {
           paymentMethod: selectedPayment,
           customerName: customerName || undefined,
           customerPhone,
-          customerAddress: customerAddress || undefined,
+          customerAddress: shippingZone?.pickup ? undefined : customerAddress || undefined,
           couponCode: coupon ? couponCode : undefined,
           shippingZone: shippingZoneId,
         }),
@@ -595,7 +598,7 @@ export default function CartPage() {
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
               <Truck size={14} className="text-[#ec4899]" />
-              <span>Envío a todo el Perú</span>
+              <span>Envío a todo el Perú o recojo gratis</span>
             </div>
           </div>
         </div>
@@ -682,16 +685,18 @@ export default function CartPage() {
               )}
 
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Envío{shippingZone ? ` a ${shippingZone.label}` : ''}</span>
-                <span className={freeShipping ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
-                  {freeShipping
+                <span>{deliveryLabel(shippingZone)}</span>
+                <span className={freeShipping || shippingZone?.pickup ? 'text-emerald-700 dark:text-emerald-400 font-bold' : ''}>
+                  {shippingZone?.pickup
+                    ? 'Gratis'
+                    : freeShipping
                     ? 'GRATIS 🎁'
                     : shippingZone
                       ? `S/ ${totals.shipping.toFixed(2)}`
                       : 'Elige tu destino'}
                 </span>
               </div>
-              {!freeShipping && (
+              {!freeShipping && !shippingZone?.pickup && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Te faltan <strong className="text-gray-700 dark:text-gray-200">S/ {missingForFreeShipping.toFixed(2)}</strong> para
                   el envío gratis (desde S/ {FREE_SHIPPING_THRESHOLD_PEN}).
@@ -782,7 +787,7 @@ export default function CartPage() {
                   setCustomerPhone(e.target.value);
                   if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
                 }}
-                placeholder="924 462 641"
+                placeholder="987 654 321"
                 className="w-full px-3 py-3 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
               />
               {errors.phone ? (
@@ -795,7 +800,7 @@ export default function CartPage() {
             </div>
             <div>
               <label htmlFor="cliente-destino" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                ¿A dónde lo enviamos?
+                ¿Cómo lo recibes?
               </label>
               <select
                 ref={zoneRef}
@@ -823,6 +828,12 @@ export default function CartPage() {
                 <p id="cliente-destino-error" role="alert" className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.zone}</p>
               )}
             </div>
+            {shippingZone?.pickup ? (
+              <p className="text-xs text-gray-600 dark:text-gray-400 rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2.5">
+                Te esperamos en <strong className="text-gray-900 dark:text-white">{STORE.streetAddress}, {STORE.city}</strong>,
+                {' '}{STORE.daysLabel.toLowerCase()}, {STORE.hoursShortLabel} Te avisamos por WhatsApp cuando tu pedido esté listo.
+              </p>
+            ) : (
             <div>
               <label htmlFor="cliente-direccion" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                 Dirección de envío <span className="font-normal text-gray-500 dark:text-gray-400">(opcional)</span>
@@ -838,6 +849,7 @@ export default function CartPage() {
                 className="w-full px-3 py-3 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
               />
             </div>
+            )}
           </div>
 
           {/* Método de pago */}

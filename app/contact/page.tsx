@@ -4,25 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import { Mail, MessageCircle, MapPin, Clock, CheckCircle2, AlertCircle, Send } from 'lucide-react';
+import { getFaqSections, pickFaq } from '@/lib/content/faq';
+import { STORE } from '@/lib/site';
 
-const FAQS = [
-  {
-    q: '¿Cuánto tiempo demora el envío?',
-    a: 'En promedio 2–5 días hábiles a nivel nacional vía Olva/Shalom. Coordinamos contigo por WhatsApp antes de despachar.',
-  },
-  {
-    q: '¿Puedo devolver mi compra?',
-    a: 'Aceptamos devoluciones de productos en perfecto estado dentro de 7 días desde la recepción.',
-  },
-  {
-    q: '¿Qué métodos de pago aceptan?',
-    a: 'Yape, Plin y transferencia bancaria (BCP). Siempre confirmamos antes del envío.',
-  },
-  {
-    q: '¿Tienen promociones?',
-    a: 'Lanzamos ofertas regulares y preventas con descuento. Escríbenos por WhatsApp para conocer las vigentes.',
-  },
-];
+// Las mismas respuestas que /faq: salen de una sola fuente.
+const FAQS = pickFaq(getFaqSections([]), ['envio-tiempo', 'recojo', 'metodos-pago', 'devolver']);
 
 const CHANNELS = [
   {
@@ -47,10 +33,10 @@ const CHANNELS = [
   },
   {
     Icon: MapPin,
-    title: 'Ubicación',
-    detail: 'Chiclayo, Perú',
-    sub: 'Envíos a nivel nacional',
-    href: null,
+    title: 'Tienda física',
+    detail: `${STORE.streetAddress}, ${STORE.city}`,
+    sub: `${STORE.daysLabel}, ${STORE.hoursShortLabel}`,
+    href: STORE.mapsUrl,
     accent: 'text-[#ec4899]',
     bg: 'bg-[#ec4899]/10',
     ring: 'ring-[#ec4899]/20',
@@ -298,24 +284,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* Horario */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <Clock size={16} className="text-[#06b6d4]" />
-                Horario de atención
-              </h3>
-              <dl className="text-sm text-gray-600 dark:text-gray-400 space-y-1.5">
-                <div className="flex justify-between">
-                  <dt>Lun — Vie</dt><dd className="font-medium text-gray-900 dark:text-white">9:00 — 20:00</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Sábado</dt><dd className="font-medium text-gray-900 dark:text-white">10:00 — 18:00</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Domingo</dt><dd className="font-medium text-gray-900 dark:text-white">11:00 — 16:00</dd>
-                </div>
-              </dl>
-            </div>
           </div>
         </div>
       </section>

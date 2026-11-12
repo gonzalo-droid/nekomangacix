@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HomeProductSections from '@/components/HomeProductSections';
@@ -11,7 +10,6 @@ import OrderPoliciesSection from '@/components/home/OrderPoliciesSection';
 import StoreSection from '@/components/home/StoreSection';
 import { siteJsonLd } from '@/lib/seo';
 import { SITE_NAME, SITE_TAGLINE } from '@/lib/site';
-import { MessageCircle, Sparkles, BookOpenText, Truck } from 'lucide-react';
 
 export const metadata: Metadata = {
   // `absolute`: el título del home ya lleva la marca; sin esto la plantilla del
@@ -42,33 +40,6 @@ function HomeSectionsFallback() {
   );
 }
 
-const FEATURES = [
-  {
-    icon: Truck,
-    title: 'Envíos a todo Perú',
-    desc: 'Olva Courier y Shalom. Empaque resistente que cuida cada tomo.',
-    accent: 'text-[#06b6d4]',
-    bg: 'bg-[#06b6d4]/10 dark:bg-[#06b6d4]/15',
-    ring: 'ring-[#06b6d4]/20',
-  },
-  {
-    icon: Sparkles,
-    title: 'Obsequios sorpresa',
-    desc: 'Stickers, separadores y sorpresas para fans como tú.',
-    accent: 'text-[#ec4899]',
-    bg: 'bg-[#ec4899]/10 dark:bg-[#ec4899]/15',
-    ring: 'ring-[#ec4899]/20',
-  },
-  {
-    icon: BookOpenText,
-    title: 'Catálogo curado',
-    desc: 'De shōnen clásicos a novedades. Ediciones originales y verificadas.',
-    accent: 'text-[#eab308]',
-    bg: 'bg-[#eab308]/10 dark:bg-[#eab308]/15',
-    ring: 'ring-[#eab308]/20',
-  },
-];
-
 export default async function Home() {
   const availableCountries = await getAvailableCountries();
   const countryNames = formatCountryNames(availableCountries);
@@ -82,45 +53,12 @@ export default async function Home() {
         <HomeProductSections />
       </Suspense>
 
-      <NextEventSection />
+      {/* Orden: primero qué comprar, luego cómo funciona el pedido (la duda que
+          aparece después de ver productos), y al final dónde encontrarnos. */}
       <OrderPoliciesSection countries={availableCountries} />
+      <NextEventSection />
       <StoreSection />
 
-      {/* Features */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-          {FEATURES.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.title}
-                className={`group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 hover:-translate-y-1 transition-all ring-1 ${f.ring} hover:shadow-xl`}
-              >
-                <div
-                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${f.bg} ${f.accent} mb-4 transition-transform group-hover:scale-110`}
-                >
-                  <Icon size={22} />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1.5">
-                  {f.title}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 text-center">
-          <Link
-            href="/about"
-            className="inline-flex items-center gap-2 min-h-11 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] dark:hover:text-[#ec4899] transition-colors"
-          >
-            Conoce más sobre nosotros →
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

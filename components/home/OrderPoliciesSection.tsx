@@ -2,18 +2,8 @@ import Link from 'next/link';
 import { CalendarCheck, Clock3, MessageCircle, PackageSearch, Wallet } from 'lucide-react';
 import SectionHeader from '@/components/SectionHeader';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
-import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
+import { ARRIVAL_TIMES, DEPOSIT_PERCENT, PICKUP_WINDOW_WEEKS, SELLOUT_TEXT } from '@/lib/content/policies';
 import { INSTAGRAM_URL, WHATSAPP_URL } from '@/lib/site';
-
-/** Tiempo de llegada desde el cierre de la preventa, por origen de la edición. */
-const ARRIVAL_TIMES: Record<CountryCode, string> = {
-  AR: '2 a 3 semanas',
-  MX: '3 a 4 semanas',
-  ES: '4 a 5 semanas',
-  JP: '2 a 3,5 meses',
-};
-
-const DEPOSIT_PERCENT = Math.round(PREORDER_DEPOSIT_RATE * 100);
 
 interface Props {
   /** Solo se listan los tiempos de los países que tienen productos cargados. */
@@ -40,8 +30,7 @@ export default function OrderPoliciesSection({ countries }: Props) {
       title: 'Según disponibilidad de la editorial',
       body: (
         <>
-          Si un tomo se agota en la editorial, tú eliges: pasarlo a la siguiente preventa,
-          usar el monto en otro producto o pedir la devolución.
+          Si un tomo se agota en la editorial, tú eliges: {SELLOUT_TEXT}.
         </>
       ),
     },
@@ -64,10 +53,10 @@ export default function OrderPoliciesSection({ countries }: Props) {
     },
     {
       icon: CalendarCheck,
-      title: '3 semanas para recoger',
+      title: `${PICKUP_WINDOW_WEEKS} semanas para recoger`,
       body: (
         <>
-          Cuando llega tu pedido tienes 3 semanas para coordinar el recojo. Pasado ese plazo,
+          Cuando llega tu pedido tienes {PICKUP_WINDOW_WEEKS} semanas para coordinar el recojo. Pasado ese plazo,
           lo que separaste queda como <strong className="font-semibold text-gray-900 dark:text-white">saldo a favor</strong> para otra compra.
         </>
       ),
