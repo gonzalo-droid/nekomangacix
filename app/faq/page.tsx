@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
-import Link from 'next/link';
-import { MessageCircle, Mail, HelpCircle } from 'lucide-react';
+import { MessageCircle, HelpCircle } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import { FaqAccordion } from './FaqAccordion';
 import { getFaqSections } from '@/lib/content/faq';
@@ -57,7 +56,7 @@ export default async function FaqPage() {
                 ¿No encontraste tu respuesta?
               </h3>
               <p className="text-sm text-white/70 max-w-md">
-                Escríbenos por WhatsApp o al correo y te respondemos rápido.
+                Escríbenos por WhatsApp y te respondemos rápido.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -69,12 +68,6 @@ export default async function FaqPage() {
               >
                 <MessageCircle size={16} /> WhatsApp
               </a>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-white/10 backdrop-blur-sm text-white border border-white/15 hover:bg-white/20 font-semibold text-sm transition-all"
-              >
-                <Mail size={16} /> Escribir
-              </Link>
             </div>
           </div>
         </div>

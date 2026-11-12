@@ -259,12 +259,14 @@ export default async function AboutPage() {
                 </a>
               </li>
             </ul>
-            <Link
-              href="/contact"
+            <a
+              href="https://wa.me/51924462641"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-6 inline-flex items-center gap-2 min-h-11 text-sm font-semibold text-[#2b496d] dark:text-neko-navy-ink hover:text-[#ec4899] transition-colors"
             >
-              Envíanos un mensaje <ArrowRight size={16} />
-            </Link>
+              Escríbenos por WhatsApp <ArrowRight size={16} />
+            </a>
           </div>
 
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0a0f] via-[#1e3550] to-[#0a0a0f] text-white p-6 sm:p-8 flex flex-col justify-between">

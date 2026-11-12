@@ -1,326 +1,134 @@
-'use client';
-
-import { useState } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ArrowRight, Clock, MapPin, MessageCircle } from 'lucide-react';
 import PageHero from '@/components/PageHero';
-import { Mail, MessageCircle, MapPin, Clock, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 import { getFaqSections, pickFaq } from '@/lib/content/faq';
-import { STORE } from '@/lib/site';
+import { pageMetadata } from '@/lib/seo';
+import { STORE, WHATSAPP_URL } from '@/lib/site';
+
+export const metadata: Metadata = pageMetadata({
+  title: 'Contacto',
+  description:
+    'Escríbenos por WhatsApp: pedidos, preventas y recomendaciones de manga y coleccionables en todo el Perú.',
+  path: '/contact',
+});
 
 // Las mismas respuestas que /faq: salen de una sola fuente.
 const FAQS = pickFaq(getFaqSections([]), ['envio-tiempo', 'recojo', 'metodos-pago', 'devolver']);
 
-const CHANNELS = [
-  {
-    Icon: MessageCircle,
-    title: 'WhatsApp',
-    detail: '(+51) 924 462 641',
-    sub: 'Disponible todos los días',
-    href: 'https://wa.me/51924462641',
-    accent: 'text-[#25D366]',
-    bg: 'bg-[#25D366]/10',
-    ring: 'ring-[#25D366]/20',
-  },
-  {
-    Icon: Mail,
-    title: 'Email',
-    detail: 'contacto@nekomangacix.com',
-    sub: 'Respuesta en 24 h',
-    href: 'mailto:contacto@nekomangacix.com',
-    accent: 'text-[#06b6d4]',
-    bg: 'bg-[#06b6d4]/10',
-    ring: 'ring-[#06b6d4]/20',
-  },
-  {
-    Icon: MapPin,
-    title: 'Tienda física',
-    detail: `${STORE.streetAddress}, ${STORE.city}`,
-    sub: `${STORE.daysLabel}, ${STORE.hoursShortLabel}`,
-    href: STORE.mapsUrl,
-    accent: 'text-[#ec4899]',
-    bg: 'bg-[#ec4899]/10',
-    ring: 'ring-[#ec4899]/20',
-  },
+/**
+ * Atajos de WhatsApp con el mensaje ya escrito. Reemplazan al formulario de
+ * correo: toda la atención es por WhatsApp (decisión del 2026-11-12).
+ */
+const TOPICS = [
+  { label: 'Consultar mi pedido', text: 'Hola, quiero consultar por mi pedido #' },
+  { label: 'Preguntar por un manga', text: 'Hola, ¿tienen o pueden conseguir este manga? ' },
+  { label: 'Preventas', text: 'Hola, quiero información sobre las preventas.' },
+  { label: 'Otra consulta', text: 'Hola Neko Manga Cix, tengo una consulta.' },
 ];
 
+const waLink = (text: string) => `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+
 export default function ContactPage() {
-  const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!formData.nombre.trim()) e.nombre = 'El nombre es requerido';
-    if (!formData.email.trim()) e.email = 'El email es requerido';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Email no válido';
-    if (!formData.asunto.trim()) e.asunto = 'El asunto es requerido';
-    if (!formData.mensaje.trim()) e.mensaje = 'El mensaje es requerido';
-    return e;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
-    if (errors[name]) setErrors((p) => ({ ...p, [name]: '' }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setStatus('loading');
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (!res.ok) throw new Error('Error al enviar');
-      setStatus('success');
-      setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
-    } catch {
-      setStatus('error');
-    }
-  };
-
-  const inputClass = (field: string) =>
-    `w-full px-4 py-3 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 ${
-      errors[field]
-        ? 'border-red-400 bg-red-50 dark:bg-red-900/10'
-        : 'border-gray-200 dark:border-white/10 focus:border-[#06b6d4]'
-    }`;
-
-  const labelClass = 'block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5';
-
   return (
     <div className="w-full">
       <PageHero
         eyebrow="Contacto"
         title={
           <>
-            Hablemos de{' '}
-            <span className="text-neko-gradient">manga</span>.
+            Hablemos de <span className="text-neko-gradient">manga</span>.
           </>
         }
-        subtitle="Pregunta, sugiere o pide una recomendación — respondemos a todos los mensajes."
+        subtitle="Pregunta, sigue tu pedido o pide una recomendación: te atendemos por WhatsApp."
       />
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12 relative z-10">
-        {/* Canales */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {CHANNELS.map(({ Icon, title, detail, sub, href, accent, bg, ring }) => {
-            const content = (
-              <div
-                className={`h-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5 transition-all ring-1 ${ring} ${
-                  href ? 'hover:-translate-y-1 hover:shadow-xl cursor-pointer' : ''
-                }`}
-              >
-                <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${bg} ${accent} mb-3`}>
-                  <Icon size={20} />
-                </div>
-                <h2 className="font-bold text-gray-900 dark:text-white">{title}</h2>
-                <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">{detail}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                  <Clock size={12} /> {sub}
+      {/* WhatsApp: el único canal para escribirnos */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12 relative z-10" aria-labelledby="contacto-whatsapp">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-xl shadow-gray-900/5 p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <span className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#25D366]/15 text-[#047857] flex items-center justify-center" aria-hidden="true">
+                <MessageCircle size={24} />
+              </span>
+              <div>
+                <h2 id="contacto-whatsapp" className="text-2xl font-extrabold text-gray-900">Escríbenos por WhatsApp</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  (+51) 924 462 641 · todos los días. Elige un tema y el mensaje se abre ya escrito.
                 </p>
-              </div>
-            );
-            return href ? (
-              <a key={title} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">
-                {content}
-              </a>
-            ) : (
-              <div key={title}>{content}</div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Form + sidebar */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
-              <div className="mb-6 relative">
-                <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-1.5">
-                  {'// Formulario'}
-                </span>
-                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                  Envíanos un mensaje
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Te respondemos al email en un máximo de 24 horas.
-                </p>
-              </div>
-
-              {status === 'success' && (
-                <div
-                  className="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 flex gap-3 animate-tilt-in"
-                  role="status"
-                >
-                  <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-emerald-900 dark:text-emerald-300 text-sm">
-                      Mensaje enviado correctamente
-                    </p>
-                    <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-0.5">
-                      Te responderemos pronto. Gracias.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {status === 'error' && (
-                <div
-                  className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex gap-3"
-                  role="alert"
-                >
-                  <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-red-900 dark:text-red-300 text-sm">
-                      Ocurrió un error
-                    </p>
-                    <p className="text-red-700 dark:text-red-400 text-xs mt-0.5">
-                      Contáctanos directamente por WhatsApp mientras lo resolvemos.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label htmlFor="nombre" className={labelClass}>Nombre *</label>
-                    <input
-                      id="nombre"
-                      name="nombre"
-                      type="text"
-                      value={formData.nombre}
-                      onChange={handleChange}
-                      placeholder="Tu nombre"
-                      className={inputClass('nombre')}
-                    />
-                    {errors.nombre && <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="email" className={labelClass}>Email *</label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="tu@email.com"
-                      className={inputClass('email')}
-                    />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="asunto" className={labelClass}>Asunto *</label>
-                  <input
-                    id="asunto"
-                    name="asunto"
-                    type="text"
-                    value={formData.asunto}
-                    onChange={handleChange}
-                    placeholder="¿Sobre qué nos escribes?"
-                    className={inputClass('asunto')}
-                  />
-                  {errors.asunto && <p className="text-red-500 text-xs mt-1">{errors.asunto}</p>}
-                </div>
-
-                <div>
-                  <label htmlFor="mensaje" className={labelClass}>Mensaje *</label>
-                  <textarea
-                    id="mensaje"
-                    name="mensaje"
-                    rows={5}
-                    value={formData.mensaje}
-                    onChange={handleChange}
-                    placeholder="Cuéntanos en detalle..."
-                    className={`${inputClass('mensaje')} resize-none`}
-                  />
-                  {errors.mensaje && <p className="text-red-500 text-xs mt-1">{errors.mensaje}</p>}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={status === 'loading'}
-                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white font-bold text-sm shadow-lg shadow-[#ec4899]/25 hover:shadow-[#ec4899]/45 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:scale-100 transition-all"
-                >
-                  <Send size={16} className="transition-transform group-hover:translate-x-0.5" />
-                  {status === 'loading' ? 'Enviando...' : 'Enviar mensaje'}
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* WhatsApp bloque destacado */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0a0f] via-[#1e3550] to-[#0a0a0f] text-white p-6">
-              <div className="absolute inset-0 bg-halftone opacity-40 pointer-events-none" aria-hidden="true" />
-              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#25D366] opacity-25 blur-2xl" aria-hidden="true" />
-              <div className="relative">
-                <h3 className="text-lg font-extrabold mb-1">¿Apurado?</h3>
-                <p className="text-sm text-white/75 mb-4">
-                  Escríbenos por WhatsApp y te respondemos en minutos.
-                </p>
-                <a
-                  href="https://wa.me/51924462641?text=Hola%20Neko%20Manga%20Cix"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0b8043] hover:bg-[#09703a] text-white font-bold text-sm transition-all active:scale-95"
-                >
-                  <MessageCircle size={16} /> Abrir WhatsApp
-                </a>
               </div>
             </div>
 
+            <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {TOPICS.map((topic) => (
+                <li key={topic.label}>
+                  <a
+                    href={waLink(topic.text)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center justify-between gap-3 min-h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 hover:border-[#047857] hover:bg-[#25D366]/10 text-sm font-semibold text-gray-900 transition-colors"
+                  >
+                    {topic.label}
+                    <ArrowRight size={16} className="text-[#047857] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <a
+              href={waLink('Hola Neko Manga Cix')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex w-full sm:w-auto items-center justify-center gap-2 min-h-12 px-7 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white font-bold transition-colors"
+            >
+              <MessageCircle size={18} aria-hidden="true" /> Abrir WhatsApp
+            </a>
           </div>
+
+          {/* Tienda física */}
+          <a
+            href={STORE.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-2xl bg-white border border-gray-200 shadow-xl shadow-gray-900/5 p-6 sm:p-8 hover:border-[#be185d]/40 transition-colors"
+          >
+            <span className="w-12 h-12 rounded-xl bg-[#ec4899]/10 text-neko-magenta-ink flex items-center justify-center" aria-hidden="true">
+              <MapPin size={24} />
+            </span>
+            <h2 className="mt-4 text-xl font-extrabold text-gray-900">Tienda física</h2>
+            <p className="mt-1 text-sm font-semibold text-gray-900">{STORE.streetAddress}, {STORE.city}</p>
+            <p className="mt-1 text-sm text-gray-600 flex items-center gap-1.5">
+              <Clock size={14} aria-hidden="true" /> {STORE.daysLabel}, {STORE.hoursShortLabel}
+            </p>
+            <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-neko-magenta-ink">
+              Cómo llegar <ArrowRight size={16} aria-hidden="true" />
+            </p>
+          </a>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-8 relative">
           <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-neko-magenta-ink mb-2">
             {'// Preguntas frecuentes'}
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-            Dudas rápidas
-          </h2>
-          <span
-            className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full"
-            aria-hidden="true"
-          />
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Dudas rápidas</h2>
+          <span className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" aria-hidden="true" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {FAQS.map(({ q, a }) => (
-            <div
-              key={q}
-              className="group bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-xl p-5 hover:border-[#ec4899]/40 transition-all"
-            >
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1.5 group-hover:text-[#ec4899] transition-colors">
-                {q}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{a}</p>
+            <div key={q} className="bg-white border border-gray-100 rounded-xl p-5">
+              <h3 className="font-bold text-gray-900 mb-1.5">{q}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{a}</p>
             </div>
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-8 text-center text-sm text-gray-600">
           ¿No encuentras tu respuesta?{' '}
           <Link href="/faq" className="text-neko-magenta-ink font-semibold hover:underline">
-            Ver FAQ completa
+            Ver todas las preguntas frecuentes
           </Link>
         </p>
       </section>
