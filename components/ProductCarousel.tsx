@@ -73,9 +73,14 @@ export default function ProductCarousel({ products, label }: Props) {
         {products.map((p) => (
           <li
             key={p.id}
-            // El ancho deja asomar la tarjeta siguiente: es la pista de que la
-            // fila continúa hacia la derecha.
-            className="grid snap-start shrink-0 basis-[58%] sm:basis-[29%] md:basis-[22%] lg:basis-[17.6%]"
+            // Cada tarjeta mide lo mismo que una columna de la rejilla de
+            // mangas del home (2/3/4/5 columnas dentro de max-w-7xl con su
+            // padding y su gap), aunque el carrusel viva dentro de un panel
+            // más angosto. `cqw` toma el ancho del contenedor de la página
+            // (el `@container` del home), que no incluye la barra de scroll.
+            // Como el panel es más angosto, siempre asoma la tarjeta
+            // siguiente: es la pista de que la fila continúa.
+            className="grid snap-start shrink-0 basis-[calc((min(100cqw,80rem)-2.75rem)/2)] sm:basis-[calc((min(100cqw,80rem)-5rem)/3)] md:basis-[calc((min(100cqw,80rem)-6rem)/4)] lg:basis-[calc((min(100cqw,80rem)-8rem)/5)]"
           >
             <ProductCard {...p} variant="compact" showQuickAdd />
           </li>

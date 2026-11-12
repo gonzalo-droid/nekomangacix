@@ -73,7 +73,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await getProductBySlugServer(slug);
   if (!product) notFound();
 
-  const relatedProducts = await getRelatedProductsServer(slug, 6);
+  const relatedProducts = await getRelatedProductsServer(slug, 12);
 
   return (
     <>

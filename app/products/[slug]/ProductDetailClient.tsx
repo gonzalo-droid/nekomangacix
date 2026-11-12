@@ -12,14 +12,15 @@ import { Product } from '@/lib/products';
 import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
 import { PREORDER_DEPOSIT_RATE } from '@/lib/domain/cart/calculate';
+import { CHEAPEST_DELIVERY, DELIVERY_DAYS, FREE_SHIPPING_FROM } from '@/lib/content/policies';
+import { STORE, YAPE_PLIN_NUMBER } from '@/lib/site';
 import { trackViewItem, trackWhatsAppOpen } from '@/lib/analytics';
 import MangaFormatGuide from '@/components/MangaFormatGuide';
-import TrustBadges from '@/components/TrustBadges';
-import ProductCard from '@/components/ProductCard';
+import ProductCarousel from '@/components/ProductCarousel';
 import StickyBuyBar from '@/components/product/StickyBuyBar';
 import {
-  Heart, ShoppingCart, Zap, Minus, Plus, ChevronLeft,
-  Banknote, Clock, Share2, Check, MessageCircle,
+  Heart, ShoppingCart, Minus, Plus, ChevronLeft, ChevronDown,
+  Clock, Share2, Check, MessageCircle, Truck, Store, Wallet, BookOpen, ShieldCheck, Gift,
 } from 'lucide-react';
 
 interface Props {
@@ -27,7 +28,12 @@ interface Props {
   relatedProducts: Product[];
 }
 
+// Claves de `attributes` que no son datos para el cliente: `featured` es la
+// curación del home y `category` ya se muestra como etiqueta.
+const HIDDEN_ATTRS = new Set(['featured', 'category']);
+
 const ATTR_LABELS: Record<string, string> = {
+  weight: 'Peso', language: 'Idioma', dimensions: 'Dimensiones', format: 'Formato',
   peso: 'Peso', idioma: 'Idioma', dimensiones: 'Dimensiones',
   formato: 'Formato', category: 'Categoría', pages: 'Páginas',
   releaseDate: 'Fecha de lanzamiento', isbn: 'ISBN', publisher: 'Editorial',
@@ -42,14 +48,6 @@ const STOCK_BADGE: Record<string, { label: string; bg: string; text: string }> =
   out_of_stock: { label: 'Agotado',   bg: 'bg-red-500/15 dark:bg-red-500/20',         text: 'text-red-700 dark:text-red-400' },
 };
 
-// Los mismos tres que ofrece el checkout. Antes se listaban tarjeta y
-// efectivo, que no se pueden usar al pagar.
-const PAYMENT_METHODS = [
-  { icon: Banknote, label: 'Yape' },
-  { icon: Banknote, label: 'Plin' },
-  { icon: Banknote, label: 'Transferencia BCP' },
-];
-
 export default function ProductDetailClient({ product, relatedProducts }: Props) {
   const { addToCart } = useCart();
   const { showCartToast } = useToast();
@@ -57,11 +55,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
   const router = useRouter();
 
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'description' | 'info'>('description');
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [shared, setShared] = useState(false);
+  const [synopsisOpen, setSynopsisOpen] = useState(false);
   const buyBoxRef = useRef<HTMLDivElement>(null);
 
   // Una vez por producto: en desarrollo React monta los efectos dos veces.
@@ -120,13 +118,16 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
   const stockBadge = STOCK_BADGE[product.stockStatus] ?? STOCK_BADGE.in_stock;
   const isOutOfStock = product.stockStatus === 'out_of_stock';
   const isPreorder = product.stockStatus === 'preorder';
-  const canAddToCart = !isOutOfStock;
   const isProductFavorite = favHydrated && isFavorite(product.id);
   const categoryLabel = getCategoryLabel(String(product.attributes?.category ?? ''));
   const countryName = product.countryCode ? COUNTRIES[product.countryCode as CountryCode]?.name : null;
 
+  const synopsis = (product.fullDescription || product.description || '').trim();
+  // Solo se recorta si de verdad es larga: un "Leer más" que no esconde nada confunde.
+  const synopsisIsLong = synopsis.length > 420;
+
   const attrs = Object.entries(product.attributes ?? {})
-    .filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '')
+    .filter(([k, v]) => !HIDDEN_ATTRS.has(k) && v !== undefined && v !== null && String(v).trim() !== '')
     .map(([key, value]) => ({
       label: ATTR_LABELS[key] ?? (key.charAt(0).toUpperCase() + key.slice(1)),
       value: key === 'releaseDate' && typeof value === 'string'
@@ -134,7 +135,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
     }));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-4 pb-8 sm:py-8">
+    <div className="@container min-h-screen bg-gray-50 dark:bg-gray-950 pt-4 pb-8 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Breadcrumb */}
@@ -157,7 +158,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
             {/* En el móvil la portada va apaisada (la tapa entra completa con
                 `object-contain`): a 3/4 ocupaba la pantalla entera y el precio
                 y el botón quedaban a más de un pantallazo. */}
-            <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[3/4]">
+            <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl overflow-hidden aspect-[16/11] sm:aspect-[3/4]">
               {product.images[selectedImage] && !imgError ? (
                 <Image
                   src={getCloudinaryUrl(product.images[selectedImage])}
@@ -203,252 +204,287 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
             )}
           </div>
 
-          {/* ── Info ─────────────────────────────────────────────────────────── */}
+          {/* ── Info: identidad · caja de compra · detalles ─────────────────
+              Antes eran nueve bloques apilados con cuatro estilos de botón del
+              mismo peso. Ahora hay un solo botón principal dentro de una caja
+              que junta todo lo necesario para decidir la compra. */}
           <div className="flex flex-col gap-4 sm:gap-5">
 
-            {/* Tags */}
-            {(product.tags?.length ?? 0) > 0 && (
-              <div className="flex gap-2 flex-wrap">
-                {(product.tags ?? []).map((tag, idx) => (
-                  <span key={idx} className="bg-[#2b496d]/10 text-[#2b496d] dark:bg-[#5a7a9e]/20 dark:text-[#5a7a9e] text-xs font-semibold px-3 py-1 rounded-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Título + autor + editorial */}
+            {/* Identidad */}
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white leading-tight mb-1">
+              {(product.tags?.length ?? 0) > 0 && (
+                <div className="flex gap-2 flex-wrap mb-3">
+                  {(product.tags ?? []).map((tag, idx) => (
+                    <span key={idx} className="bg-[#2b496d]/10 text-[#2b496d] text-xs font-semibold px-3 py-1 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
                 {product.title}
               </h1>
-              {product.author && (
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
-                  Por <span className="font-semibold text-gray-700 dark:text-gray-300">{product.author}</span>
-                </p>
-              )}
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {countryName ? `${countryName} · ${product.editorial}` : product.editorial}
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                {product.author && (
+                  <>
+                    Por{' '}
+                    <Link href={`/products?author=${encodeURIComponent(product.author)}`} className="font-semibold text-gray-900 underline-offset-2 hover:underline">
+                      {product.author}
+                    </Link>
+                    {' · '}
+                  </>
+                )}
+                <Link href={`/products?editorial=${encodeURIComponent(product.editorial)}`} className="font-semibold text-gray-900 underline-offset-2 hover:underline">
+                  {product.editorial}
+                </Link>
+                {countryName && <> · {countryName}</>}
               </p>
+              {product.series && (
+                <Link
+                  href={`/products?series=${encodeURIComponent(product.series)}`}
+                  className="mt-2 inline-flex items-center gap-1.5 min-h-11 text-sm font-bold text-neko-magenta-ink hover:underline underline-offset-2"
+                >
+                  <BookOpen size={16} aria-hidden="true" /> Ver todos los tomos<span className="hidden sm:inline">&nbsp;de {product.series}</span>
+                </Link>
+              )}
+              {/* En el celular estas etiquetas viven en la ficha técnica: acá
+                  empujaban el botón de compra fuera del primer pantallazo. */}
+              <div className="mt-1 hidden sm:flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                {categoryLabel && (
+                  <span className="font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100">{categoryLabel}</span>
+                )}
+                {product.seriesStatus && (
+                  <span className={`font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                    product.seriesStatus === 'single' ? 'bg-[#eab308]/15 text-neko-gold-ink'
+                    : product.seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-800'
+                    : 'bg-[#ec4899]/15 text-neko-magenta-ink'
+                  }`}>
+                    {product.seriesStatus === 'single' ? 'Tomo único' : product.seriesStatus === 'completed' ? 'Serie completada' : 'Serie en curso'}
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Precio + stock */}
-            <div className="flex items-end gap-4 py-4 border-y border-gray-200 dark:border-gray-700/60">
-              <p className="text-4xl font-extrabold text-[#2b496d] dark:text-neko-navy-ink leading-none">
-                S/ {product.pricePEN.toFixed(2)}
-              </p>
-              <div className="flex flex-col gap-1 pb-0.5">
+            {/* Caja de compra */}
+            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 sm:p-6">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <p className="text-4xl font-extrabold text-[#2b496d] leading-none">
+                  S/ {product.pricePEN.toFixed(2)}
+                </p>
                 <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${stockBadge.bg} ${stockBadge.text}`}>
                   {stockBadge.label}
                 </span>
                 {product.stockStatus === 'in_stock' && product.stock > 0 && product.stock < 10 && (
-                  <span className="text-xs font-semibold text-orange-700 dark:text-orange-400">
+                  <span className="text-xs font-semibold text-orange-700">
                     {product.stock === 1 ? 'Solo queda 1 unidad' : `Solo quedan ${product.stock} unidades`}
                   </span>
                 )}
               </div>
-            </div>
 
-            {/* Info preventa */}
-            {isPreorder && (
-              <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-xl px-4 py-3 space-y-1.5">
-                {(product.etaText ?? product.estimatedArrival) && (
-                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 text-sm font-semibold">
-                    <Clock size={15} />
-                    <span>Llegada estimada: {product.etaText ?? product.estimatedArrival}</span>
-                  </div>
-                )}
-                <p className="text-blue-600 dark:text-blue-400 text-sm">
-                  Reserva con <strong>S/ {(product.pricePEN * PREORDER_DEPOSIT_RATE).toFixed(2)}</strong> ({PREORDER_DEPOSIT_RATE * 100}%) y paga el resto al llegar.
+              {(isPreorder || isOutOfStock) && (
+                <p className="mt-3 text-sm text-blue-800 bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5">
+                  Hoy pagas <strong>S/ {(product.pricePEN * PREORDER_DEPOSIT_RATE).toFixed(2)}</strong> ({PREORDER_DEPOSIT_RATE * 100} %) y el resto cuando llega.
+                  {(product.etaText ?? product.estimatedArrival) && (
+                    <span className="mt-1 flex items-center gap-1.5 font-semibold">
+                      <Clock size={14} aria-hidden="true" /> Llegada estimada: {product.etaText ?? product.estimatedArrival}
+                    </span>
+                  )}
                 </p>
-              </div>
-            )}
+              )}
 
-            {/* Cantidad */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Cantidad</span>
-              <div className="flex items-center rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <button
-                  onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
-                  className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Disminuir cantidad"
-                >
-                  <Minus size={16} />
-                </button>
-                <span className="px-4 py-2 min-w-[48px] text-center font-bold text-gray-900 dark:text-white text-sm">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => handleQuantityChange(1)}
-                  disabled={product.stockStatus === 'in_stock' && quantity >= product.stock}
-                  className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Aumentar cantidad"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-            </div>
+              <ul className="mt-3 sm:mt-4 space-y-1.5 text-sm text-gray-700">
+                <li className="flex items-start gap-2">
+                  <Truck size={16} className="mt-0.5 flex-shrink-0 text-neko-cyan-ink" aria-hidden="true" />
+                  <span>Envío desde S/ {CHEAPEST_DELIVERY.toFixed(2)} ({DELIVERY_DAYS}) · <strong className="font-semibold">gratis desde S/ {FREE_SHIPPING_FROM}</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Store size={16} className="mt-0.5 flex-shrink-0 text-neko-magenta-ink" aria-hidden="true" />
+                  <span>Recojo gratis en nuestra tienda de {STORE.city}</span>
+                </li>
+              </ul>
 
-            {/* Botones de acción. Cuando salen de pantalla en el móvil, la
-                barra fija del pie toma su lugar. */}
-            <div ref={buyBoxRef} className="space-y-2.5">
-              <div className="flex gap-2.5">
-                {(
+              {/* Cantidad + botón principal. Cuando sale de pantalla en el
+                  móvil, la barra fija del pie toma su lugar. */}
+              <div ref={buyBoxRef} className="mt-4 sm:mt-5 flex items-stretch gap-3">
+                <div className="flex items-center rounded-xl border border-gray-200 overflow-hidden flex-shrink-0" role="group" aria-label="Cantidad">
                   <button
-                    onClick={handleAddToCart}
-                    className={`flex-1 py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                      addedToCart
-                        ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-700/30'
-                        : isPreorder || isOutOfStock
-                          ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
-                          : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-lg hover:shadow-[#ec4899]/30'
-                    }`}
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                    className="w-11 h-12 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Disminuir cantidad"
                   >
-                    <ShoppingCart size={18} />
-                    {addedToCart ? '¡Agregado!' : isPreorder || isOutOfStock ? 'Reservar' : 'Agregar al carrito'}
+                    <Minus size={16} />
                   </button>
-                )}
+                  <span className="min-w-[40px] text-center font-bold text-gray-900 text-sm" aria-live="polite">{quantity}</span>
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={product.stockStatus === 'in_stock' && quantity >= product.stock}
+                    className="w-11 h-12 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Aumentar cantidad"
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
                 <button
-                  onClick={() => toggleFavorite(product.id)}
-                  className={`p-3 rounded-xl border-2 transition-all active:scale-95 ${
-                    isProductFavorite
-                      ? 'border-[#ec4899] bg-[#ec4899]/10 text-neko-magenta-ink'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-[#ec4899] hover:text-[#ec4899]'
+                  onClick={handleAddToCart}
+                  className={`flex-1 min-h-12 px-5 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-colors active:scale-[0.98] ${
+                    addedToCart ? 'bg-emerald-700' : 'bg-[#be185d] hover:bg-[#9d174d]'
                   }`}
-                  aria-label={isProductFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                 >
-                  <Heart size={20} fill={isProductFavorite ? 'currentColor' : 'none'} />
-                </button>
-                <button
-                  onClick={handleShare}
-                  className={`p-3 rounded-xl border-2 transition-all active:scale-95 ${
-                    shared
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-[#06b6d4] hover:text-[#06b6d4]'
-                  }`}
-                  aria-label="Compartir producto"
-                >
-                  {shared ? <Check size={20} /> : <Share2 size={20} />}
+                  <ShoppingCart size={18} aria-hidden="true" />
+                  {addedToCart ? '¡Agregado!' : isPreorder || isOutOfStock ? 'Reservar' : (
+                    <>Agregar<span className="hidden sm:inline">&nbsp;al carrito</span></>
+                  )}
                 </button>
               </div>
 
-              {!isOutOfStock && (
+              {/* Acciones secundarias, discretas */}
+              <div className="mt-3 flex items-center justify-between gap-2">
                 <button
                   onClick={handleBuyNow}
-                  disabled={!canAddToCart}
-                  className="w-full min-h-11 py-2.5 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-95 border-2 border-[#2b496d] text-[#2b496d] hover:bg-[#2b496d] hover:text-white dark:border-neko-navy-ink dark:text-neko-navy-ink dark:hover:bg-neko-navy-ink dark:hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center min-h-11 text-sm font-semibold text-[#2b496d] underline-offset-4 hover:underline"
                 >
-                  <Zap size={18} aria-hidden="true" />
-                  {isPreorder ? 'Reservar e ir al carrito' : 'Comprar ahora'}
+                  {isPreorder || isOutOfStock ? 'Reservar e ir al carrito' : 'Comprar ahora'}
                 </button>
-              )}
-
-              {product.type === 'manga' && (
-                <MangaFormatGuide variant="ghost" className="w-full justify-center" />
-              )}
-            </div>
-
-            {/* Chips de categoría / serie */}
-            <div className="flex flex-wrap gap-2">
-              {categoryLabel && (
-                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  {categoryLabel}
-                </span>
-              )}
-              {product.seriesStatus && (
-                <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                  product.seriesStatus === 'single'   ? 'bg-[#eab308]/15 text-neko-gold-ink'
-                  : product.seriesStatus === 'completed' ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400'
-                  : 'bg-[#ec4899]/15 text-neko-magenta-ink'
-                }`}>
-                  {product.seriesStatus === 'single' ? 'Tomo único' : product.seriesStatus === 'completed' ? 'Serie completada' : 'En curso'}
-                </span>
-              )}
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                SKU: {product.sku}
-              </span>
-            </div>
-
-            {/* Trust badges */}
-            <TrustBadges variant="compact" />
-
-            {/* Métodos de pago */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Métodos de pago</p>
-              <div className="flex flex-wrap gap-2">
-                {/* Fondo blanco con borde: la página ya es gris claro, así que
-                    una ficha gris sobre gris no se distinguía en tema claro. */}
-                {PAYMENT_METHODS.map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex items-center gap-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-transparent rounded-lg px-3 py-2">
-                    <Icon size={14} className="flex-shrink-0 text-gray-500 dark:text-gray-400" aria-hidden="true" />
-                    {label}
-                  </div>
-                ))}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => toggleFavorite(product.id)}
+                    className={`w-11 h-11 flex items-center justify-center rounded-full transition-colors ${
+                      isProductFavorite ? 'text-neko-magenta-ink bg-[#ec4899]/10' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                    aria-label={isProductFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                    aria-pressed={isProductFavorite}
+                  >
+                    <Heart size={20} fill={isProductFavorite ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className={`w-11 h-11 flex items-center justify-center rounded-full transition-colors ${shared ? 'text-emerald-700 bg-emerald-50' : 'text-gray-600 hover:bg-gray-100'}`}
+                    aria-label={shared ? 'Enlace copiado' : 'Compartir producto'}
+                  >
+                    {shared ? <Check size={20} /> : <Share2 size={20} />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Consultar por WhatsApp */}
-            <a
-              href={`https://wa.me/51924462641?text=Hola%2C%20quisiera%20consultar%20sobre%20${encodeURIComponent(product.title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackWhatsAppOpen('product')}
-              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-[#25D366]/40 text-neko-green-ink hover:bg-[#25D366]/10 transition-colors text-sm font-semibold"
-            >
-              <MessageCircle size={16} />
-              Consultar por WhatsApp
-            </a>
+            {/* Detalles en acordeones: están para quien los busca, sin
+                competir con la compra. */}
+            <div className="rounded-2xl bg-white border border-gray-200 divide-y divide-gray-200">
+              {[
+                {
+                  id: 'envio',
+                  icon: Truck,
+                  title: 'Envío y recojo',
+                  body: (
+                    <>
+                      <p>Enviamos a todo el Perú en {DELIVERY_DAYS} según el destino, desde S/ {CHEAPEST_DELIVERY.toFixed(2)}. Desde S/ {FREE_SHIPPING_FROM} de compra el envío es gratis.</p>
+                      <p className="mt-2">Recojo gratis en {STORE.streetAddress}, {STORE.city}: {STORE.daysLabel.toLowerCase()}, {STORE.hoursShortLabel}</p>
+                      <Link href="/shipping" className="mt-2 inline-flex min-h-11 items-center font-semibold text-neko-magenta-ink hover:underline">Ver tarifas por destino</Link>
+                    </>
+                  ),
+                },
+                {
+                  id: 'pago',
+                  icon: Wallet,
+                  title: 'Métodos de pago',
+                  body: <p>Yape y Plin al {YAPE_PLIN_NUMBER}, o transferencia BCP. Confirmas el pago por WhatsApp con tu número de pedido.</p>,
+                },
+                ...(product.type === 'manga'
+                  ? [{
+                      id: 'formato',
+                      icon: BookOpen,
+                      title: '¿Qué formato es?',
+                      body: (
+                        <>
+                          <p>Tamaños y acabados de las ediciones de manga, para que sepas qué recibes.</p>
+                          <MangaFormatGuide variant="ghost" className="mt-2" />
+                        </>
+                      ),
+                    }]
+                  : []),
+              ].map(({ id, icon: Icon, title, body }) => (
+                <details key={id} className="group">
+                  <summary className="flex items-center justify-between gap-3 min-h-12 px-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-semibold text-sm text-gray-900">
+                    <span className="flex items-center gap-2.5">
+                      <Icon size={17} className="text-gray-500" aria-hidden="true" />
+                      {title}
+                    </span>
+                    <ChevronDown size={18} className="text-gray-500 transition-transform group-open:rotate-180" aria-hidden="true" />
+                  </summary>
+                  <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed">{body}</div>
+                </details>
+              ))}
+            </div>
+
+            {/* Confianza en una línea (antes, cinco íconos en tres filas) */}
+            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-600">
+              <li className="flex items-center gap-1.5"><ShieldCheck size={15} className="text-neko-cyan-ink" aria-hidden="true" />100% original</li>
+              <li className="flex items-center gap-1.5"><Gift size={15} className="text-neko-magenta-ink" aria-hidden="true" />Obsequio en cada compra</li>
+              <li>
+                <a
+                  href={`https://wa.me/51924462641?text=Hola%2C%20quisiera%20consultar%20sobre%20${encodeURIComponent(product.title)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackWhatsAppOpen('product')}
+                  className="flex items-center gap-1.5 font-semibold text-neko-green-ink hover:underline"
+                >
+                  <MessageCircle size={15} aria-hidden="true" />Consultar por WhatsApp
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* ── Tabs ─────────────────────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-16">
-          <div className="border-b border-gray-100 dark:border-gray-800 flex">
-            {(['description', 'info'] as const).map((tab) => {
-              const labels = { description: 'Descripción', info: 'Información' };
-              const active = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-4 px-6 text-sm font-semibold transition-colors relative ${
-                    active
-                      ? 'text-gray-900 dark:text-white'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {labels[tab]}
-                  {active && (
-                    <span className="absolute bottom-0 left-6 right-6 h-0.5 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="p-6">
-            {activeTab === 'description' && (
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                {product.fullDescription || product.description || 'Sin descripción disponible.'}
-              </p>
+        {/* ── Sinopsis + ficha técnica (antes en pestañas, con los datos
+            técnicos escondidos) ────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 mb-16">
+          <section className="rounded-2xl bg-white border border-gray-200 p-6" aria-labelledby="ficha-sinopsis">
+            <h2 id="ficha-sinopsis" className="text-lg font-extrabold text-gray-900 mb-3">Sinopsis</h2>
+            {synopsis ? (
+              <>
+                <p className={`text-gray-700 leading-relaxed text-sm sm:text-base ${synopsisOpen || !synopsisIsLong ? '' : 'line-clamp-6'}`}>
+                  {synopsis}
+                </p>
+                {synopsisIsLong && (
+                  <button
+                    type="button"
+                    onClick={() => setSynopsisOpen((o) => !o)}
+                    aria-expanded={synopsisOpen}
+                    className="mt-2 inline-flex items-center gap-1 min-h-11 text-sm font-bold text-neko-magenta-ink hover:underline"
+                  >
+                    {synopsisOpen ? 'Leer menos' : 'Leer más'}
+                    <ChevronDown size={16} className={`transition-transform ${synopsisOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-gray-600">Todavía no tenemos la sinopsis de este tomo.</p>
             )}
+          </section>
 
-            {activeTab === 'info' && (
-              attrs.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                  {attrs.map((row) => (
-                    <div key={row.label} className="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{row.label}</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white text-right">{row.value}</span>
-                    </div>
-                  ))}
+          <section className="rounded-2xl bg-white border border-gray-200 p-6" aria-labelledby="ficha-tecnica">
+            <h2 id="ficha-tecnica" className="text-lg font-extrabold text-gray-900 mb-3">Ficha técnica</h2>
+            <dl className="text-sm">
+              {[
+                { label: 'Editorial', value: product.editorial },
+                ...(product.author ? [{ label: 'Autor', value: product.author }] : []),
+                ...(product.series ? [{ label: 'Serie', value: product.series }] : []),
+                ...(countryName ? [{ label: 'Edición', value: countryName }] : []),
+                ...(categoryLabel ? [{ label: 'Género', value: categoryLabel }] : []),
+                ...(product.seriesStatus
+                  ? [{ label: 'Estado', value: product.seriesStatus === 'single' ? 'Tomo único' : product.seriesStatus === 'completed' ? 'Serie completada' : 'Serie en curso' }]
+                  : []),
+                ...attrs,
+                { label: 'SKU', value: product.sku },
+              ].map((row) => (
+                <div key={row.label} className="flex justify-between gap-4 py-2.5 border-b border-gray-100 last:border-0">
+                  <dt className="text-gray-600">{row.label}</dt>
+                  <dd className="font-semibold text-gray-900 text-right">{row.value}</dd>
                 </div>
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">Sin información adicional.</p>
-              )
-            )}
-          </div>
+              ))}
+            </dl>
+          </section>
         </div>
 
         {/* ── Productos relacionados ─────────────────────────────────────── */}
@@ -459,14 +495,17 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                 {'// También te puede gustar'}
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">
-                {product.series ? `Más de la serie ${product.series}` : 'Más en esta categoría'}
+                {product.series ? `Más de ${product.series} y similares` : 'Te puede interesar'}
               </h2>
               <span className="absolute -bottom-3 left-0 w-16 h-1 bg-gradient-to-r from-[#ec4899] to-[#06b6d4] rounded-full" aria-hidden="true" />
             </div>
-            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              {relatedProducts.map((related) => (
-                <ProductCard key={related.id} {...related} variant="compact" />
-              ))}
+            {/* Carrusel: deja ver más opciones sin alargar la página. Las
+                tarjetas miden como las del home (ver ProductCarousel). */}
+            <div className="mt-8">
+              <ProductCarousel
+                products={relatedProducts}
+                label={product.series ? `Más de ${product.series} y similares` : 'Te puede interesar'}
+              />
             </div>
           </section>
         )}

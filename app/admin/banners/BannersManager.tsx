@@ -26,7 +26,8 @@ export default function BannersManager() {
         <FolderOpen size={18} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
         <div className="text-sm text-blue-800 dark:text-blue-300">
           <p className="font-semibold mb-1">Carpeta: <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">public/images/banners/</code></p>
-          <p>Para agregar o quitar banners, coloca imágenes JPG/PNG/WebP en esa carpeta. Dimensiones recomendadas: <strong>1920 × 600 px</strong>. El slider del home los muestra automáticamente.</p>
+          <p>Cada campaña del hero del home es una imagen de esa carpeta más su entrada en <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">banners.json</code> con etiqueta, título, bajada, botón y enlace. Sin esa entrada la imagen no aparece.</p>
+          <p className="mt-1">La imagen es solo el arte: se recorta a 5:4, así que conviene que no lleve texto. La próxima feria se agrega sola desde los eventos.</p>
         </div>
       </div>
 

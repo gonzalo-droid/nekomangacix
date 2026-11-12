@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
 import Wordmark from './Wordmark';
 import SearchDropdown from './SearchDropdown';
@@ -127,7 +126,6 @@ export default function Header() {
             </Link>
 
             <UserMenu />
-            <ThemeToggle />
           </div>
 
           {/* Mobile: carrito + hamburguesa */}
@@ -144,7 +142,6 @@ export default function Header() {
                 </span>
               )}
             </Link>
-            <ThemeToggle />
             <button
               ref={burgerRef}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

@@ -36,6 +36,7 @@ interface Props extends ProductCardData {
   onRemove?: (id: string) => void;
   showFavoriteToggle?: boolean;
   sizes?: string;
+  /** Botón de comprar/reservar. Visible por defecto: toda tarjeta debe dejar comprar. */
   showQuickAdd?: boolean;
 }
 
@@ -56,15 +57,12 @@ function getTagAccent(tag: string, idx: number): string {
 }
 
 /*
- * Controles que se revelan al pasar el ratón. En una pantalla táctil no hay
- * hover: con solo `opacity-0 group-hover:opacity-100` el botón quedaba
- * invisible pero tocable, y un toque sobre la portada agregaba el producto al
- * carrito en vez de abrir la ficha. Fuera de `(hover: hover)` estos controles
- * no se pintan, y la tarjeta muestra su botón normal bajo el precio.
+ * Los botones de las tarjetas se ven siempre. Antes el de comprar aparecía
+ * solo al pasar el ratón: en táctil quedaba invisible pero tocable, y en
+ * escritorio quien no pasaba el ratón no sabía que podía comprar desde la
+ * lista. El corazón de favoritos sí sigue apareciendo al pasar el ratón en
+ * escritorio, porque no es la acción principal.
  */
-const HOVER_ONLY = 'hidden [@media(hover:hover)]:flex';
-const TOUCH_ONLY = '[@media(hover:hover)]:hidden';
-
 const STOCK_BADGE: Record<string, { label: string; cls: string }> = {
   preorder:     { label: 'Preventa',  cls: 'bg-blue-600 text-white' },
   out_of_stock: { label: 'Agotado',   cls: 'bg-red-600 text-white' },
@@ -84,7 +82,7 @@ export default function ProductCard({
   id, slug, title, editorial, countryCode, pricePEN, stock, type = 'manga',
   tags = [], images, stockStatus, preorderDeposit, seriesStatus,
   variant = 'default', priority = false, onRemove,
-  showFavoriteToggle = false, sizes, showQuickAdd = false,
+  showFavoriteToggle = false, sizes, showQuickAdd = true,
 }: Props) {
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite, isHydrated: favHydrated } = useFavorites();
@@ -160,21 +158,21 @@ export default function ProductCard({
               </p>
               {hasDiscount && <p className="text-[11px] line-through text-gray-400">S/ {pricePEN.toFixed(2)}</p>}
             </div>
-            {showQuickAdd && !isOutOfStock && (
+            {showQuickAdd && (
               <button
                 type="button"
-                onClick={isPreorder ? handleReserve : handleAdd}
+                onClick={isPreorder || isOutOfStock ? handleReserve : handleAdd}
                 className={`flex-shrink-0 flex items-center justify-center gap-1 px-2.5 min-h-11 rounded-lg text-[11px] font-bold transition-all ${
                   added
                     ? 'bg-emerald-700 text-white'
-                    : isPreorder
+                    : isPreorder || isOutOfStock
                     ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white'
                     : 'bg-[#ec4899]/10 text-neko-magenta-ink hover:bg-[#ec4899] hover:text-white'
                 }`}
-                aria-label={isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
+                aria-label={isPreorder || isOutOfStock ? `Reservar ${title}` : `Agregar ${title} al carrito`}
               >
-                <ShoppingCart size={12} />
-                {added ? '✓' : isPreorder ? 'Reservar' : 'Agregar'}
+                <ShoppingCart size={12} aria-hidden="true" />
+                {added ? '✓' : isPreorder || isOutOfStock ? 'Reservar' : 'Agregar'}
               </button>
             )}
           </div>
@@ -205,11 +203,14 @@ export default function ProductCard({
           </div>
         </Link>
         <div className="px-3 pb-3">
-          <button type="button" onClick={handleAdd} disabled={isOutOfStock}
-            className="w-full py-2 px-3 bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white text-xs font-semibold rounded-md hover:shadow-lg hover:shadow-[#ec4899]/30 disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-700 dark:disabled:to-gray-700 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-all active:scale-95"
+          <button type="button" onClick={isPreorder || isOutOfStock ? handleReserve : handleAdd}
+            className={`w-full min-h-11 px-3 text-white text-sm font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors active:scale-95 ${
+              added ? 'bg-emerald-700' : isPreorder || isOutOfStock ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[#be185d] hover:bg-[#9d174d]'
+            }`}
+            aria-label={isPreorder || isOutOfStock ? `Reservar ${title}` : `Agregar ${title} al carrito`}
           >
-            <ShoppingCart size={14} />
-            {added ? '¡Agregado!' : 'Agregar al carrito'}
+            <ShoppingCart size={14} aria-hidden="true" />
+            {added ? '¡Agregado!' : isPreorder || isOutOfStock ? 'Reservar' : 'Agregar al carrito'}
           </button>
         </div>
       </div>
@@ -262,25 +263,6 @@ export default function ProductCard({
           </button>
         )}
 
-        {/* Botón flotante sobre la portada: solo con ratón (al pasar) o al
-            llegar con el teclado. En táctil se usa el botón bajo el precio. */}
-        <div className={`absolute inset-x-0 bottom-0 p-3 ${HOVER_ONLY} justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 translate-y-2 group-hover:translate-y-0 group-focus-within:translate-y-0 transition-all duration-200 z-10`}>
-          <button
-            type="button"
-            onClick={isOutOfStock ? handleReserve : handleAdd}
-            className={`inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold shadow-xl transition-all active:scale-95 ${
-              added
-                ? 'bg-emerald-700 text-white shadow-emerald-700/40'
-                : isOutOfStock || isPreorder
-                  ? 'bg-gradient-to-r from-[#ec4899] to-[#06b6d4] text-white shadow-[#ec4899]/40'
-                  : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white shadow-[#ec4899]/40'
-            }`}
-            aria-label={isOutOfStock || isPreorder ? `Reservar ${title}` : `Agregar ${title} al carrito`}
-          >
-            <ShoppingCart size={15} />
-            {added ? '¡Agregado!' : isOutOfStock || isPreorder ? 'Reservar' : 'Agregar'}
-          </button>
-        </div>
       </div>
 
       {/* Info */}
@@ -327,7 +309,7 @@ export default function ProductCard({
           <button
             type="button"
             onClick={isOutOfStock ? handleReserve : handleAdd}
-            className={`${TOUCH_ONLY} mt-3 w-full min-h-11 inline-flex items-center justify-center gap-1.5 rounded-lg text-sm font-bold transition-colors active:scale-[0.98] ${
+            className={`mt-3 w-full min-h-11 inline-flex items-center justify-center gap-1.5 rounded-lg text-sm font-bold transition-colors active:scale-[0.98] ${
               added
                 ? 'bg-emerald-700 text-white'
                 : isOutOfStock || isPreorder

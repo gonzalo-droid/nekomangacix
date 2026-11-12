@@ -41,19 +41,19 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative mt-20">
-      {/* Separador diagonal */}
-      <div className="relative h-16 overflow-hidden bg-white dark:bg-gray-950" aria-hidden="true">
-        <svg viewBox="0 0 1440 64" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-          className="absolute bottom-0 left-0 w-full h-full">
-          <polygon points="0,64 1440,0 1440,64" fill="#050508" />
-        </svg>
-      </div>
+    // Bloque oscuro con las esquinas de arriba redondeadas sobre el gris de la
+    // página. Antes había un corte diagonal sobre una franja blanca que no
+    // coincidía con el fondo gris: se veía como una línea suelta.
+    <footer className="relative isolate overflow-hidden mt-20 rounded-t-[2rem] sm:rounded-t-[3rem] bg-[#0a0a0f]">
+      {/* Filo de marca y luces suaves */}
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#ec4899] via-[#a855f7] to-[#06b6d4]" aria-hidden="true" />
+      <div className="absolute -top-32 -left-24 w-96 h-96 rounded-full bg-[#ec4899] opacity-[0.12] blur-3xl pointer-events-none -z-10" aria-hidden="true" />
+      <div className="absolute -bottom-40 -right-24 w-[28rem] h-[28rem] rounded-full bg-[#06b6d4] opacity-[0.10] blur-3xl pointer-events-none -z-10" aria-hidden="true" />
 
       {/* Cuerpo principal */}
-      <div className="bg-[#050508] pb-10">
+      <div className="pb-10">
         {/* CTA WhatsApp */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-12">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0d1f0d] via-[#0a1a12] to-[#0d1f0d] border border-[#25D366]/20 px-8 sm:px-12 py-10 sm:py-12">
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#25D366] opacity-10 blur-3xl pointer-events-none" />
             <div className="relative flex flex-col sm:flex-row items-center justify-between gap-8">
@@ -82,13 +82,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Línea divisora con glow */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
-          <div className="relative h-px bg-gradient-to-r from-transparent via-[#ec4899]/40 to-transparent mb-14">
-            <div className="absolute left-1/2 -translate-x-1/2 -top-2.5 w-5 h-5 rounded-full bg-[#ec4899]/20 border border-[#ec4899]/40 flex items-center justify-center">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#ec4899]" />
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="border-t border-white/10 pt-12">
 
           {/* Grid de columnas */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
@@ -204,8 +199,10 @@ export default function Footer() {
             </div>
           </div>
 
+          </div>
+
           {/* Libro de Reclamaciones + Copyright */}
-          <div className="mt-14 pt-8 border-t border-gray-800/60">
+          <div className="mt-14 pt-8 border-t border-white/10">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 
               <a
