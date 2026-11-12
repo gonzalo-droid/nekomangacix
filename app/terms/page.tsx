@@ -1,6 +1,19 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
+import Link from 'next/link';
 import LegalShell, { LegalSection } from '@/components/LegalShell';
+import {
+  DELIVERY_DAYS,
+  DEPOSIT_PERCENT,
+  FREE_SHIPPING_FROM,
+  PICKUP_TEXT,
+  PICKUP_WINDOW_WEEKS,
+  REFUND_TIME,
+  RETURN_DAYS,
+  SELLOUT_TEXT,
+  arrivalTimesText,
+} from '@/lib/content/policies';
+import { getAvailableCountries } from '@/lib/domain/products/availability';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Términos y condiciones',
@@ -14,7 +27,8 @@ const SECTIONS = [
   { id: 'servicio',       title: 'Descripción del servicio' },
   { id: 'precios',        title: 'Precios y pagos' },
   { id: 'stock',          title: 'Disponibilidad y stock' },
-  { id: 'envios',         title: 'Envíos' },
+  { id: 'preventas',      title: 'Preventas' },
+  { id: 'envios',         title: 'Envíos y recojo' },
   { id: 'devoluciones',   title: 'Devoluciones' },
   { id: 'propiedad',      title: 'Propiedad intelectual' },
   { id: 'responsabilidad', title: 'Limitación de responsabilidad' },
@@ -22,7 +36,9 @@ const SECTIONS = [
   { id: 'contacto',       title: 'Contacto' },
 ];
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const arrivals = arrivalTimesText(await getAvailableCountries());
+
   return (
     <LegalShell
       eyebrow="Legal"
@@ -32,7 +48,7 @@ export default function TermsPage() {
         </>
       }
       heroSubtitle="Las reglas del juego para comprar en NekoMangaCix."
-      updatedAt="marzo 2026"
+      updatedAt="noviembre 2026"
       sections={SECTIONS}
     >
       <LegalSection id="aceptacion" number="01" title="Aceptación de términos">
@@ -45,8 +61,9 @@ export default function TermsPage() {
       <LegalSection id="servicio" number="02" title="Descripción del servicio">
         <p>
           NekoMangaCix es una tienda de manga online con sede en Chiclayo, Perú. Ofrecemos mangas de
-          editoriales oficiales en español y coleccionables originales, con envíos a nivel nacional. Las ventas se coordinan
-          por WhatsApp y el pago se realiza por transferencia bancaria, Yape o Plin.
+          editoriales oficiales en español y coleccionables originales, con envíos a nivel nacional y una tienda física en
+          Chiclayo. Los pedidos se registran en este sitio, se confirman por WhatsApp y se pagan por transferencia bancaria,
+          Yape o Plin.
         </p>
       </LegalSection>
 
@@ -59,30 +76,49 @@ export default function TermsPage() {
 
       <LegalSection id="stock" number="04" title="Disponibilidad y stock">
         <p>
-          El stock mostrado es referencial. En caso de agotarse un producto luego de recibir tu pedido,
-          te contactaremos para ofrecerte alternativas o proceder con el reembolso.
-        </p>
-        <p>
-          Los productos a pedido (on demand) tienen un tiempo de espera estimado de 2–3 semanas.
-          Las preventas requieren un pago adelantado y la fecha de llegada es estimada.
+          El stock mostrado es referencial. Si un producto se agota después de recibir tu pedido, te
+          contactamos para ofrecerte alternativas o el reembolso.
         </p>
       </LegalSection>
 
-      <LegalSection id="envios" number="05" title="Envíos">
+      <LegalSection id="preventas" number="05" title="Preventas">
+        <p>
+          Una preventa se separa pagando el {DEPOSIT_PERCENT} % del valor del tomo; el saldo se paga cuando llega.
+          Las ediciones limitadas pueden requerir otro monto.
+        </p>
+        <p>Tiempos estimados desde el cierre de la preventa: {arrivals}.</p>
+        <p>
+          El pedido depende de la disponibilidad de la editorial. Si un tomo se agota, puedes elegir {SELLOUT_TEXT}.
+        </p>
+        <p>
+          Cuando el pedido llega tienes {PICKUP_WINDOW_WEEKS} semanas para coordinar su recojo o envío. Pasado ese plazo,
+          el monto separado queda como saldo a favor para otra compra.
+        </p>
+      </LegalSection>
+
+      <LegalSection id="envios" number="06" title="Envíos y recojo">
         <p>Realizamos envíos a todo el territorio peruano mediante servicios de courier.</p>
-        <p>El costo de envío es de S/ 15.00 a nivel nacional (sujeto a cambios según destino).</p>
-        <p>El tiempo de entrega es de 2 a 5 días hábiles desde la confirmación del pago.</p>
+        <p>
+          El costo depende del destino (ver la tabla en{' '}
+          <Link href="/shipping" className="text-neko-magenta-ink font-semibold hover:underline">Políticas de envío</Link>)
+          y es gratis desde S/ {FREE_SHIPPING_FROM} de compra.
+        </p>
+        <p>El tiempo de entrega es de {DELIVERY_DAYS} desde la confirmación del pago, según el destino.</p>
+        <p>{PICKUP_TEXT}.</p>
         <p>NekoMangaCix no se responsabiliza por retrasos causados por la empresa de courier.</p>
       </LegalSection>
 
-      <LegalSection id="devoluciones" number="06" title="Devoluciones">
-        <p>Aceptamos devoluciones dentro de los 7 días calendario desde la recepción del producto.</p>
+      <LegalSection id="devoluciones" number="07" title="Devoluciones">
+        <p>Aceptamos devoluciones dentro de los {RETURN_DAYS} días calendario desde la recepción del producto.</p>
         <p>El producto debe estar en perfectas condiciones, sin usar y con el embalaje original.</p>
-        <p>El cliente asume el costo de devolución. El reembolso se procesa en 48–72 horas hábiles.</p>
-        <p>No se aceptan devoluciones de productos en preventa una vez confirmado el pedido.</p>
+        <p>El cliente asume el costo de devolución. El reembolso se procesa en {REFUND_TIME}.</p>
+        <p>
+          Las preventas no se devuelven una vez confirmado el pedido, salvo que la editorial agote el tomo
+          (ver Preventas).
+        </p>
       </LegalSection>
 
-      <LegalSection id="propiedad" number="07" title="Propiedad intelectual">
+      <LegalSection id="propiedad" number="08" title="Propiedad intelectual">
         <p>
           Todo el contenido de este sitio (imágenes, textos, logos) es propiedad de NekoMangaCix o de sus
           respectivos titulares y está protegido por las leyes de propiedad intelectual. Queda prohibida
@@ -90,21 +126,21 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="responsabilidad" number="08" title="Limitación de responsabilidad">
+      <LegalSection id="responsabilidad" number="09" title="Limitación de responsabilidad">
         <p>
           NekoMangaCix no será responsable por daños indirectos, incidentales o consecuentes derivados
           del uso de nuestros productos o servicios.
         </p>
       </LegalSection>
 
-      <LegalSection id="modificaciones" number="09" title="Modificaciones">
+      <LegalSection id="modificaciones" number="10" title="Modificaciones">
         <p>
           Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entran
           en vigor desde su publicación en este sitio.
         </p>
       </LegalSection>
 
-      <LegalSection id="contacto" number="10" title="Contacto">
+      <LegalSection id="contacto" number="11" title="Contacto">
         <p>
           Para consultas sobre estos términos, contáctanos en{' '}
           <a href="mailto:contacto@nekomangacix.com" className="text-neko-magenta-ink font-semibold hover:underline">

@@ -3,10 +3,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-interface FaqSection {
-  category: string;
-  items: { q: string; a: string }[];
-}
+import type { FaqSection } from '@/lib/content/faq';
 
 interface CategoryAccent {
   text: string;

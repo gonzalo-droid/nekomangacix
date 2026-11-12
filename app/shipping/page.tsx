@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import { SHIPPING_ZONES } from '@/lib/domain/shipping/zones';
+import { DELIVERY_DAYS, FREE_SHIPPING_FROM } from '@/lib/content/policies';
+import { STORE } from '@/lib/site';
 import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import {
@@ -19,7 +21,7 @@ import {
 export const metadata: Metadata = pageMetadata({
   title: 'Envíos a todo el Perú',
   description:
-    'Costos y tiempos de envío de manga y coleccionables por destino: Chiclayo, Lima, norte, sur y selva.',
+    'Costos y tiempos de envío de manga y coleccionables por destino, envío gratis desde S/ 100 y recojo gratis en nuestra tienda de Chiclayo.',
   path: '/shipping',
 });
 
@@ -34,16 +36,16 @@ const HIGHLIGHTS = [
   },
   {
     Icon: Clock,
-    title: '2–5 días hábiles',
-    desc: 'Tiempo promedio desde la confirmación del pago hasta la entrega.',
+    title: DELIVERY_DAYS.charAt(0).toUpperCase() + DELIVERY_DAYS.slice(1),
+    desc: `Según el destino, desde la confirmación del pago. Envío gratis desde S/ ${FREE_SHIPPING_FROM} de compra.`,
     accent: 'text-[#ec4899]',
     bg: 'bg-[#ec4899]/10',
     ring: 'ring-[#ec4899]/20',
   },
   {
     Icon: MapPin,
-    title: 'Chiclayo y Lima',
-    desc: 'Entregas locales con tiempos reducidos (1–3 días hábiles).',
+    title: 'Recojo gratis en Chiclayo',
+    desc: `En nuestra tienda de ${STORE.streetAddress}: ${STORE.daysLabel.toLowerCase()}, ${STORE.hoursShortLabel}`,
     accent: 'text-[#eab308]',
     bg: 'bg-[#eab308]/10',
     ring: 'ring-[#eab308]/20',
@@ -59,11 +61,11 @@ const HIGHLIGHTS = [
 ];
 
 const STEPS = [
-  { Icon: ShoppingCart, title: 'Realizas tu pedido',    desc: 'Agrega al carrito y coordina por WhatsApp los detalles de entrega.' },
-  { Icon: Send,          title: 'Confirmas el pago',     desc: 'Yape, Plin o transferencia BCP. Nos envías el voucher para confirmar.' },
+  { Icon: ShoppingCart, title: 'Realizas tu pedido',    desc: 'En el carrito eliges destino o recojo en tienda y confirmas. Te damos un número de pedido.' },
+  { Icon: Send,          title: 'Confirmas el pago',     desc: 'Yape, Plin o transferencia BCP. Nos envías el comprobante por WhatsApp con tu número de pedido.' },
   { Icon: Package,       title: 'Preparamos tu pedido',  desc: 'Verificamos tu pago y embalamos cuidadosamente cada tomo.' },
   { Icon: Truck,         title: 'Despachamos',           desc: 'Entregamos al courier y te enviamos el número de seguimiento.' },
-  { Icon: CheckCircle2,  title: 'Recibes tu manga',      desc: 'Llega a tu puerta. Coordinaremos contigo la recepción.' },
+  { Icon: CheckCircle2,  title: 'Recibes tu manga',      desc: 'Llega a tu puerta, o te avisamos para que lo recojas en la tienda.' },
 ];
 
 export default function ShippingPage() {
@@ -189,7 +191,7 @@ export default function ShippingPage() {
               <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1.5 list-disc list-inside marker:text-[#eab308]">
                 <li>Los tiempos son estimados y pueden variar por factores externos.</li>
                 <li>NekoMangaCix no se responsabiliza por demoras del courier.</li>
-                <li>Los productos a pedido y preventa tienen tiempos adicionales a los de envío.</li>
+                <li>Las preventas suman el tiempo de llegada de la editorial al de envío (ver <Link href="/faq" className="font-semibold underline underline-offset-2">preguntas frecuentes</Link>).</li>
                 <li>Proporciona una dirección completa y un teléfono disponible.</li>
               </ul>
             </div>
