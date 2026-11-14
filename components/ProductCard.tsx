@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePrefetchOnIntent } from '@/hooks/usePrefetchOnIntent';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { usePromotions } from '@/context/PromotionsContext';
@@ -89,6 +90,7 @@ export default function ProductCard({
   const { getDiscountedPrice } = usePromotions();
   const { showCartToast } = useToast();
   const [added, setAdded] = useState(false);
+  const prefetchOnIntent = usePrefetchOnIntent(`/products/${slug}`);
 
   const { finalPrice, discount, promotionName } = getDiscountedPrice(pricePEN, id, type);
   const hasDiscount = discount > 0;
@@ -125,6 +127,7 @@ export default function ProductCard({
       <Link
         href={`/products/${slug}`}
         prefetch={false}
+        {...prefetchOnIntent}
         className="group card-manga bg-white dark:bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/40 flex flex-col"
       >
         <div className="relative overflow-hidden">
@@ -193,7 +196,7 @@ export default function ProductCard({
             <Trash2 size={14} />
           </button>
         )}
-        <Link href={`/products/${slug}`} prefetch={false} className="block">
+        <Link href={`/products/${slug}`} prefetch={false} {...prefetchOnIntent} className="block">
           <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} />
           <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-[2.5rem]">{title}</h3>
@@ -222,6 +225,7 @@ export default function ProductCard({
     <Link
       href={`/products/${slug}`}
       prefetch={false}
+      {...prefetchOnIntent}
       className="group card-manga relative bg-white dark:bg-gray-900 rounded-xl overflow-hidden flex flex-col h-full transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/15 dark:hover:shadow-black/60"
     >
       {/* Imagen */}
