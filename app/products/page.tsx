@@ -48,11 +48,24 @@ const loadCachedCatalog = unstable_cache(
   { revalidate: 300, tags: ['products'] },
 );
 
+/**
+ * Si Supabase falla (timeouts esporádicos), la función cacheada lanza y no se
+ * guarda nada; se reintenta una vez en vivo. Si también falla, el error llega
+ * a `app/error.tsx` en vez de mostrar un catálogo vacío.
+ */
+async function loadCatalogView(query: CatalogQuery) {
+  if (query.search) return loadCatalog(query);
+  try {
+    return await loadCachedCatalog(query);
+  } catch (err) {
+    console.error('[catalog] cached view failed, retrying live', err);
+    return loadCatalog(query);
+  }
+}
+
 export default async function ProductsPage({ searchParams }: Props) {
   const query = parseCatalogQuery(await searchParams);
-  const { products, total, facets } = query.search
-    ? await loadCatalog(query)
-    : await loadCachedCatalog(query);
+  const { products, total, facets } = await loadCatalogView(query);
 
   const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
   // Búsqueda sin coincidencias exactas: se ofrecen los más parecidos en vez

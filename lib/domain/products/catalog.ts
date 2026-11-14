@@ -161,6 +161,18 @@ export function isDefaultQuery(q: CatalogQuery): boolean {
   );
 }
 
+/**
+ * Supabase respondió con error (p. ej. un `statement timeout`). Se lanza en vez
+ * de devolver una página vacía: dentro de `unstable_cache` un vacío quedaría
+ * guardado 5 minutos y el catálogo diría "No se encontraron productos" a todos.
+ */
+export class CatalogUnavailableError extends Error {
+  constructor(what: string, cause?: unknown) {
+    super(`Catalog query failed: ${what}`, { cause });
+    this.name = 'CatalogUnavailableError';
+  }
+}
+
 function getClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -215,7 +227,7 @@ export async function queryCatalogPage(
     .order('id', { ascending: true })
     .range(from, from + ITEMS_PER_PAGE - 1);
 
-  if (error || !data) return { products: [], total: 0 };
+  if (error || !data) throw new CatalogUnavailableError('page', error);
 
   return {
     products: (data as Record<string, unknown>[]).map(dbRowToProduct),
@@ -244,7 +256,8 @@ async function queryRecommendedPage(
       const { count, error } = await base('id', { count: 'exact', head: true })
         .eq('is_active', true)
         .eq('stock_status', status);
-      return error ? 0 : (count ?? 0);
+      if (error) throw new CatalogUnavailableError(`count ${status}`, error);
+      return count ?? 0;
     }),
   );
   const total = counts.reduce((sum, c) => sum + c, 0);
@@ -265,7 +278,7 @@ async function queryRecommendedPage(
       .order('title', { ascending: true })
       .order('id', { ascending: true })
       .range(from, to);
-    if (error || !data) break;
+    if (error || !data) throw new CatalogUnavailableError(`page ${groups[i]}`, error);
     products.push(...(data as Record<string, unknown>[]).map(dbRowToProduct));
     remaining -= data.length;
     from = 0;
@@ -334,7 +347,7 @@ async function facetsFallback(supabase: SupabaseClient, q: CatalogQuery): Promis
     query = applyFilters(query, nonStructural);
 
     const { data, error } = await query.range(from, from + PAGE - 1);
-    if (error || !data) break;
+    if (error || !data) throw new CatalogUnavailableError('facets', error);
     rows.push(...(data as Row[]));
     if (data.length < PAGE) break;
   }
