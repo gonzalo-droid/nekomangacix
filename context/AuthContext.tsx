@@ -2,7 +2,23 @@
 
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { createSupabaseClient } from '@/core/supabase/client';
+
+/**
+ * El cliente de Supabase pesa ~50 KB comprimidos y casi ningún visitante tiene
+ * cuenta: se descarga aparte, cuando el navegador queda libre, para que no
+ * compita con la primera pintura de la página.
+ */
+const loadClient = () =>
+  import('@/core/supabase/client').then(({ createSupabaseClient }) => createSupabaseClient());
+
+function whenIdle(cb: () => void): () => void {
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(cb, { timeout: 2000 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(cb, 1);
+  return () => window.clearTimeout(id);
+}
 
 interface AuthContextType {
   user: User | null;
@@ -31,27 +47,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!configured.current) return;
 
-    const supabase = createSupabaseClient();
     let mounted = true;
+    let unsubscribe: (() => void) | undefined;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const cancelIdle = whenIdle(async () => {
+      const supabase = await loadClient();
+      if (!mounted) return;
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+      unsubscribe = () => subscription.unsubscribe();
+
+      const { data: { session } } = await supabase.auth.getSession();
       if (!mounted) return;
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      cancelIdle();
+      unsubscribe?.();
     };
   }, []);
 
   const signOut = async () => {
-    const supabase = createSupabaseClient();
+    const supabase = await loadClient();
     await supabase.auth.signOut();
     setUser(null);
   };

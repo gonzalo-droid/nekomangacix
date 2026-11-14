@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
 import { useFavorites } from '@/context/FavoritesContext';
-import { getCategoryLabel } from '@/hooks/useProducts';
+import { getCategoryLabel } from '@/lib/constants/categories';
 import { Product } from '@/lib/products';
 import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';

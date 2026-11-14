@@ -6,22 +6,14 @@ import { isCountryCode, type CountryCode } from '@/lib/constants/countries';
 import { isProductType, type ProductType } from '@/lib/constants/productTypes';
 import { isDemographic, type Demographic } from '@/lib/constants/demographics';
 
-export const ITEMS_PER_PAGE = 18;
-
-/** Mínimo de caracteres para que una búsqueda llegue a la base. */
-export const MIN_SEARCH_LENGTH = 3;
-
-/**
- * `recommended`: primero lo que está en stock (se entrega ya), después las
- * preventas y al final los agotados; dentro de cada grupo, por título.
- * Antes el orden por defecto era alfabético y el catálogo abría con 18
- * preventas y una imagen rota, mientras los 155 productos en stock solo
- * aparecían si alguien filtraba. "Más recientes" se quitó: el catálogo se
- * importó en bloque y la fecha de alta no dice nada.
- */
-export const SORT_OPTIONS = ['recommended', 'name_asc', 'price_asc', 'price_desc'] as const;
-export type SortOption = (typeof SORT_OPTIONS)[number];
-export const DEFAULT_SORT: SortOption = 'recommended';
+export {
+  ITEMS_PER_PAGE,
+  MIN_SEARCH_LENGTH,
+  SORT_OPTIONS,
+  DEFAULT_SORT,
+  type SortOption,
+} from './catalogOptions';
+import { DEFAULT_SORT, ITEMS_PER_PAGE, MIN_SEARCH_LENGTH, SORT_OPTIONS, type SortOption } from './catalogOptions';
 
 /** Orden de los grupos en `recommended`. */
 const STOCK_STATUSES = ['in_stock', 'preorder', 'out_of_stock'];
