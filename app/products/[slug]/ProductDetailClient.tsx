@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
 import { useFavorites } from '@/context/FavoritesContext';
-import { getCategoryLabel } from '@/hooks/useProducts';
+import { getCategoryLabel } from '@/lib/constants/categories';
 import { Product } from '@/lib/products';
 import { cloudinaryLoader, getCloudinaryUrl } from '@/lib/cloudinary';
 import { COUNTRIES, type CountryCode } from '@/lib/constants/countries';
@@ -167,8 +167,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Props)
                   loader={cloudinaryLoader}
                   className="object-contain p-3 sm:p-6"
                   onError={() => setImgError(true)}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  /* Móvil: caja 16/11 a todo el ancho con la tapa en `contain`,
+                     así que la portada mide ~45 % del ancho, no el 100 %. */
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 90vw, 600px"
                   priority
+                  fetchPriority="high"
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">

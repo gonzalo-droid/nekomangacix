@@ -4,7 +4,6 @@ import { unstable_cache } from 'next/cache';
 import ProductsClient from './ProductsClient';
 import {
   ITEMS_PER_PAGE,
-  isDefaultQuery,
   parseCatalogQuery,
   queryCatalogFacets,
   queryCatalogPage,
@@ -38,21 +37,22 @@ async function loadCatalog(query: CatalogQuery) {
 }
 
 /**
- * La vista sin filtros es la que recibe la mayor parte del tráfico y es igual
- * para todos, así que se cachea. Las combinaciones de filtros son muchas y de
- * cola larga: esas se resuelven en vivo.
+ * Cualquier vista sin búsqueda de texto (sin filtros, "En stock", una
+ * editorial, la página 2…) es igual para todos: se cachea 5 minutos, con la
+ * consulta como clave, y el admin la invalida con la etiqueta `products`.
+ * Las búsquedas son de cola larga y van en vivo.
  */
-const loadDefaultCatalog = unstable_cache(
+const loadCachedCatalog = unstable_cache(
   async (query: CatalogQuery) => loadCatalog(query),
-  ['catalog-default'],
+  ['catalog-view'],
   { revalidate: 300, tags: ['products'] },
 );
 
 export default async function ProductsPage({ searchParams }: Props) {
   const query = parseCatalogQuery(await searchParams);
-  const { products, total, facets } = isDefaultQuery(query)
-    ? await loadDefaultCatalog(query)
-    : await loadCatalog(query);
+  const { products, total, facets } = query.search
+    ? await loadCatalog(query)
+    : await loadCachedCatalog(query);
 
   const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
   // Búsqueda sin coincidencias exactas: se ofrecen los más parecidos en vez

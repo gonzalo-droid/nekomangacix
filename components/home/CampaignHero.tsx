@@ -70,6 +70,7 @@ function SlideArt({ slide, priority }: { slide: HeroSlide; priority: boolean }) 
           alt={slide.image.alt}
           fill
           priority={priority}
+          fetchPriority={priority ? 'high' : undefined}
           sizes="(max-width: 1024px) 100vw, 640px"
           className="object-cover"
           style={{ objectPosition: slide.image.position }}

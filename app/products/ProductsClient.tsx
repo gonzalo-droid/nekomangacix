@@ -13,10 +13,9 @@ import {
   ITEMS_PER_PAGE,
   MIN_SEARCH_LENGTH,
   DEFAULT_SORT,
-  type CatalogQuery,
-  type FacetCounts,
   type SortOption,
-} from '@/lib/domain/products/catalog';
+} from '@/lib/domain/products/catalogOptions';
+import type { CatalogQuery, FacetCounts } from '@/lib/domain/products/catalog';
 import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
 
 interface Props {

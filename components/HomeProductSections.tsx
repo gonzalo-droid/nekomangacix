@@ -30,8 +30,8 @@ function FeaturedSection({ products, badge, title, description, href, linkLabel 
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-        {products.map((p, idx) => (
-          <ProductCard key={p.id} {...p} variant="compact" priority={idx < 6} showQuickAdd />
+        {products.map((p) => (
+          <ProductCard key={p.id} {...p} variant="compact" showQuickAdd />
         ))}
       </div>
 
