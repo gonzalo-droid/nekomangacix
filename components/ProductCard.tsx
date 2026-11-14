@@ -39,6 +39,8 @@ interface Props extends ProductCardData {
   sizes?: string;
   /** Botón de comprar/reservar. Visible por defecto: toda tarjeta debe dejar comprar. */
   showQuickAdd?: boolean;
+  /** No pedir la portada todavía: la tarjeta está lejos de la pantalla. */
+  deferImage?: boolean;
 }
 
 const TAG_ACCENTS = [
@@ -83,7 +85,7 @@ export default function ProductCard({
   id, slug, title, editorial, countryCode, pricePEN, stock, type = 'manga',
   tags = [], images, stockStatus, preorderDeposit, seriesStatus,
   variant = 'default', priority = false, onRemove,
-  showFavoriteToggle = false, sizes, showQuickAdd = true,
+  showFavoriteToggle = false, sizes, showQuickAdd = true, deferImage = false,
 }: Props) {
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite, isHydrated: favHydrated } = useFavorites();
@@ -131,7 +133,7 @@ export default function ProductCard({
         className="group card-manga bg-white dark:bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/40 flex flex-col"
       >
         <div className="relative overflow-hidden">
-          <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} />
+          <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} defer={deferImage} />
           <span className="absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 animate-sheen pointer-events-none" aria-hidden="true" />
 
           {/* Stock badge arriba izquierda */}
@@ -197,7 +199,7 @@ export default function ProductCard({
           </button>
         )}
         <Link href={`/products/${slug}`} prefetch={false} {...prefetchOnIntent} className="block">
-          <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} />
+          <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} defer={deferImage} />
           <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-[2.5rem]">{title}</h3>
             <EditorialLine countryCode={countryCode} editorial={editorial} />
@@ -230,7 +232,7 @@ export default function ProductCard({
     >
       {/* Imagen */}
       <div className="relative overflow-hidden">
-        <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} />
+        <ProductImage src={images?.[0]} alt={title} aspect="2/3" sizes={sizes ?? defaultSizes} priority={priority} defer={deferImage} />
 
         {/* Sheen */}
         <span className="absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 animate-sheen pointer-events-none" aria-hidden="true" />

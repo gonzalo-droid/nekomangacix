@@ -22,6 +22,25 @@ export default function ProductCarousel({ products, label }: Props) {
   const trackRef = useRef<HTMLUListElement>(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Las portadas se piden cuando la fila se acerca a la pantalla. Con `lazy`
+  // nativo no basta: el navegador carga todo lo que esté a ~1 250 px, y en la
+  // ficha eso eran 12 portadas (~1 MB) compitiendo con la portada principal.
+  // Las tarjetas (títulos, precios, enlaces) sí van en el HTML desde el inicio.
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || near) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setNear(true);
+      },
+      { rootMargin: '400px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
 
   const updateArrows = useCallback(() => {
     const el = trackRef.current;
@@ -54,7 +73,7 @@ export default function ProductCarousel({ products, label }: Props) {
     'hidden md:flex absolute top-[38%] -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white text-gray-900 shadow-lg shadow-black/30 ring-1 ring-black/5 hover:scale-105 transition-transform';
 
   return (
-    <div role="region" aria-roledescription="carrusel" aria-label={label} className="relative">
+    <div ref={rootRef} role="region" aria-roledescription="carrusel" aria-label={label} className="relative">
       {canPrev && (
         <button type="button" onClick={() => scrollByPage(-1)} aria-label="Ver anteriores" className={`${arrowClass} -left-4`}>
           <ChevronLeft size={20} aria-hidden="true" />
@@ -82,7 +101,7 @@ export default function ProductCarousel({ products, label }: Props) {
             // siguiente: es la pista de que la fila continúa.
             className="grid snap-start shrink-0 basis-[calc((min(100cqw,80rem)-2.75rem)/2)] sm:basis-[calc((min(100cqw,80rem)-5rem)/3)] md:basis-[calc((min(100cqw,80rem)-6rem)/4)] lg:basis-[calc((min(100cqw,80rem)-8rem)/5)]"
           >
-            <ProductCard {...p} variant="compact" showQuickAdd />
+            <ProductCard {...p} variant="compact" showQuickAdd deferImage={!near} />
           </li>
         ))}
       </ul>

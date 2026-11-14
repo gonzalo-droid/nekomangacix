@@ -13,6 +13,8 @@ interface Props {
   priority?: boolean;
   className?: string;
   hoverScale?: boolean;
+  /** Reserva el espacio sin pedir la imagen todavía (ver ProductCarousel). */
+  defer?: boolean;
 }
 
 export default function ProductImage({
@@ -24,6 +26,7 @@ export default function ProductImage({
   priority = false,
   className = '',
   hoverScale = true,
+  defer = false,
 }: Props) {
   const [error, setError] = useState(false);
   const resolvedSrc = src ? getCloudinaryUrl(src) : '';
@@ -36,7 +39,7 @@ export default function ProductImage({
     <div
       className={`relative w-full ${aspectClass} bg-gradient-to-br from-[#e8eef4] to-[#d1dce8] dark:from-gray-800 dark:to-gray-700 overflow-hidden ${className}`}
     >
-      {hasImage ? (
+      {defer ? null : hasImage ? (
         <Image
           src={resolvedSrc}
           alt={alt}
